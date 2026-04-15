@@ -1,36 +1,36 @@
 {
-  "name": "e-roux-plugins",
-  "owner": {
-    "name": "e-roux"
-  },
-  "metadata": {
-    "description": "Agent plugins by e-roux — works with both GitHub Copilot CLI and Claude Code",
-    "version": "1.0.0"
-  },
-  "plugins": [
-    {
-      "name": "vulcan",
-      "description": "Expert agent for GitHub Copilot CLI plugins, extensions, and standalone SDK applications (TypeScript)",
-      "version": "0.19.1",
-      "source": "./plugins/vulcan"
+    "name": "e-roux-plugins",
+    "owner": {
+        "name": "e-roux"
     },
-    {
-      "name": "make-first",
-      "description": "Makefile-centric project workflow with .SILENT, .ONESHELL, mandatory qa target",
-      "version": "0.11.7",
-      "source": "./plugins/make"
+    "metadata": {
+        "description": "Agent plugins by e-roux \u2014 works with both GitHub Copilot CLI and Claude Code",
+        "version": "1.0.0"
     },
-    {
-      "name": "dev",
-      "description": "General-purpose development guards: no hardcoded secrets, no direct main pushes, self-documenting code",
-      "version": "0.4.5",
-      "source": "./plugins/dev"
-    },
-    {
-      "name": "infra",
-      "description": "Infrastructure automation agent for cloud and on-premise environments",
-      "version": "0.1.7",
-      "source": "./plugins/infra"
-    }
-  ]
+    "plugins": [
+        {
+            "name": "vulcan",
+            "description": "Expert agent for GitHub Copilot CLI plugins, extensions, and standalone SDK applications (TypeScript)",
+            "version": "0.19.1",
+            "source": "./plugins/vulcan"
+        },
+        {
+            "name": "make-first",
+            "description": "Makefile-centric project workflow with .SILENT, .ONESHELL, mandatory qa target",
+            "version": "0.11.8",
+            "source": "./plugins/make"
+        },
+        {
+            "name": "dev",
+            "description": "General-purpose development guards: no hardcoded secrets, no direct main pushes, self-documenting code",
+            "version": "0.4.5",
+            "source": "./plugins/dev"
+        },
+        {
+            "name": "infra",
+            "description": "Infrastructure automation agent for cloud and on-premise environments",
+            "version": "0.1.7",
+            "source": "./plugins/infra"
+        }
+    ]
 }
