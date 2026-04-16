@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "type": "command",
+        "bash": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/session-start.sh\"",
+        "timeoutSec": 10
+      }
+    ],
+    "preToolUse": [
+      {
+        "type": "command",
+        "bash": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/pre-tool.sh\"",
+        "timeoutSec": 10
+      }
+    ]
+  }
+}
