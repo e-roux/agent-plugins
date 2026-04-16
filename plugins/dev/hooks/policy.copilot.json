@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "type": "command",
+        "bash": "hooks/scripts/session-start.sh",
+        "timeoutSec": 10
+      }
+    ],
+    "preToolUse": [
+      {
+        "type": "command",
+        "bash": "hooks/scripts/pre-tool.sh",
+        "timeoutSec": 15
+      }
+    ],
+    "postToolUse": [
+      {
+        "type": "command",
+        "bash": "bash hooks/scripts/post-tool.sh",
+        "timeoutSec": 10
+      },
+      {
+        "type": "command",
+        "bash": "bash hooks/scripts/pipeline-chainguard.sh",
+        "timeoutSec": 5
+      }
+    ]
+  }
+}

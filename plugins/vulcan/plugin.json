@@ -1,0 +1,27 @@
+{
+  "name": "vulcan",
+  "description": "Expert agent for building GitHub Copilot CLI plugins, extensions, and standalone SDK applications (TypeScript)",
+  "version": "0.19.1",
+  "author": {
+    "name": "e-roux"
+  },
+  "license": "MIT",
+  "keywords": [
+    "copilot-cli",
+    "copilot-sdk",
+    "plugin",
+    "extension",
+    "typescript",
+    "agent"
+  ],
+  "_meta": {
+    "copilotCliVersion": "1.0.27",
+    "copilotSdkVersion": "0.2.2",
+    "copilotSdkPackage": "@github/copilot-sdk",
+    "lastVerified": "2026-04-15",
+    "notes": "v0.19.0: Dual-tool plugin architecture"
+  },
+  "agents": "agents/",
+  "skills": "skills/",
+  "hooks": "hooks/hooks.copilot.json"
+}

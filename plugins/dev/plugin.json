@@ -1,0 +1,29 @@
+{
+  "name": "dev",
+  "description": "General-purpose development guards: blocks hardcoded secrets, direct main pushes, destructive SQL migrations, --no-verify bypasses, comment lines in source code, and monitors CI pipeline status after every push. Works with any project.",
+  "version": "0.4.5",
+  "author": {
+    "name": "Emmanuel Roux"
+  },
+  "license": "MIT",
+  "keywords": [
+    "development",
+    "guards",
+    "security",
+    "git",
+    "migration",
+    "secrets",
+    "self-documenting",
+    "ci",
+    "pipeline"
+  ],
+  "category": "development",
+  "_meta": {
+    "copilotCliVersion": "1.0.27",
+    "copilotSdkVersion": "0.2.2",
+    "lastVerified": "2026-04-15",
+    "notes": "Root manifest for Copilot CLI. Minimal manifest for Claude Code lives in .claude-plugin/plugin.json."
+  },
+  "skills": "skills/",
+  "hooks": "hooks/policy.copilot.json"
+}

@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionEnd": [
+      {
+        "type": "command",
+        "bash": "bash scripts/version-check.sh",
+        "cwd": "{{plugin_data_dir}}/..",
+        "timeoutSec": 15
+      }
+    ]
+  }
+}
