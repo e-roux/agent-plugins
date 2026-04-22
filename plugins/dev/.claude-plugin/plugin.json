@@ -1,0 +1,20 @@
+{
+  "name": "dev",
+  "description": "General-purpose development guards: blocks hardcoded secrets, direct main pushes, destructive SQL migrations, --no-verify bypasses, comment lines in source code, and monitors CI pipeline status after every push. Works with any project.",
+  "version": "0.5.0",
+  "author": {
+    "name": "Emmanuel Roux"
+  },
+  "license": "MIT",
+  "keywords": [
+    "development",
+    "guards",
+    "security",
+    "git",
+    "migration",
+    "secrets",
+    "self-documenting",
+    "ci",
+    "pipeline"
+  ]
+}

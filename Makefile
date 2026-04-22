@@ -6,7 +6,7 @@ SHELL := /bin/bash
 PLUGIN_SRC_ROOT ?= $(HOME)/development/github.com/e-roux
 
 PLUGINS := make dev vulcan infra web-browser
-RSYNC_EXCLUDE := --exclude='.git' --exclude='.gitignore' --exclude='.claude-plugin' \
+RSYNC_EXCLUDE := --exclude='.git' --exclude='.gitignore' \
 	--exclude='test' --exclude='Makefile' --exclude='.cursor' --exclude='.github'
 
 .PHONY: help sync verify qa
