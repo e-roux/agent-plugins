@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.0]
+
+- Add `git` skill: opinionated commit/PR workflow with `make qa` quality gate, scoped conventional commits, and branch safety rules
+
 ## [0.4.5]
 
 - Split dual manifests: `plugin.json` (root, full Copilot CLI format) and `.claude-plugin/plugin.json` (minimal, Claude Code compatible — name/description/version/author/license/keywords only)
