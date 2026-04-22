@@ -1,0 +1,26 @@
+{
+  "name": "web-browser",
+  "description": "CDP-based Chrome automation for web design verification: navigate, interact, and inspect live browser state. Essential for agents that must validate UI implementations in a real browser.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Emmanuel Roux"
+  },
+  "license": "MIT",
+  "keywords": [
+    "browser",
+    "chrome",
+    "cdp",
+    "automation",
+    "web-design",
+    "ui",
+    "testing"
+  ],
+  "category": "development",
+  "_meta": {
+    "copilotCliVersion": "1.0.27",
+    "copilotSdkVersion": "0.2.2",
+    "lastVerified": "2026-04-22",
+    "notes": "Root manifest for Copilot CLI. Minimal manifest for Claude Code lives in .claude-plugin/plugin.json."
+  },
+  "skills": "skills/"
+}

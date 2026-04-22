@@ -1,3 +1,7 @@
+## [0.19.2]
+
+- fix(hooks/copilot): add version field and remove duplicate injection
+
 # Changelog
 
 - Fix dual-manifest schema: `.claude-plugin/plugin.json` is minimal (no agents/skills/hooks/_meta — Claude Code rejects them); root `plugin.json` is full Copilot CLI format (agents/skills/hooks/_meta); Copilot CLI reads root (priority 2), Claude Code reads .claude-plugin (only path it knows)
