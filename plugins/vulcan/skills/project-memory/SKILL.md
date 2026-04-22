@@ -1,6 +1,8 @@
 ---
 name: project-memory
-description: >
+description: |
+  ▎ BLOCKING: invoke this skill — do NOT use Write/Edit tools directly — when the user asks to write, capture, or document: requirements, feature specs, user stories,
+  ▎ pitfalls, or lessons learned.
   Persistent agent memory for a repository — known pitfalls, lessons learned, and feature
   requirements. Use when the user mentions: requirements, specification, spec, acceptance
   criteria, pitfall, lesson learned, remember this, track mistakes, enforce lessons, add a
