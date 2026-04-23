@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.7.1]
+
+- fix(hooks/pre-tool): branch-first guard now falls back to `CWD` when `FILE_DIR` doesn't exist — previously, creating a file in a new subdirectory bypassed the guard entirely because the parent directory hadn't been created yet
+- test(hooks): add test for creating a file in a non-existent subdirectory on `main`
+
 ## [0.7.0]
 
 - fix(hooks/pre-tool): read `toolCalls` array from `preToolUse` input (was incorrectly reading `.toolName`/`.toolArgs` — all guards were silently bypassed)
