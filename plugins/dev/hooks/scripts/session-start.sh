@@ -15,7 +15,12 @@ CTX+="- **no-comments-guard**: code must be self-documenting — no comment line
 CTX+="- **branch-guard**: never push/merge to \`main\` directly — use PRs\n"
 CTX+="- **migration-guard**: no DROP/TRUNCATE/DELETE in SQL migrations\n"
 CTX+="- **no-verify-guard**: \`--no-verify\` is forbidden on commits\n"
+CTX+="- **branch-first-guard**: \`edit\`/\`create\` on \`main\`/\`master\` is blocked — create a feature branch first\n"
 CTX+="- **pipeline-chainguard**: after every \`git push\`, check CI pipeline status before continuing\n\n"
+CTX+="**MANDATORY WORKFLOW — before editing any file in a git repo:**\n"
+CTX+="1. Check current branch: \`git branch --show-current\`\n"
+CTX+="2. If on \`main\`/\`master\`, create and switch to a feature branch: \`git checkout -b <type>/<descriptive-slug>\`\n"
+CTX+="3. Only then begin making changes\n\n"
 CTX+="All guards apply to every project in this session.\n\n"
 
 HAS_MEMORY=0

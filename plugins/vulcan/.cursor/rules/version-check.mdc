@@ -1,0 +1,31 @@
+---
+description: Check if plugin.json version needs bumping before completing a task
+alwaysApply: true
+---
+
+# Plugin Version Check
+
+Before considering any task complete, evaluate whether `plugin.json` version should be bumped.
+
+## When to bump
+
+Read the current version from `plugin.json` and the latest commit messages, then apply semver:
+
+- **patch** (0.1.0 → 0.1.1): bug fixes, typo corrections, minor wording improvements in existing content
+- **minor** (0.1.0 → 0.2.0): new skill, new shared resource, new capability added to the agent, meaningful content additions to existing skills
+- **major** (0.1.0 → 1.0.0): breaking changes to plugin structure, renamed/removed skills or resources, agent scope fundamentally changed
+
+## When NOT to bump
+
+- Pure documentation changes (README, comments) that don't affect agent behavior
+- Reformatting or reorganization that preserves the same content
+- Changes outside the plugin (e.g., .cursor/rules, .gitignore)
+
+## How to check
+
+At the end of a task, before the final summary:
+
+1. Review what files changed (skills, agent, resources, plugin.json)
+2. Classify the change as patch/minor/major or no-bump
+3. If a bump is warranted, ask the user: "This looks like a **minor** version bump (new resource added). Update plugin.json from 0.2.0 → 0.3.0?"
+4. Only bump after user confirmation

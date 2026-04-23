@@ -141,6 +141,18 @@ Use kebab-case slugs that describe the incident:
 
 `doc/requirements/features/<feature>.md` provides acceptance criteria that agents must read before implementing a feature.
 
+### File Organization — Keep Entropy Low
+
+**Do not create a new file for every requirement.** A proliferation of tiny files adds navigation overhead and makes the requirements directory harder to reason about.
+
+Rules:
+- **Group by domain/functionality**, not by individual requirement. A file should cover a coherent area (e.g., `auth.md`, `data-export.md`, `cli-ux.md`).
+- **Add to an existing file** when the new requirement belongs to an already-covered domain. Only create a new file when no existing file is a logical home.
+- **One file per feature cluster**, not one file per acceptance criterion.
+- If a requirement touches multiple domains, place it in the file that owns the primary concern and cross-reference if needed.
+
+Before creating a new file, scan `doc/requirements/features/` and ask: *does this belong in an existing file?*
+
 ### Requirements Template
 
 ```markdown

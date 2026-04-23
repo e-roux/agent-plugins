@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.7.0]
+
+- fix(hooks/pre-tool): read `toolCalls` array from `preToolUse` input (was incorrectly reading `.toolName`/`.toolArgs` — all guards were silently bypassed)
+- fix(hooks/pre-tool): handle unborn branches via `symbolic-ref` fallback in `_current_branch_for_path`
+- feat(hooks/pre-tool): add `.bats` and `/test/` to exemption patterns in `_is_test_or_config`
+- feat(hooks/pre-tool): extract `CWD` from hook input for branch-first bash guard
+- test(hooks): update all pre-tool tests to `toolCalls` input format
+- test(hooks): add 4 branch-first-guard tests for `edit`/`create` on main branch
+
+
+
+- feat(hooks/pre-tool): add `branch-first-guard` — blocks `edit`/`create` when current branch is `main`/`master`, requires feature branch creation first
+- feat(hooks/pre-tool): extend `branch-first-guard` to `bash` tool — also blocks shell-level file writes (`echo >`, `cat >`, `tee`, `sed -i`) on `main`/`master`
+- feat(hooks/scripts): add `branch-check-turn.sh` — Claude Code `UserPromptSubmit` hook injects branch status before every turn (proactive, not just at session start)
+- feat(hooks/policy.json): add `UserPromptSubmit` hook for Claude Code with `branch-check-turn.sh`
+- feat(skills/git): add branch-first workflow as first core principle with naming convention
+- feat(skills/dev): document dual-layer enforcement, updated guard table, expanded branch guard section
+- feat(doc/requirements): add `git-workflow.md` — acceptance criteria for branch-first enforcement
+
 ## [0.5.0]
 
 - Add `git` skill: opinionated commit/PR workflow with `make qa` quality gate, scoped conventional commits, and branch safety rules

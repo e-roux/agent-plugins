@@ -26,17 +26,30 @@ Applies to: all code files except tests, templates, and markdown.
 ### 2. Branch Guard
 
 **Never push or merge directly to `main`.**
+**Never edit or create files while on `main`.**
 
 ```bash
-# ✗ Forbidden
+# ✗ Forbidden — pushing/merging to main
 git push origin main
 git merge main
 
-# ✓ Correct
-gh pr create --base main
+# ✗ Forbidden — editing while on main (preToolUse blocks edit/create/bash-writes)
+echo "content" > file.ts
+cat > file.go << 'EOF'
+...
+
+# ✓ Correct — create a branch first
+git checkout -b feat/my-feature
+# now edit files freely
 ```
 
 Also blocks `git commit --no-verify` which bypasses hooks.
+
+**Dual-layer enforcement:**
+- `edit`/`create` tools: blocked by `preToolUse` hook checking git branch of the target file
+- `bash` file writes (`echo >`, `cat >`, `tee`, `sed -i`): also blocked by `preToolUse` when on `main`/`master`
+- **Claude Code only**: `UserPromptSubmit` hook injects branch status before every turn, so the model knows its branch before deciding what tools to call
+- Copilot CLI has no `UserPromptSubmit` equivalent; `sessionStart` + `preToolUse` are the enforcement layers
 
 ### 3. Migration Guard
 
@@ -104,9 +117,12 @@ gh run view <run-id> --log-failed  # diagnose failures
 |-------|------|-----------|
 | secrets-guard | `edit`, `create` | Detects credential pattern in new content |
 | no-comments-guard | `edit`, `create` | Detects comment lines (`//`, `/*`, `#`) in code files |
+| branch-first-guard | `edit`, `create`, `bash` | Current git branch is `main` or `master` |
 | branch-guard | `bash` | `git push/merge ... main` or `git commit --no-verify` |
 | migration-guard | `bash` | SQL command on migration path with DROP/TRUNCATE/DELETE |
 | pipeline-chainguard | `bash` (postToolUse) | Detects successful `git push`, injects CI check instructions |
+
+> **Claude Code only:** `UserPromptSubmit` hook injects branch status before each turn (proactive). Copilot CLI enforces at `preToolUse` only (reactive).
 
 ## Scope
 
