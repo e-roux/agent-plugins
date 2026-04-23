@@ -638,15 +638,15 @@ Marketplace-based install is the only method that works in BOTH tools.
 
 ### Marketplace must be updated on every plugin release
 
-**`claude plugin update` reads the marketplace, not the plugin repo directly.** If the marketplace is not updated, `plugin update` will always report "already at the latest version" regardless of what the plugin repo contains.
+**Both `copilot plugin update` and `claude plugin update` read the marketplace, not the plugin repo directly.** If the marketplace is not updated, `plugin update` will always report "already at the latest version" regardless of what the plugin repo contains.
 
 Three files must be bumped atomically with every release:
 
 | File | Read by |
 |------|---------|
-| `.claude-plugin/marketplace.json` → plugin `version` | `claude plugin update` (version resolution) |
-| `plugins/<name>/.claude-plugin/plugin.json` → `version` | Claude Code (installed plugin metadata) |
-| `plugins/<name>/plugin.json` → `version` | Copilot CLI |
+| `.claude-plugin/marketplace.json` → plugin `version` | Both tools (version resolution) |
+| `plugins/<name>/.claude-plugin/plugin.json` → `version` | Both tools (installed plugin metadata) |
+| `plugins/<name>/plugin.json` → `version` | Both tools (full manifest) |
 
 **Finding the marketplace:** It is a **sibling repository** in the same owner namespace — a separate repo containing `.claude-plugin/marketplace.json`. It is **not** a public registry, awesome-list, or shared community index. Scan the parent directory of the plugin repo (e.g. `ls ../`) for a repo with that file. Never assume it is named anything specific.
 
