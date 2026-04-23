@@ -1,3 +1,7 @@
+## [0.19.4]
+
+- fix(claude-plugin/version): sync `.claude-plugin/plugin.json` — this is the file `claude plugin update` reads
+
 ## [0.19.3]
 
 - feat(skills/project-memory): prepend BLOCKING prefix to description — names the competing tools (Write/Edit) and echoes system instruction language to force skill invocation over direct file edits
