@@ -4,6 +4,52 @@ Accumulated gotchas discovered through use. Read this before giving advice — i
 
 ## Plugin vs Project-Local Confusion
 
+### Never edit the installed plugin copy — always edit the source repository
+
+Installed plugins live under `~/.config/copilot/installed-plugins/` (or the platform equivalent). These are **deployment artifacts**, not source files. Editing them directly means:
+- Changes are lost on the next `copilot plugin update`
+- The source repo diverges silently — no diff, no history
+- Other environments (CI, teammates) never see the fix
+
+**Rule (ABSOLUTE):** Always identify and edit the **source repository** of a plugin. The installed copy is read-only from the agent's perspective.
+
+How to identify the source: check `plugin.json`'s `author` field or search `~/development` (or your equivalent workspace) for the matching repo. Never assume the source is wherever the skill context was loaded from.
+
+**Guard:** None yet. Relies on agent discipline.
+
+**Incident 2026-04-23:** Agent was asked to update the `project-memory` skill with an entropy guideline. The skill context injected at session start referenced the installed plugin path. Agent edited that installed copy (`~/.config/copilot/installed-plugins/e-roux-plugins/vulcan/skills/project-memory/SKILL.md`) instead of the source at `~/development/github.com/e-roux/agent-plugin-vulcan/skills/project-memory/SKILL.md`.
+
+---
+
+### `preToolUse` on `edit`/`create` alone is insufficient — bash tool bypasses it
+
+Blocking `edit` and `create` tools in `preToolUse` does NOT prevent all file modifications. The `bash` tool can write files via shell operators that bypass the guard entirely:
+
+```bash
+echo "content" > file.ts          # bypasses edit guard
+cat > file.go << 'EOF'            # bypasses create guard
+printf '%s' "data" > file.py      # bypasses both
+tee file.txt <<< "content"        # bypasses both
+sed -i 's/old/new/' file.go       # bypasses both (in-place edit)
+```
+
+**Rule:** Any `preToolUse` guard that must be universal MUST also inspect `bash` tool commands for file-writing patterns. Filter on output redirects (`>`, `>>`) and in-place edit flags (`sed -i`, `tee <file>`).
+
+**Example pattern for pre-tool.sh:**
+```bash
+if [ "$TOOL" = "bash" ]; then
+  if printf '%s' "$CMD" | grep -qE '(>[[:space:]]+[^/dev]|>>[[:space:]]|tee[[:space:]][^-]|sed[[:space:]]+-[^ ]*i)'; then
+    # check branch, deny if on main
+  fi
+fi
+```
+
+**Guard:** Implemented in `agent-plugin-dev` `pre-tool.sh` `branch-first-guard`.
+
+**Incident 2026-04-23:** Agent implemented `branch-first-guard` that only covered `edit`/`create`. During the same session, it violated the rule it was building by making changes on `main` — the bash tool could have been used to write files without triggering the guard.
+
+---
+
 ### `plugin.json` does NOT belong in `.agents/`
 
 `.agents/` is for **project-local customization** — skills, instructions, and resources scoped to a single repository. It is not a plugin.
@@ -173,19 +219,40 @@ In non-interactive mode (`copilot -p "..."`), the observed firing order is:
 
 Do not rely on session initialization state in `userPromptSubmitted`. This ordering anomaly is specific to `-p` mode; interactive mode may differ.
 
-### `toolArgs` has different types in `preToolUse` vs `postToolUse`
+### `preToolUse` input is a `toolCalls` array — NOT `toolName`/`toolArgs` ⚠️ BREAKING
 
-In `preToolUse`, `toolArgs` is a **JSON string** (must be parsed):
+**Current format (empirically verified, session 2ed337f2, CLI v1.0.34):**
+
+`preToolUse` delivers a `toolCalls` array. `toolArgs` and `toolName` at top level do **not exist**.
+`postToolUse` still uses flat `toolName`/`toolArgs` (object, not string).
+
 ```bash
+# preToolUse — correct
+INPUT=$(cat)
+TOOL_CALLS=$(echo "$INPUT" | jq -c '.toolCalls // empty')
+# Iterate the array; args is a double-encoded JSON string:
+TOOL=$(echo "$INPUT" | jq -r '.toolCalls[0].name')
+ARGS=$(echo "$INPUT" | jq -r '.toolCalls[0].args')          # unwraps to JSON string
+COMMAND=$(echo "$ARGS" | jq -r '.command')
+
+# postToolUse — flat object (unchanged)
+TOOL=$(echo "$INPUT" | jq -r '.toolName')
+COMMAND=$(echo "$INPUT" | jq -r '.toolArgs.command')         # object, not string
+```
+
+`preToolUse` can batch multiple tool calls: always iterate the full array.
+
+**Incident 2026-04-24:** `pre-tool.sh` (dev plugin v0.6.0) read `.toolName` → `null` → no
+`case` branch matched → ALL guards silently bypassed. Agent edited files on `main` without
+branch-first guard firing. Root cause confirmed via `jq` analysis of `events.jsonl`.
+Fixed in dev plugin v0.7.0.
+
+**Old (v1.0.11) format — now obsolete:**
+```bash
+# preToolUse used to have .toolArgs as a JSON string
 COMMAND=$(echo "$INPUT" | jq -r '.toolArgs | fromjson | .command')
 ```
 
-In `postToolUse`, `toolArgs` is a **parsed JSON object** (access directly):
-```bash
-COMMAND=$(echo "$INPUT" | jq -r '.toolArgs.command')
-```
-
-**Empirically verified** (CLI v1.0.11).
 
 ### Plugin hooks are ignored unless declared in `plugin.json`
 
@@ -597,13 +664,32 @@ Using the wrong case silently results in hooks never firing. Hook configuration 
 
 ### Hook input payload field names differ
 
-Copilot CLI hook stdin uses `toolName` and `toolInput`.
-Claude Code hook stdin uses `tool_name` and `tool_input`.
+`preToolUse` and `postToolUse` have **completely different schemas**:
 
-Scripts that inspect the payload must handle both:
+| Hook | Format | Access pattern |
+|------|--------|---------------|
+| `preToolUse` | `{cwd, toolCalls:[{id,name,args}]}` | `jq '.toolCalls[0].name'`; args is a JSON string |
+| `postToolUse` | `{toolName, toolArgs:{...}, toolResult}` | `jq '.toolName'`; toolArgs is an object |
 
+For Claude Code: `PreToolUse` uses `tool_name` / `tool_input` (snake_case, flat — no array).
+
+Scripts that must run under both tools need to branch on which fields are present:
 ```bash
-TOOL=$(echo "$INPUT" | jq -r '.tool_name // .toolName')
+INPUT=$(cat)
+# Detect format
+if echo "$INPUT" | jq -e '.toolCalls' > /dev/null 2>&1; then
+  # Copilot CLI preToolUse
+  TOOL=$(echo "$INPUT" | jq -r '.toolCalls[0].name')
+  ARGS=$(echo "$INPUT" | jq -r '.toolCalls[0].args')
+elif echo "$INPUT" | jq -e '.tool_name' > /dev/null 2>&1; then
+  # Claude Code PreToolUse
+  TOOL=$(echo "$INPUT" | jq -r '.tool_name')
+  ARGS=$(echo "$INPUT" | jq -c '.tool_input')
+else
+  # postToolUse (Copilot CLI)
+  TOOL=$(echo "$INPUT" | jq -r '.toolName')
+  ARGS=$(echo "$INPUT" | jq -c '.toolArgs')
+fi
 ```
 
 ### Plugin manifest paths — two files needed (schemas differ)

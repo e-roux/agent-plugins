@@ -10,6 +10,21 @@ description: Version control operations including commits, pull requests, and br
 This skill provides workflows for common git operations with focus on communication quality and code review readiness. Operations are organized by subcommand type.
 
 ## Core Principles
+
+### Branch-First Workflow
+
+**MANDATORY — before any file changes in a git repository:**
+
+1. Check current branch: `git branch --show-current`
+2. If on `main`/`master`, you MUST create and switch to a feature branch:
+   ```sh
+   git checkout -b <type>/<descriptive-slug>
+   ```
+3. Branch naming: `feat/`, `fix/`, `chore/`, `docs/`, `refactor/`, `test/` prefix + kebab-case slug
+4. Only then begin making changes
+
+The `branch-first-guard` hook mechanically enforces this — `edit`/`create` calls are denied on `main`/`master`.
+
 ### Communication Style
 
 - No emoji in commit bodies. Small Unicode symbols (·, →, ✗, ✓) acceptable only when they add meaning.

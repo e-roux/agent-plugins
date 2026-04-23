@@ -1,22 +1,33 @@
+## [0.21.0]
+
+- fix(known-pitfalls): update `preToolUse` format — it now delivers a `toolCalls` array (not flat `toolName`/`toolArgs`); update dual-tool hook payload comparison table; add incident 2026-04-24
+
+
+
+- feat(skills/project-memory): add "File Organization — Keep Entropy Low" section — requirements must be grouped by domain/functionality; add to existing files before creating new ones
+- fix(known-pitfalls): add pitfall — never edit installed plugin copy, always edit source repository; incident 2026-04-23
+- fix(known-pitfalls): add pitfall — `preToolUse` on `edit`/`create` alone is insufficient; bash tool bypasses file-write guards via shell redirects; must also inspect bash commands
+
 ## [0.19.7]
 
-- feat(release/marketplace): enforce branch naming `chore/<plugin>-v<version>` and post-merge tag `<plugin>/v<version>`
-- feat(doc/requirements): add AC-007/AC-008
+- feat(doc/requirements): add AC-007/AC-008 — marketplace branch must be `chore/<plugin>-v<version>`, tag `<plugin>/v<version>` must be pushed after merge
+- feat(AGENTS.md): enforce branch naming and post-merge tagging in both main procedure and cascade subagent steps
 
 ## [0.19.6]
 
-- feat(doc/requirements): add marketplace update requirement with formal AC
-- fix(known-pitfalls): both tools read the marketplace, not Claude Code only
-- fix(AGENTS.md): correct tool attribution throughout
+- feat(doc/requirements): add `plugin-update-triggers-marketplace-update.md` — formal AC capturing that both Copilot CLI and Claude Code read the marketplace for version resolution
+- fix(known-pitfalls): correct "read by" — both tools use the marketplace, not Claude Code only
+- fix(AGENTS.md): correct tool attribution in marketplace update step and version-bump note
 
 ## [0.19.5]
 
-- doc(AGENTS.md): make marketplace update mandatory step; three-file rule; sibling-repo discovery
-- doc(known-pitfalls): add marketplace-must-be-updated pitfall with three-file table and sibling-repo rule
+- doc(AGENTS.md): make marketplace update a mandatory named step in the release procedure — three files must be bumped atomically, marketplace is a sibling repo (not a public registry), locate by scanning parent directory for `.claude-plugin/marketplace.json`
+- doc(known-pitfalls): expand marketplace section with "must update on every release" pitfall, three-file table, and sibling-repo discovery rule
 
 ## [0.19.4]
 
-- fix(claude-plugin/version): sync `.claude-plugin/plugin.json` — this is the file `claude plugin update` reads
+- fix(claude-plugin/version): sync `.claude-plugin/plugin.json` to 0.19.3 — this is the file `claude plugin update` reads; root `plugin.json` alone is insufficient
+- fix(AGENTS.md): document that both `plugin.json` and `.claude-plugin/plugin.json` must be bumped on every release
 
 ## [0.19.3]
 

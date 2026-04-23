@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionEnd": [
+      {
+        "type": "command",
+        "bash": "bash scripts/version-check.sh",
+        "timeoutSec": 15
+      }
+    ]
+  }
+}
