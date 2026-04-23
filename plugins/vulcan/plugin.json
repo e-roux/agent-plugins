@@ -1,7 +1,7 @@
 {
   "name": "vulcan",
   "description": "Expert agent for building GitHub Copilot CLI plugins, extensions, and standalone SDK applications (TypeScript)",
-  "version": "0.19.3",
+  "version": "0.19.4",
   "author": {
     "name": "e-roux"
   },

@@ -11,7 +11,7 @@
         {
             "name": "vulcan",
             "description": "Expert agent for GitHub Copilot CLI plugins, extensions, and standalone SDK applications (TypeScript)",
-            "version": "0.19.2",
+            "version": "0.19.4",
             "source": "./plugins/vulcan"
         },
         {
