@@ -1,3 +1,8 @@
+## [0.19.5]
+
+- doc(AGENTS.md): make marketplace update mandatory step; three-file rule; sibling-repo discovery
+- doc(known-pitfalls): add marketplace-must-be-updated pitfall with three-file table and sibling-repo rule
+
 ## [0.19.4]
 
 - fix(claude-plugin/version): sync `.claude-plugin/plugin.json` — this is the file `claude plugin update` reads
