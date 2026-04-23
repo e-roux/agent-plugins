@@ -95,11 +95,10 @@ _guard_one_call() {
   if [ "$TOOL" = "edit" ] || [ "$TOOL" = "create" ]; then
     if [ -n "$FILE" ]; then
       FILE_DIR=$(dirname "$FILE")
-      if [ -d "$FILE_DIR" ]; then
-        BRANCH=$(_current_branch_for_path "$FILE_DIR")
-        if _is_on_protected_branch "$BRANCH"; then
-          _branch_first_deny "$BRANCH"
-        fi
+      [ -d "$FILE_DIR" ] || FILE_DIR="$CWD"
+      BRANCH=$(_current_branch_for_path "$FILE_DIR")
+      if _is_on_protected_branch "$BRANCH"; then
+        _branch_first_deny "$BRANCH"
       fi
     fi
   fi
