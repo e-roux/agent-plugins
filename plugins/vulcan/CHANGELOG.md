@@ -1,3 +1,9 @@
+## [0.19.6]
+
+- feat(doc/requirements): add marketplace update requirement with formal AC
+- fix(known-pitfalls): both tools read the marketplace, not Claude Code only
+- fix(AGENTS.md): correct tool attribution throughout
+
 ## [0.19.5]
 
 - doc(AGENTS.md): make marketplace update mandatory step; three-file rule; sibling-repo discovery

@@ -6,13 +6,13 @@ To get to know what is Vulcan, please read the README.md.
 - if new versions are available, create a new branch in this repository
 - Update and fill the information gap within agents, hooks, resources and skills definition
 - Analyse the README.md for correctness with the newly updated information
-- always bump the version (major/minor/patch) in **both** `plugin.json` AND `.claude-plugin/plugin.json` (the latter is what `claude plugin update` reads); for patches not implied by the `copilot-cli` or `copilot-sdk`, this is a patch update.
+- always bump the version (major/minor/patch) in **both** `plugin.json` AND `.claude-plugin/plugin.json` (both tools read these for installed plugin metadata); for patches not implied by the `copilot-cli` or `copilot-sdk`, this is a patch update.
 - update the changelog with top level bullets ONLY
 - pr and merge to main
 - **marketplace update** (MANDATORY): find the sibling marketplace repository (a separate repo in the same owner namespace, containing `.claude-plugin/marketplace.json`). Update **three files** atomically in one PR:
-  1. `.claude-plugin/marketplace.json` — bump the plugin's `version` field (this is what `claude plugin update` resolves against)
-  2. `plugins/<name>/.claude-plugin/plugin.json` — bump `version` (Claude Code reads this)
-  3. `plugins/<name>/plugin.json` — bump `version` (Copilot CLI reads this)
+  1. `.claude-plugin/marketplace.json` — bump the plugin's `version` field (both `copilot plugin update` and `claude plugin update` resolve versions from here)
+  2. `plugins/<name>/.claude-plugin/plugin.json` — bump `version` (both tools read this for installed plugin metadata)
+  3. `plugins/<name>/plugin.json` — bump `version` (both tools read the full manifest)
   The marketplace is **user-specific** — it is not a public registry or awesome-list. Locate it by scanning sibling directories (same parent as the plugin repo) for a repo containing `.claude-plugin/marketplace.json`.
 - **release**: create a GitHub release (`gh release create`) tagged with the new version; use the changelog diff as release notes
 - switch back to main, clean branches in the repo
