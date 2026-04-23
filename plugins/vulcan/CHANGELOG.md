@@ -1,3 +1,7 @@
+## [0.19.3]
+
+- feat(skills/project-memory): prepend BLOCKING prefix to description — names the competing tools (Write/Edit) and echoes system instruction language to force skill invocation over direct file edits
+
 ## [0.19.2]
 
 - fix(hooks/copilot): add version field and remove duplicate injection
