@@ -22,6 +22,8 @@ the parent directory of the plugin repo for a repo containing `.claude-plugin/ma
 - [ ] AC-004: `plugins/<name>/plugin.json` `version` field matches the released plugin version.
 - [ ] AC-005: The marketplace repo is located by scanning sibling directories — never hardcoded by name.
 - [ ] AC-006: The marketplace PR is squash-merged and the branch deleted before the GitHub release is created.
+- [ ] AC-007: The marketplace branch MUST be named `chore/<plugin-name>-v<version>` (e.g. `chore/vulcan-v0.19.7`).
+- [ ] AC-008: After the marketplace PR is merged, a git tag `<plugin-name>/v<version>` is pushed to the marketplace repo (e.g. `vulcan/v0.19.7`), marking the exact marketplace state for that plugin release.
 
 ## Constraints
 

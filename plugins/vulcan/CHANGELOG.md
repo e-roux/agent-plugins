@@ -1,3 +1,8 @@
+## [0.19.7]
+
+- feat(release/marketplace): enforce branch naming `chore/<plugin>-v<version>` and post-merge tag `<plugin>/v<version>`
+- feat(doc/requirements): add AC-007/AC-008
+
 ## [0.19.6]
 
 - feat(doc/requirements): add marketplace update requirement with formal AC

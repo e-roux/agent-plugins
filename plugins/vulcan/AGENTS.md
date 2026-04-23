@@ -9,10 +9,11 @@ To get to know what is Vulcan, please read the README.md.
 - always bump the version (major/minor/patch) in **both** `plugin.json` AND `.claude-plugin/plugin.json` (both tools read these for installed plugin metadata); for patches not implied by the `copilot-cli` or `copilot-sdk`, this is a patch update.
 - update the changelog with top level bullets ONLY
 - pr and merge to main
-- **marketplace update** (MANDATORY): find the sibling marketplace repository (a separate repo in the same owner namespace, containing `.claude-plugin/marketplace.json`). Update **three files** atomically in one PR:
+- **marketplace update** (MANDATORY): find the sibling marketplace repository (a separate repo in the same owner namespace, containing `.claude-plugin/marketplace.json`). Update **three files** atomically in one PR on branch `chore/<plugin-name>-v<version>`:
   1. `.claude-plugin/marketplace.json` — bump the plugin's `version` field (both `copilot plugin update` and `claude plugin update` resolve versions from here)
   2. `plugins/<name>/.claude-plugin/plugin.json` — bump `version` (both tools read this for installed plugin metadata)
   3. `plugins/<name>/plugin.json` — bump `version` (both tools read the full manifest)
+  After squash-merge, tag the marketplace repo: `git tag <plugin-name>/v<version> && git push origin <plugin-name>/v<version>` (e.g. `vulcan/v0.19.7`).
   The marketplace is **user-specific** — it is not a public registry or awesome-list. Locate it by scanning sibling directories (same parent as the plugin repo) for a repo containing `.claude-plugin/marketplace.json`.
 - **release**: create a GitHub release (`gh release create`) tagged with the new version; use the changelog diff as release notes
 - switch back to main, clean branches in the repo
@@ -40,8 +41,9 @@ Each subagent MUST:
    implications for that plugin
 5. Bump the plugin version (patch unless the change is breaking)
 6. Update the plugin's changelog with top-level bullets
-7. Create branch `chore/cli-<version>-sdk-<version>`, commit, push,
-   create PR via `gh pr create`, squash-merge via `gh pr merge --squash --delete-branch`
+7. Create branch `chore/<plugin-name>-v<version>` in the marketplace repo, commit, push,
+   create PR via `gh pr create`, squash-merge via `gh pr merge --squash --delete-branch`,
+   then tag: `git tag <plugin-name>/v<version> && git push origin <plugin-name>/v<version>`
 8. Return to clean `main`
 
 Do NOT mechanically bump only metadata — each dependent plugin must be
