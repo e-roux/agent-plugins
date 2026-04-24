@@ -156,6 +156,15 @@ _guard_one_call() {
     fi
   fi
 
+  # ── qa-gate-guard: make qa MUST pass before any commit ────────────────────────
+  if printf '%s' "$CMD" | grep -qE 'git[[:space:]]+commit\b'; then
+    if [ -f "$CWD/Makefile" ]; then
+      if ! make -C "$CWD" qa >/dev/null 2>&1; then
+        deny "QA gate: make qa failed — fix ALL errors before committing. Zero failures required, regardless of error origin."
+      fi
+    fi
+  fi
+
   # ── branch-guard: push/merge to main directly, --no-verify ───────────────────
   if printf '%s' "$CMD" | grep -qE 'git[[:space:]]+(push|merge)[[:space:]][^&|;]*\bmain\b'; then
     deny "Branch guard: never push/merge to main directly. Use a PR: gh pr create --base <default-branch>."

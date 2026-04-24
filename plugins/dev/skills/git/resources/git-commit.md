@@ -7,7 +7,9 @@ description: Commit workflow guidelines including message format, quality gates,
 
 ## Quality gate
 
-If a `Makefile` exists at the repository root, run `make qa` before any commit. Do not proceed if it fails. Fix the issues first.
+**BLOCKING** — enforced by the `qa-gate-guard` hook.
+
+If a `Makefile` exists at the repository root, `git commit` is **denied** unless `make qa` passes with zero errors. This is non-negotiable regardless of error origin.
 
 ```sh
 [ -f Makefile ] && make qa

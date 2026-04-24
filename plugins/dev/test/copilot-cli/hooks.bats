@@ -288,6 +288,48 @@ _make_main_repo() {
   [ -z "$output" ]
 }
 
+# ── pre-tool.sh: qa-gate-guard ────────────────────────────────────────────────
+
+@test "qa-gate: denies git commit when make qa fails" {
+  local repo; repo=$(mktemp -d)
+  printf 'qa:\n\texit 1\n' > "$repo/Makefile"
+  local args; args=$(jq -n '{"command":"git commit -m test"}')
+  local input
+  input=$(jq -n --arg args "$args" --arg cwd "$repo" '{"cwd":$cwd,"toolCalls":[{"id":"t1","name":"bash","args":$args}]}')
+  local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
+  run bash -c "'$SCRIPTS_DIR/pre-tool.sh' < '$tmpf'"
+  rm -f "$tmpf"; rm -rf "$repo"
+  [ "$status" -eq 0 ]
+  decision="$(echo "$output" | jq -r '.permissionDecision')"
+  [ "$decision" = "deny" ]
+  [[ "$output" == *"QA gate"* ]]
+}
+
+@test "qa-gate: allows git commit when make qa passes" {
+  local repo; repo=$(mktemp -d)
+  printf 'qa:\n\ttrue\n' > "$repo/Makefile"
+  local args; args=$(jq -n '{"command":"git commit -m test"}')
+  local input
+  input=$(jq -n --arg args "$args" --arg cwd "$repo" '{"cwd":$cwd,"toolCalls":[{"id":"t1","name":"bash","args":$args}]}')
+  local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
+  echo "$(date +%s)" > /tmp/.mcp-git-ops-cb
+  run bash -c "'$SCRIPTS_DIR/pre-tool.sh' < '$tmpf'"
+  rm -f "$tmpf" /tmp/.mcp-git-ops-cb; rm -rf "$repo"
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}
+
+@test "qa-gate: skips when no Makefile exists" {
+  local args; args=$(jq -n '{"command":"git commit -m test"}')
+  local input
+  input=$(jq -n --arg args "$args" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"bash","args":$args}]}')
+  echo "$(date +%s)" > /tmp/.mcp-git-ops-cb
+  run bash -c "echo '$input' | '$SCRIPTS_DIR/pre-tool.sh'"
+  rm -f /tmp/.mcp-git-ops-cb
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}
+
 # ── pre-tool.sh: migration-guard ──────────────────────────────────────────────
 
 @test "migration: allows normal SQL commands outside migrations" {
