@@ -22,13 +22,14 @@
     "copilotCliVersion": "1.0.27",
     "copilotSdkVersion": "0.2.2",
     "lastVerified": "2026-04-15",
-    "notes": "Root manifest for Copilot CLI. Minimal manifest for Claude Code lives in .claude-plugin/plugin.json."
+    "notes": "Root manifest for Copilot CLI. Copilot CLI MCP schema requires args array alongside command — bare command alone fails ZodError validation. bash -lc sources login profile so Go bin dir is in PATH. Minimal manifest for Claude Code lives in .claude-plugin/plugin.json."
   },
   "skills": "skills/",
   "hooks": "hooks/policy.copilot.json",
   "mcpServers": {
     "git-ops": {
-      "command": "mcp-git-ops"
+      "command": "bash",
+      "args": ["-lc", "exec mcp-git-ops"]
     }
   }
 }

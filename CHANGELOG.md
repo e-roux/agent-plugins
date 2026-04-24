@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- fix(dev/mcp): use `bash -lc exec mcp-git-ops` — Copilot CLI MCP schema requires `args` array (bare `command` fails ZodError); login shell ensures Go bin dir is in PATH
 - fix(marketplace): bump dev version to 0.8.0 in marketplace.json (was stuck at 0.7.1)
 - chore(makefile): verify now cross-checks marketplace.json versions against plugin.json
 

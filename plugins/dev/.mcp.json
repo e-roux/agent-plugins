@@ -1,7 +1,8 @@
 {
   "mcpServers": {
     "git-ops": {
-      "command": "mcp-git-ops"
+      "command": "bash",
+      "args": ["-lc", "exec mcp-git-ops"]
     }
   }
 }
