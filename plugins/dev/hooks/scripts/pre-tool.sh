@@ -160,9 +160,14 @@ _guard_one_call() {
   # ── qa-gate-guard: make qa MUST pass before any commit ────────────────────────
   if printf '%s' "$CMD" | grep -qE 'git[[:space:]]+commit\b'; then
     if [ -f "$CWD/Makefile" ]; then
-      if ! make -C "$CWD" qa >/dev/null 2>&1; then
-        deny "QA gate: make qa failed — fix ALL errors before committing. Zero failures required, regardless of error origin."
+      QA_OUT=$(make -C "$CWD" qa 2>&1)
+      QA_STATUS=$?
+      if [ $QA_STATUS -ne 0 ]; then
+        deny "QA gate: make qa failed — fix ALL errors before committing. Zero failures required, regardless of error origin.\n\n${QA_OUT}"
       fi
+      jq -cn --arg ctx "QA gate passed. Output:\n\`\`\`\n${QA_OUT}\n\`\`\`\n\nWarnings MUST be fixed when feasible — do not ignore them." \
+        '{"additionalContext":$ctx}'
+      exit 0
     fi
   fi
 

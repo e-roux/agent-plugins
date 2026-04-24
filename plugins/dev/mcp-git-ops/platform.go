@@ -114,11 +114,15 @@ func detectPlatform(dir string) (Platform, error) {
 		return &AzureDevOpsPlatform{Dir: dir}, nil
 	}
 
-	if cliAvailable("gh") {
-		return &GitHubPlatform{Dir: dir}, nil
-	}
 	if cliAvailable("glab") {
-		return &GitLabPlatform{Dir: dir}, nil
+		if _, err := runExternalCommand(dir, "glab", "repo", "view"); err == nil {
+			return &GitLabPlatform{Dir: dir}, nil
+		}
+	}
+	if cliAvailable("gh") {
+		if _, err := runExternalCommand(dir, "gh", "repo", "view", "--json", "name"); err == nil {
+			return &GitHubPlatform{Dir: dir}, nil
+		}
 	}
 	if cliAvailable("az") {
 		return &AzureDevOpsPlatform{Dir: dir}, nil
