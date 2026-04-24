@@ -1,0 +1,11 @@
+{
+  "name": "@e-roux/pi-plugin-web-browser",
+  "version": "0.1.0",
+  "description": "CDP-based Chrome automation for web design verification: navigate, interact, and inspect live browser state",
+  "keywords": ["pi-package"],
+  "license": "MIT",
+  "author": "Emmanuel Roux",
+  "pi": {
+    "skills": ["./skills"]
+  }
+}
