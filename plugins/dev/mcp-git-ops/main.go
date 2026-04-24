@@ -1,0 +1,24 @@
+package main
+
+import (
+	"fmt"
+	"os"
+
+	"github.com/mark3labs/mcp-go/server"
+)
+
+const serverVersion = "0.1.0"
+
+func main() {
+	mcpServer := server.NewMCPServer(
+		"git-ops",
+		serverVersion,
+	)
+
+	registerAllTools(mcpServer)
+
+	if err := server.ServeStdio(mcpServer); err != nil {
+		fmt.Fprintf(os.Stderr, "fatal: %s\n", err)
+		os.Exit(1)
+	}
+}
