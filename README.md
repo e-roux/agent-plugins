@@ -30,6 +30,17 @@ git push
 | Plugin | Description |
 |--------|-------------|
 | `make` | Make-first workflow enforcement |
-| `dev` | Development guards (secrets, comments, branches, migrations) |
+| `dev` | Development guards (secrets, comments, branches, migrations, MCP git-ops) |
 | `vulcan` | Copilot CLI plugin development expert |
 | `infra` | Infrastructure & deployment guards |
+
+## Companion tools
+
+| Tool | Description |
+|------|-------------|
+| [`mcp-git-ops`](https://github.com/e-roux/mcp-git-ops) | MCP server for platform-agnostic git operations (push, PR, merge) — required by the `dev` plugin for full git-ops tooling |
+
+Install `mcp-git-ops`:
+```bash
+go install github.com/e-roux/mcp-git-ops@latest
+```

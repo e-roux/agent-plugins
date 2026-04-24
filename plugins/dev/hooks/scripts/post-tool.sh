@@ -10,6 +10,15 @@ TOOL_NAME="$(printf '%s' "$INPUT" | jq -r '.toolName // empty')"
 RESULT="$(printf '%s' "$INPUT" | jq -r '.toolResult.textResultForLlm // .toolResult // empty')"
 [[ -n "$RESULT" ]] || exit 0
 
+# ── MCP git-ops circuit breaker: trip on MCP tool failure ──────────────────────
+if [[ "$TOOL_NAME" == mcp__git-ops__* ]]; then
+  RESULT_TYPE="$(printf '%s' "$INPUT" | jq -r '.toolResult.resultType // empty')"
+  IS_ERROR="$(printf '%s' "$INPUT" | jq -r '.toolResult.isError // false')"
+  if [[ "$RESULT_TYPE" == "error" ]] || [[ "$IS_ERROR" == "true" ]] || printf '%s' "$RESULT" | grep -qiE '(denied|failed|error|cannot)'; then
+    date +%s > /tmp/.mcp-git-ops-cb 2>/dev/null || true
+  fi
+fi
+
 REDACTED="$RESULT"
 FOUND=0
 

@@ -16,6 +16,24 @@ deny() {
   exit 0
 }
 
+# ── MCP git-ops circuit breaker ─────────────────────────────────────────────────
+# Returns 0 (available) if mcp-git-ops binary is on PATH and circuit is closed.
+# Returns 1 (unavailable) if binary missing or circuit tripped (recent MCP failure).
+MCP_CB_FILE="/tmp/.mcp-git-ops-cb"
+MCP_CB_TTL=300
+
+_mcp_git_ops_available() {
+  command -v mcp-git-ops >/dev/null 2>&1 || return 1
+  [ -f "$MCP_CB_FILE" ] || return 0
+  local now tripped age
+  now=$(date +%s)
+  tripped=$(cat "$MCP_CB_FILE" 2>/dev/null || echo 0)
+  age=$((now - tripped))
+  [ "$age" -lt "$MCP_CB_TTL" ] && return 1
+  rm -f "$MCP_CB_FILE" 2>/dev/null
+  return 0
+}
+
 _is_test_or_config() {
   printf '%s' "$1" | grep -qE '(_test\.(go|ts|js|rs|py)|\.test\.(ts|js)|spec\.(ts|js)|\.example|\.md|\.template|testdata|\.bats|/test/)'
 }
@@ -105,6 +123,23 @@ _guard_one_call() {
 
   [ "$TOOL" = "bash" ] || return 0
   [ -z "$CMD" ] && return 0
+
+  # ── mcp-git-ops redirect: prefer MCP tools over raw bash git commands ────────
+  if printf '%s' "$CMD" | grep -qE 'git\s+push\b'; then
+    if _mcp_git_ops_available; then
+      deny "Use the mcp__git-ops__push tool instead of bash git push. It enforces branch protection and triggers CI monitoring. If MCP failed previously, retry in a moment — the circuit breaker will allow bash through."
+    fi
+  fi
+  if printf '%s' "$CMD" | grep -qE '(gh\s+pr\s+create|glab\s+mr\s+create|az\s+repos\s+pr\s+create)\b'; then
+    if _mcp_git_ops_available; then
+      deny "Use the mcp__git-ops__create_pr tool instead. It auto-detects the platform and enforces branch protection."
+    fi
+  fi
+  if printf '%s' "$CMD" | grep -qE '(gh\s+pr\s+merge|glab\s+mr\s+merge|az\s+repos\s+pr\s+update.*--status\s+completed)\b'; then
+    if _mcp_git_ops_available; then
+      deny "Use the mcp__git-ops__merge_pr tool instead. It auto-detects the platform."
+    fi
+  fi
 
   # ── branch-first-guard (bash): block shell-level file writes on main ──────────
   if printf '%s' "$CMD" | grep -qE '(>[[:space:]]+[^/dev]|>>[[:space:]]+[^/dev]|[[:space:]]tee[[:space:]][^-]|sed[[:space:]]+-[^ ]*i)'; then
