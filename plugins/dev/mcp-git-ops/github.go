@@ -7,7 +7,9 @@ import (
 	"strings"
 )
 
-type GitHubPlatform struct{}
+type GitHubPlatform struct {
+	Dir string
+}
 
 func (g *GitHubPlatform) PlatformName() string { return "github" }
 
@@ -16,7 +18,7 @@ func (g *GitHubPlatform) Push(_ context.Context, opts PushOptions) (*CommandResu
 	if opts.Force {
 		args = []string{"push", "--force-with-lease", opts.Remote, opts.Branch}
 	}
-	output, err := runGitCommand(args...)
+	output, err := runGitCommand(g.Dir, args...)
 	if err != nil {
 		return &CommandResult{Success: false, Output: output}, err
 	}
@@ -35,7 +37,7 @@ func (g *GitHubPlatform) CreatePR(_ context.Context, opts PRCreateOptions) (*Com
 		args = append(args, "--draft")
 	}
 
-	output, err := runExternalCommand("gh", args...)
+	output, err := runExternalCommand(g.Dir, "gh", args...)
 	if err != nil {
 		return &CommandResult{Success: false, Output: output}, err
 	}
@@ -57,7 +59,7 @@ func (g *GitHubPlatform) MergePR(_ context.Context, opts PRMergeOptions) (*Comma
 		args = append(args, "--delete-branch")
 	}
 
-	output, err := runExternalCommand("gh", args...)
+	output, err := runExternalCommand(g.Dir, "gh", args...)
 	if err != nil {
 		return &CommandResult{Success: false, Output: output}, err
 	}
@@ -76,7 +78,7 @@ func (g *GitHubPlatform) PRStatus(_ context.Context, opts PRStatusOptions) (*PRI
 	}
 	args = append(args, "--json", "number,title,state,url,headRefName,baseRefName")
 
-	output, err := runExternalCommand("gh", args...)
+	output, err := runExternalCommand(g.Dir, "gh", args...)
 	if err != nil {
 		return nil, fmt.Errorf("gh pr view: %s", output)
 	}

@@ -18,6 +18,7 @@ func registerAllTools(s *server.MCPServer) {
 func pushTool() mcp.Tool {
 	return mcp.NewTool("push",
 		mcp.WithDescription("Push commits to remote. Enforces branch protection."),
+		mcp.WithString("cwd", mcp.Description("Working directory of the git repository.")),
 		mcp.WithString("remote", mcp.Description("Remote name. Defaults to origin.")),
 		mcp.WithString("branch", mcp.Description("Branch to push. Defaults to current.")),
 		mcp.WithBoolean("force", mcp.Description("Force push with lease.")),
@@ -27,6 +28,7 @@ func pushTool() mcp.Tool {
 func createPRTool() mcp.Tool {
 	return mcp.NewTool("create_pr",
 		mcp.WithDescription("Create a pull/merge request. Auto-detects platform."),
+		mcp.WithString("cwd", mcp.Description("Working directory of the git repository.")),
 		mcp.WithString("title", mcp.Required(), mcp.Description("PR title.")),
 		mcp.WithString("body"),
 		mcp.WithString("target_branch", mcp.Description("Target branch. Auto-detected if omitted.")),
@@ -38,6 +40,7 @@ func createPRTool() mcp.Tool {
 func mergePRTool() mcp.Tool {
 	return mcp.NewTool("merge_pr",
 		mcp.WithDescription("Merge a pull/merge request. Auto-detects platform."),
+		mcp.WithString("cwd", mcp.Description("Working directory of the git repository.")),
 		mcp.WithString("identifier", mcp.Required(), mcp.Description("PR number or MR ID.")),
 		mcp.WithBoolean("delete_branch", mcp.Description("Delete source branch after merge.")),
 		mcp.WithString("strategy", mcp.Description("Merge strategy: merge, squash, or rebase.")),
@@ -47,18 +50,20 @@ func mergePRTool() mcp.Tool {
 func prStatusTool() mcp.Tool {
 	return mcp.NewTool("pr_status",
 		mcp.WithDescription("Get pull/merge request status. Auto-detects platform."),
+		mcp.WithString("cwd", mcp.Description("Working directory of the git repository.")),
 		mcp.WithString("identifier", mcp.Description("PR number or MR ID.")),
 		mcp.WithString("branch", mcp.Description("Branch name to look up PR.")),
 	)
 }
 
 func handlePush(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	cwd := stringArg(request, "cwd", "")
 	remote := stringArg(request, "remote", "origin")
 	branch := stringArg(request, "branch", "")
 	force := boolArg(request, "force")
 
 	if branch == "" {
-		detected, err := currentBranch()
+		detected, err := currentBranch(cwd)
 		if err != nil {
 			return errorResult("cannot determine current branch: %s", err), nil
 		}
@@ -69,7 +74,7 @@ func handlePush(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTool
 		return errorResult("denied: cannot push to protected branch '%s'. Create a feature branch: git checkout -b <type>/<slug>", branch), nil
 	}
 
-	platform, err := detectPlatform()
+	platform, err := detectPlatform(cwd)
 	if err != nil {
 		return errorResult("platform detection failed: %s — fallback: git push %s %s", err, remote, branch), nil
 	}
@@ -87,6 +92,7 @@ func handlePush(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTool
 }
 
 func handleCreatePR(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	cwd := stringArg(request, "cwd", "")
 	title := stringArg(request, "title", "")
 	body := stringArg(request, "body", "")
 	targetBranch := stringArg(request, "target_branch", "")
@@ -98,7 +104,7 @@ func handleCreatePR(ctx context.Context, request mcp.CallToolRequest) (*mcp.Call
 	}
 
 	if sourceBranch == "" {
-		detected, err := currentBranch()
+		detected, err := currentBranch(cwd)
 		if err != nil {
 			return errorResult("cannot determine current branch: %s", err), nil
 		}
@@ -109,7 +115,7 @@ func handleCreatePR(ctx context.Context, request mcp.CallToolRequest) (*mcp.Call
 		return errorResult("denied: cannot create PR from protected branch '%s'. Work on a feature branch.", sourceBranch), nil
 	}
 
-	platform, err := detectPlatform()
+	platform, err := detectPlatform(cwd)
 	if err != nil {
 		return errorResult("platform detection failed: %s", err), nil
 	}
@@ -137,6 +143,7 @@ func handleCreatePR(ctx context.Context, request mcp.CallToolRequest) (*mcp.Call
 }
 
 func handleMergePR(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	cwd := stringArg(request, "cwd", "")
 	identifier := stringArg(request, "identifier", "")
 	deleteBranch := boolArg(request, "delete_branch")
 	strategy := stringArg(request, "strategy", "")
@@ -145,7 +152,7 @@ func handleMergePR(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallT
 		return errorResult("identifier is required (PR number or MR ID)"), nil
 	}
 
-	platform, err := detectPlatform()
+	platform, err := detectPlatform(cwd)
 	if err != nil {
 		return errorResult("platform detection failed: %s", err), nil
 	}
@@ -167,18 +174,19 @@ func handleMergePR(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallT
 }
 
 func handlePRStatus(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	cwd := stringArg(request, "cwd", "")
 	identifier := stringArg(request, "identifier", "")
 	branch := stringArg(request, "branch", "")
 
 	if identifier == "" && branch == "" {
-		detected, err := currentBranch()
+		detected, err := currentBranch(cwd)
 		if err != nil {
 			return errorResult("cannot determine current branch: %s", err), nil
 		}
 		branch = detected
 	}
 
-	platform, err := detectPlatform()
+	platform, err := detectPlatform(cwd)
 	if err != nil {
 		return errorResult("platform detection failed: %s", err), nil
 	}

@@ -83,21 +83,21 @@ func isProtectedBranch(branch string) bool {
 	return false
 }
 
-func detectPlatform() (Platform, error) {
+func detectPlatform(dir string) (Platform, error) {
 	if override := os.Getenv("GIT_OPS_PLATFORM"); override != "" {
 		switch strings.ToLower(override) {
 		case "github":
-			return &GitHubPlatform{}, nil
+			return &GitHubPlatform{Dir: dir}, nil
 		case "gitlab":
-			return &GitLabPlatform{}, nil
+			return &GitLabPlatform{Dir: dir}, nil
 		case "azuredevops", "azure":
-			return &AzureDevOpsPlatform{}, nil
+			return &AzureDevOpsPlatform{Dir: dir}, nil
 		default:
 			return nil, fmt.Errorf("unknown platform override: %s", override)
 		}
 	}
 
-	remoteURL, err := runGitCommand("remote", "get-url", "origin")
+	remoteURL, err := runGitCommand(dir, "remote", "get-url", "origin")
 	if err != nil {
 		return nil, fmt.Errorf("cannot read git remote: %w", err)
 	}
@@ -105,42 +105,50 @@ func detectPlatform() (Platform, error) {
 	lowered := strings.ToLower(remoteURL)
 
 	if strings.Contains(lowered, "github.com") {
-		return &GitHubPlatform{}, nil
+		return &GitHubPlatform{Dir: dir}, nil
 	}
 	if strings.Contains(lowered, "gitlab") {
-		return &GitLabPlatform{}, nil
+		return &GitLabPlatform{Dir: dir}, nil
 	}
 	if strings.Contains(lowered, "dev.azure.com") || strings.Contains(lowered, "visualstudio.com") {
-		return &AzureDevOpsPlatform{}, nil
+		return &AzureDevOpsPlatform{Dir: dir}, nil
 	}
 
 	if cliAvailable("gh") {
-		return &GitHubPlatform{}, nil
+		return &GitHubPlatform{Dir: dir}, nil
 	}
 	if cliAvailable("glab") {
-		return &GitLabPlatform{}, nil
+		return &GitLabPlatform{Dir: dir}, nil
 	}
 	if cliAvailable("az") {
-		return &AzureDevOpsPlatform{}, nil
+		return &AzureDevOpsPlatform{Dir: dir}, nil
 	}
 
 	return nil, fmt.Errorf("cannot detect platform from remote: %s", remoteURL)
 }
 
-func currentBranch() (string, error) {
-	return runGitCommand("rev-parse", "--abbrev-ref", "HEAD")
+func currentBranch(dir string) (string, error) {
+	return runGitCommand(dir, "rev-parse", "--abbrev-ref", "HEAD")
 }
 
-func runGitCommand(args ...string) (string, error) {
-	out, err := exec.Command("git", args...).CombinedOutput()
+func runGitCommand(dir string, args ...string) (string, error) {
+	cmd := exec.Command("git", args...)
+	if dir != "" {
+		cmd.Dir = dir
+	}
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return strings.TrimSpace(string(out)), fmt.Errorf("%s: %w", strings.TrimSpace(string(out)), err)
 	}
 	return strings.TrimSpace(string(out)), nil
 }
 
-func runExternalCommand(name string, args ...string) (string, error) {
-	out, err := exec.Command(name, args...).CombinedOutput()
+func runExternalCommand(dir string, name string, args ...string) (string, error) {
+	cmd := exec.Command(name, args...)
+	if dir != "" {
+		cmd.Dir = dir
+	}
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return strings.TrimSpace(string(out)), fmt.Errorf("%s: %w", strings.TrimSpace(string(out)), err)
 	}
