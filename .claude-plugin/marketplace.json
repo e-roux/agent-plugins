@@ -23,7 +23,7 @@
     {
       "name": "dev",
       "description": "General-purpose development guards: no hardcoded secrets, no direct main pushes, self-documenting code",
-      "version": "0.7.1",
+      "version": "0.8.0",
       "source": "./plugins/dev"
     },
     {

@@ -13,9 +13,15 @@ verify:
 	for plugin in $(PLUGINS); do
 		dir="plugins/$$plugin"
 		if [ ! -f "$$dir/plugin.json" ]; then
-			printf "FAIL: %s/plugin.json missing\n" "$$dir"; fail=1
+			printf "FAIL: %s/plugin.json missing\n" "$$dir"; fail=1; continue
+		fi
+		plugin_ver=$$(jq -r .version "$$dir/plugin.json" 2>/dev/null)
+		plugin_name=$$(jq -r .name "$$dir/plugin.json" 2>/dev/null)
+		market_ver=$$(jq -r ".plugins[] | select(.source == \"./$$dir\") | .version" .claude-plugin/marketplace.json 2>/dev/null)
+		if [ -n "$$market_ver" ] && [ "$$plugin_ver" != "$$market_ver" ]; then
+			printf "FAIL: %-14s plugin.json=v%s but marketplace.json=v%s\n" "$$plugin" "$$plugin_ver" "$$market_ver"; fail=1
 		else
-			printf "  OK %-14s v%s\n" "$$plugin" "$$(jq -r .version $$dir/plugin.json 2>/dev/null)"
+			printf "  OK %-14s v%s\n" "$$plugin" "$$plugin_ver"
 		fi
 	done
 	[ $$fail -eq 0 ] || exit 1
