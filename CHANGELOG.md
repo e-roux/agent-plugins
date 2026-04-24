@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- feat(dev/mcp): migrate mcp-git-ops source into mono-repo at `plugins/dev/mcp-git-ops/`; update module path, add skill-conformant Makefile, delegate sync/test/typecheck from `plugins/dev/Makefile`
+
 - fix(repo/monorepo): remove stray `.git` dirs from plugins/dev and plugins/vulcan — completing mono-repo migration (nested repos were leftover from old sibling-repo workflow)
 
 - feat(repo/makefile): add `make update` / `make update.list` targets — update or list all installed copilot + claude plugins; mirrors `agents plugin update/list` logic inline
