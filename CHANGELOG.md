@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- feat(repo/makefile): add silent `build`/`install` targets — probe each plugin with `make -n` before delegating, no explicit MCP_PLUGINS list needed; fix `override GOBIN` in mcp-git-ops to always install to `$XDG_BIN_HOME`
+
 - feat(dev/mcp): migrate mcp-git-ops source into mono-repo at `plugins/dev/mcp-git-ops/`; update module path, add skill-conformant Makefile, delegate sync/test/typecheck from `plugins/dev/Makefile`
 
 - fix(repo/monorepo): remove stray `.git` dirs from plugins/dev and plugins/vulcan — completing mono-repo migration (nested repos were leftover from old sibling-repo workflow)

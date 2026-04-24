@@ -4,8 +4,7 @@ SHELL := /bin/bash
 .DEFAULT_GOAL := help
 
 BINARY  := mcp-git-ops
-GOBIN   ?= ${XDG_BIN_HOME}
-GOBIN   := $(or $(GOBIN),$(HOME)/.local/bin)
+override GOBIN := $(or $(XDG_BIN_HOME),$(HOME)/.local/bin)
 
 .PHONY: help sync fmt lint typecheck check qa clean distclean
 .PHONY: test test.unit test.integration test.e2e
