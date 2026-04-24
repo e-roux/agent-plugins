@@ -10,6 +10,7 @@ JQ         := jq
 .PHONY: help sync fmt lint typecheck check qa clean distclean
 .PHONY: test test.unit test.integration test.e2e
 .PHONY: verify verify-pi
+.PHONY: update update.list
 
 check: fmt lint typecheck
 qa: check test
@@ -77,6 +78,34 @@ clean:
 
 distclean: clean
 
+update:
+	if command -v copilot >/dev/null 2>&1; then
+		copilot plugin list 2>/dev/null | grep '•' | awk '{print $$2}' | \
+		while IFS= read -r p; do copilot plugin update "$$p"; done
+	else
+		printf "  ⚠ copilot not found\n"
+	fi
+	if command -v claude >/dev/null 2>&1; then
+		claude plugin list --json 2>/dev/null | $(JQ) -r '.[].id' | \
+		while IFS= read -r p; do claude plugin update "$$p"; done
+	else
+		printf "  ⚠ claude not found\n"
+	fi
+
+update.list:
+	if command -v copilot >/dev/null 2>&1; then
+		printf "copilot:\n"
+		copilot plugin list 2>/dev/null | grep '•' || printf "  (none)\n"
+	else
+		printf "  ⚠ copilot not found\n"
+	fi
+	if command -v claude >/dev/null 2>&1; then
+		printf "claude:\n"
+		claude plugin list --json 2>/dev/null | $(JQ) -r '.[].id' | sed 's/^/  /' || printf "  (none)\n"
+	else
+		printf "  ⚠ claude not found\n"
+	fi
+
 help:
 	printf "\033[36m"
 	printf "╔═╗╦  ╦ ╦╔═╗ ╦ ╔╗╔╔═╗\n"
@@ -98,3 +127,7 @@ help:
 	printf "\033[1;35mCleanup:\033[0m\n"
 	printf "  clean        - Remove build artifacts\n"
 	printf "  distclean    - Deep clean\n"
+	printf "\n"
+	printf "\033[1;35mAgents:\033[0m\n"
+	printf "  update       - Update all installed plugins (copilot + claude)\n"
+	printf "  update.list  - List installed plugins for all agents\n"
