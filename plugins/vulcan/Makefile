@@ -6,7 +6,7 @@ SHELL := /bin/bash
 BATS    := bats
 VERSION := $(shell jq -r .version plugin.json 2>/dev/null || echo "0.0.0")
 
-.PHONY: help sync fmt lint typecheck check qa clean distclean
+.PHONY: help sync fmt lint typecheck check qa clean distclean install
 .PHONY: test test.unit test.integrity
 
 check: lint
@@ -31,6 +31,9 @@ test.integrity:
 	$(BATS) test/plugin_integrity.bats
 
 clean:
+	true
+
+install:
 	true
 
 distclean: clean
