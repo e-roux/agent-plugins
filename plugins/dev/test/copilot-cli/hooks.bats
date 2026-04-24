@@ -305,7 +305,7 @@ _make_main_repo() {
   [[ "$output" == *"QA gate"* ]]
 }
 
-@test "qa-gate: allows git commit when make qa passes" {
+@test "qa-gate: allows git commit when make qa passes and injects additionalContext" {
   local repo; repo=$(mktemp -d)
   printf 'qa:\n\ttrue\n' > "$repo/Makefile"
   local args; args=$(jq -n '{"command":"git commit -m test"}')
@@ -316,7 +316,8 @@ _make_main_repo() {
   run bash -c "'$SCRIPTS_DIR/pre-tool.sh' < '$tmpf'"
   rm -f "$tmpf" /tmp/.mcp-git-ops-cb; rm -rf "$repo"
   [ "$status" -eq 0 ]
-  [ -z "$output" ]
+  ctx="$(echo "$output" | jq -r '.additionalContext')"
+  [[ "$ctx" == *"QA gate passed"* ]]
 }
 
 @test "qa-gate: skips when no Makefile exists" {
