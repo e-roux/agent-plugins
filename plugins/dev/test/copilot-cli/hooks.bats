@@ -483,6 +483,34 @@ _make_main_repo() {
   [ -z "$output" ]
 }
 
+@test "comments: allows PEP 723 inline script metadata block in Python" {
+  local content
+  content='# /// script'$'\n''# requires-python = ">=3.12"'$'\n''# dependencies = ["psycopg"]'$'\n''# ///'$'\n''import psycopg'
+  local toolargs
+  toolargs=$(jq -n --arg path '/tmp/seed.py' --arg new_str "$content" '{"path":$path,"old_str":"","new_str":$new_str}')
+  local input
+  input=$(jq -n --arg args "$toolargs" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"edit","args":$args}]}')
+  local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
+  run bash -c "'$SCRIPTS_DIR/pre-tool.sh' < '$tmpf'"
+  rm -f "$tmpf"
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}
+
+@test "comments: allows # noqa directive in Python source" {
+  local content
+  content='from module import something  # noqa: F401'
+  local toolargs
+  toolargs=$(jq -n --arg path '/tmp/app.py' --arg new_str "$content" '{"path":$path,"old_str":"","new_str":$new_str}')
+  local input
+  input=$(jq -n --arg args "$toolargs" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"edit","args":$args}]}')
+  local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
+  run bash -c "'$SCRIPTS_DIR/pre-tool.sh' < '$tmpf'"
+  rm -f "$tmpf"
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}
+
 # ── pipeline-chainguard.sh ────────────────────────────────────────────────────
 
 

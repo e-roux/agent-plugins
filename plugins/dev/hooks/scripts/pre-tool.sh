@@ -102,7 +102,8 @@ _guard_one_call() {
         if printf '%s' "$CONTENT" | grep -qE '^[[:space:]]*(//|/\*|\*/)'; then
           deny "No-comments guard: code must be self-documenting — express intent through clear naming, not comment lines. See https://p.ampeco.com/infinite-engineer/infinite-engineer"
         fi
-        if printf '%s' "$CONTENT" | grep -E '^[[:space:]]*#' | grep -qv '^[[:space:]]*#!'; then
+        STRIPPED=$(printf '%s' "$CONTENT" | awk '/^[[:space:]]*# \/\/\// { skip=!skip; next } skip { next } 1')
+        if printf '%s' "$STRIPPED" | grep -E '^[[:space:]]*#' | grep -qvE '^[[:space:]]*(#!|# noqa)'; then
           deny "No-comments guard: code must be self-documenting — express intent through clear naming, not comment lines. See https://p.ampeco.com/infinite-engineer/infinite-engineer"
         fi
       fi
