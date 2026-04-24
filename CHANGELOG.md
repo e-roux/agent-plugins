@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- fix(dev/mcp): mirror mcp-rb-resources pattern — `type:local`, `bash -c`, `${XDG_BIN_HOME:-$HOME/.local/bin}/mcp-git-ops`, `tools:["*"]`; install binary with `GOBIN=$XDG_BIN_HOME go install ...` or symlink from go bin
+- refactor(repo/makefile): rewrite Makefile to score ≥6 — full standard targets (sync/fmt/lint/typecheck/test*/clean/distclean), PLUGINS banner, explicit printf help
 - fix(dev/mcp): use `bash -lc exec mcp-git-ops` — Copilot CLI MCP schema requires `args` array (bare `command` fails ZodError); login shell ensures Go bin dir is in PATH
 - fix(marketplace): bump dev version to 0.8.0 in marketplace.json (was stuck at 0.7.1)
 - chore(makefile): verify now cross-checks marketplace.json versions against plugin.json
