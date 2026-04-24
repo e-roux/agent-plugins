@@ -7,7 +7,9 @@ import (
 	"strings"
 )
 
-type AzureDevOpsPlatform struct{}
+type AzureDevOpsPlatform struct {
+	Dir string
+}
 
 func (a *AzureDevOpsPlatform) PlatformName() string { return "azuredevops" }
 
@@ -16,7 +18,7 @@ func (a *AzureDevOpsPlatform) Push(_ context.Context, opts PushOptions) (*Comman
 	if opts.Force {
 		args = []string{"push", "--force-with-lease", opts.Remote, opts.Branch}
 	}
-	output, err := runGitCommand(args...)
+	output, err := runGitCommand(a.Dir, args...)
 	if err != nil {
 		return &CommandResult{Success: false, Output: output}, err
 	}
@@ -39,7 +41,7 @@ func (a *AzureDevOpsPlatform) CreatePR(_ context.Context, opts PRCreateOptions) 
 		args = append(args, "--draft")
 	}
 
-	output, err := runExternalCommand("az", args...)
+	output, err := runExternalCommand(a.Dir, "az", args...)
 	if err != nil {
 		return &CommandResult{Success: false, Output: output}, err
 	}
@@ -73,7 +75,7 @@ func (a *AzureDevOpsPlatform) MergePR(_ context.Context, opts PRMergeOptions) (*
 		"--delete-source-branch", boolFlag(opts.DeleteBranch),
 	}
 
-	output, err := runExternalCommand("az", args...)
+	output, err := runExternalCommand(a.Dir, "az", args...)
 	if err != nil {
 		return &CommandResult{Success: false, Output: output}, err
 	}
@@ -91,7 +93,7 @@ func (a *AzureDevOpsPlatform) PRStatus(_ context.Context, opts PRStatusOptions) 
 		"--output", "json",
 	}
 
-	output, err := runExternalCommand("az", args...)
+	output, err := runExternalCommand(a.Dir, "az", args...)
 	if err != nil {
 		return nil, fmt.Errorf("az repos pr show: %s", output)
 	}

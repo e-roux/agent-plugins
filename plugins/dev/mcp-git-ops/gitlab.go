@@ -6,7 +6,9 @@ import (
 	"strings"
 )
 
-type GitLabPlatform struct{}
+type GitLabPlatform struct {
+	Dir string
+}
 
 func (g *GitLabPlatform) PlatformName() string { return "gitlab" }
 
@@ -15,7 +17,7 @@ func (g *GitLabPlatform) Push(_ context.Context, opts PushOptions) (*CommandResu
 	if opts.Force {
 		args = []string{"push", "--force-with-lease", opts.Remote, opts.Branch}
 	}
-	output, err := runGitCommand(args...)
+	output, err := runGitCommand(g.Dir, args...)
 	if err != nil {
 		return &CommandResult{Success: false, Output: output}, err
 	}
@@ -39,7 +41,7 @@ func (g *GitLabPlatform) CreatePR(_ context.Context, opts PRCreateOptions) (*Com
 		args = append(args, "--draft")
 	}
 
-	output, err := runExternalCommand("glab", args...)
+	output, err := runExternalCommand(g.Dir, "glab", args...)
 	if err != nil {
 		return &CommandResult{Success: false, Output: output}, err
 	}
@@ -59,7 +61,7 @@ func (g *GitLabPlatform) MergePR(_ context.Context, opts PRMergeOptions) (*Comma
 		args = append(args, "--remove-source-branch")
 	}
 
-	output, err := runExternalCommand("glab", args...)
+	output, err := runExternalCommand(g.Dir, "glab", args...)
 	if err != nil {
 		return &CommandResult{Success: false, Output: output}, err
 	}
@@ -77,7 +79,7 @@ func (g *GitLabPlatform) PRStatus(_ context.Context, opts PRStatusOptions) (*PRI
 		args = append(args, ref)
 	}
 
-	output, err := runExternalCommand("glab", args...)
+	output, err := runExternalCommand(g.Dir, "glab", args...)
 	if err != nil {
 		return nil, fmt.Errorf("glab mr view: %s", output)
 	}
