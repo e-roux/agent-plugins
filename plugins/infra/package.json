@@ -1,0 +1,12 @@
+{
+  "name": "@e-roux/pi-plugin-infra",
+  "version": "0.1.7",
+  "description": "Infrastructure development plugin: Ansible roles and collections with Molecule testing, Podman driver, and Make-centric workflow",
+  "keywords": ["pi-package"],
+  "license": "MIT",
+  "author": "Emmanuel Roux",
+  "pi": {
+    "extensions": ["./extensions/pi"],
+    "skills": ["./skills"]
+  }
+}
