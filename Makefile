@@ -7,6 +7,12 @@ PLUGINS    := make dev vulcan infra web-browser
 PI_PLUGINS := make dev infra web-browser
 JQ         := jq
 
+PLUGIN_DIRS  := $(patsubst plugins/%/Makefile,%,$(wildcard plugins/*/Makefile))
+QA_PLUGINS   := $(addprefix qa/,$(PLUGIN_DIRS))
+BUILD_PLUGINS   := $(addprefix build/,$(PLUGIN_DIRS))
+INSTALL_PLUGINS := $(addprefix install/,$(PLUGIN_DIRS))
+CLEAN_PLUGINS   := $(addprefix clean/,$(PLUGIN_DIRS))
+
 .PHONY: help sync fmt lint typecheck check qa clean distclean
 .PHONY: test test.unit test.integration test.e2e
 .PHONY: verify verify-pi
@@ -14,7 +20,7 @@ JQ         := jq
 .PHONY: build install
 
 check: fmt lint typecheck
-qa: check test
+qa: check test $(QA_PLUGINS)
 test: test.unit
 
 sync:
@@ -74,8 +80,7 @@ test.integration:
 test.e2e:
 	printf "  OK no e2e tests\n"
 
-clean:
-	printf "  OK nothing to clean\n"
+clean: $(CLEAN_PLUGINS)
 
 distclean: clean
 
@@ -107,19 +112,22 @@ update.list:
 		printf "  ⚠ claude not found\n"
 	fi
 
-build:
-	for p in $(PLUGINS); do \
-		[ -f "plugins/$$p/Makefile" ] && \
-		$(MAKE) -C "plugins/$$p" -n build >/dev/null 2>&1 && \
-		$(MAKE) -C "plugins/$$p" build || true; \
-	done
+build: $(BUILD_PLUGINS)
 
-install:
-	for p in $(PLUGINS); do \
-		[ -f "plugins/$$p/Makefile" ] && \
-		$(MAKE) -C "plugins/$$p" -n install >/dev/null 2>&1 && \
-		$(MAKE) -C "plugins/$$p" install || true; \
-	done
+install: $(INSTALL_PLUGINS)
+
+qa/%:
+	printf "\033[1;34m── qa: %s ──\033[0m\n" "$*"
+	$(MAKE) --no-print-directory -C plugins/$* qa
+
+build/%:
+	$(MAKE) --no-print-directory -C plugins/$* build
+
+install/%:
+	$(MAKE) --no-print-directory -C plugins/$* install
+
+clean/%:
+	$(MAKE) --no-print-directory -C plugins/$* clean
 
 help:
 	printf "\033[36m"
@@ -137,7 +145,7 @@ help:
 	printf "  fmt          - Validate all JSON files are well-formed\n"
 	printf "  lint         - verify + verify-pi\n"
 	printf "  check        - fmt + lint + typecheck\n"
-	printf "  qa           - check + test (quality gate)\n"
+	printf "  qa           - check + test + qa in all plugins (use -j for parallel)\n"
 	printf "\n"
 	printf "\033[1;35mCleanup:\033[0m\n"
 	printf "  clean        - Remove build artifacts\n"
@@ -148,5 +156,5 @@ help:
 	printf "  update.list  - List installed plugins for all agents\n"
 	printf "\n"
 	printf "\033[1;35mBuild:\033[0m\n"
-	printf "  build        - Build MCP servers across all plugins\n"
-	printf "  install      - Install MCP servers to XDG_BIN_HOME\n"
+	printf "  build        - Build MCP servers across all plugins (parallel)\n"
+	printf "  install      - Install MCP servers to XDG_BIN_HOME (parallel)\n"
