@@ -164,9 +164,24 @@ _make_main_repo() {
   local args; args=$(jq -n '{"command":"git push origin feat/my-feature"}')
   local input
   input=$(jq -n --arg args "$args" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"bash","args":$args}]}')
+  echo "$(date +%s)" > /tmp/.mcp-git-ops-cb
   run bash -c "echo '$input' | '$SCRIPTS_DIR/pre-tool.sh'"
+  rm -f /tmp/.mcp-git-ops-cb
   [ "$status" -eq 0 ]
   [ -z "$output" ]
+}
+
+@test "branch: mcp-redirect denies bash git push when mcp-git-ops available" {
+  command -v mcp-git-ops >/dev/null 2>&1 || skip "mcp-git-ops not installed"
+  rm -f /tmp/.mcp-git-ops-cb
+  local args; args=$(jq -n '{"command":"git push origin feat/my-feature"}')
+  local input
+  input=$(jq -n --arg args "$args" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"bash","args":$args}]}')
+  run bash -c "echo '$input' | '$SCRIPTS_DIR/pre-tool.sh'"
+  [ "$status" -eq 0 ]
+  decision="$(echo "$output" | jq -r '.permissionDecision')"
+  [ "$decision" = "deny" ]
+  [[ "$output" == *"mcp__git-ops__push"* ]]
 }
 
 @test "branch: denies git push to main" {
