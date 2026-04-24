@@ -19,6 +19,8 @@ description: Pull request workflow including branch safety, quality gates, commi
 
 If a `Makefile` exists at the repository root, `git commit` is **denied** unless `make qa` passes with zero errors. This is non-negotiable regardless of error origin.
 
+**Warnings are not optional.** Do not silently ignore warnings emitted by `make qa`. Fix them when feasible — they indicate real issues. Only skip a warning fix when it is genuinely infeasible (e.g., upstream dependency, false positive from a third-party tool). In that case, state which warning you are skipping and why.
+
 ```sh
 [ -f Makefile ] && make qa
 ```

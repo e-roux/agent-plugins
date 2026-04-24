@@ -41,6 +41,8 @@ The `branch-first-guard` hook mechanically enforces this — `edit`/`create` cal
 
 `git commit` is **denied** if `make qa` fails. Zero failures required, regardless of error origin. Fix all issues before committing.
 
+**Warnings are not optional.** Do not silently ignore warnings emitted by `make qa`. Fix them when feasible — they indicate real issues. Only skip a warning fix when it is genuinely infeasible (e.g., upstream dependency, false positive from a third-party tool). In that case, state which warning you are skipping and why.
+
 If a pull requests is emitted:
 - the pull request must be merged into the target branch,
 - the target branch must be selected and the git status must be clean
