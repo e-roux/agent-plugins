@@ -33,13 +33,13 @@ The `branch-first-guard` hook mechanically enforces this — `edit`/`create` cal
 
 ### Quality Gate
 
-Always run the quality gate before committing if applicable:
+**BLOCKING** — enforced by the `qa-gate-guard` hook:
 
 ```sh
 [ -f Makefile ] && make qa
 ```
 
-Do not proceed if it fails. Fix issues first.
+`git commit` is **denied** if `make qa` fails. Zero failures required, regardless of error origin. Fix all issues before committing.
 
 If a pull requests is emitted:
 - the pull request must be merged into the target branch,
