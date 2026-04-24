@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- fix(repo/monorepo): remove stray `.git` dirs from plugins/dev and plugins/vulcan — completing mono-repo migration (nested repos were leftover from old sibling-repo workflow)
+
 - feat(repo/makefile): add `make update` / `make update.list` targets — update or list all installed copilot + claude plugins; mirrors `agents plugin update/list` logic inline
 
 - fix(dev/mcp): mirror mcp-rb-resources pattern — `type:local`, `bash -c`, `${XDG_BIN_HOME:-$HOME/.local/bin}/mcp-git-ops`, `tools:["*"]`; install binary with `GOBIN=$XDG_BIN_HOME go install ...` or symlink from go bin
