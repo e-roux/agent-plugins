@@ -12,8 +12,7 @@ MCP_DIR      := mcp-git-ops
 VERSION := $(shell jq -r .version plugin.json 2>/dev/null || echo "unknown")
 
 .PHONY: help sync fmt lint typecheck check qa clean distclean
-.PHONY: test test.unit
-.PHONY: mcp.build mcp.install mcp.test
+.PHONY: test test.unit build install
 
 check: lint
 qa: check test
@@ -34,17 +33,14 @@ lint:
 typecheck:
 	$(MAKE) -C $(MCP_DIR) typecheck
 
-test.unit:
-	$(BATS) $(TEST_DIR)/copilot-cli/hooks.bats
-	$(MAKE) -C $(MCP_DIR) test.unit
-
-mcp.build:
+build:
 	$(MAKE) -C $(MCP_DIR) build
 
-mcp.install:
+install:
 	$(MAKE) -C $(MCP_DIR) install
 
-mcp.test:
+test.unit:
+	$(BATS) $(TEST_DIR)/copilot-cli/hooks.bats
 	$(MAKE) -C $(MCP_DIR) test.unit
 
 clean:
@@ -62,8 +58,10 @@ help:
 	printf "Usage: make [target]\n\n"
 	printf "\033[1;35mSetup:\033[0m\n"
 	printf "  sync            - Install deps (bats, shellcheck) + build mcp-git-ops\n"
+	printf "  install         - Install mcp-git-ops binary to XDG_BIN_HOME\n"
 	printf "\n"
 	printf "\033[1;35mDev:\033[0m\n"
+	printf "  build           - Build mcp-git-ops binary\n"
 	printf "  fmt             - Format shell scripts\n"
 	printf "  lint            - Lint shell scripts\n"
 	printf "  check           - lint\n"
@@ -72,11 +70,6 @@ help:
 	printf "\033[1;35mTest:\033[0m\n"
 	printf "  test            - Run all tests (bats + Go)\n"
 	printf "  test.unit       - bats + Go unit tests\n"
-	printf "\n"
-	printf "\033[1;35mMCP server:\033[0m\n"
-	printf "  mcp.build       - Build mcp-git-ops binary\n"
-	printf "  mcp.install     - Install mcp-git-ops to XDG_BIN_HOME\n"
-	printf "  mcp.test        - Run mcp-git-ops Go tests\n"
 	printf "\n"
 	printf "\033[1;35mCleanup:\033[0m\n"
 	printf "  clean           - Remove artifacts\n"
