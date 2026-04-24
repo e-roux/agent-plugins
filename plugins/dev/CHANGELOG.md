@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.8.0]
+
+- feat(mcp): integrate mcp-git-ops server for platform-agnostic push, create_pr, merge_pr, pr_status
+- feat(hooks/pre-tool): circuit breaker redirects bash git-push/pr-create/pr-merge to MCP tools when available
+- feat(hooks/post-tool): trip circuit breaker on MCP tool failures to prevent deadlock
+- feat(skills/git): tool routing table — MCP preferred, bash fallback
+- feat(skills/git): git-pull-request resource updated with MCP-first workflow + Azure DevOps
+- chore(config): add .mcp.json and mcpServers to plugin.json
+
 ## [0.7.1]
 
 - fix(hooks/pre-tool): branch-first guard now falls back to `CWD` when `FILE_DIR` doesn't exist — previously, creating a file in a new subdirectory bypassed the guard entirely because the parent directory hadn't been created yet

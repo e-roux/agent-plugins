@@ -78,17 +78,21 @@ without manual maintenance.
 6. Commit.
 7. Determine PR target branch.
 8. Push branch to origin.
-9. Open the PR/MR with the appropriate CLI — never use a web browser:
+9. Open the PR/MR — prefer MCP tool, fall back to CLI:
 
+   **MCP (preferred):** Call `mcp__git-ops__create_pr` with `title`, `body`,
+   and `target_branch` set to `$TARGET`. The tool auto-detects the platform.
+
+   **Bash fallback** (if MCP unavailable):
    ```sh
    REMOTE_URL=$(git remote get-url origin)
    BRANCH=$(git branch --show-current)
 
    if echo "$REMOTE_URL" | grep -qE 'github\.com'; then
-     # GitHub (github.com or GitHub Enterprise)
      gh pr create --base "$TARGET" --title "<title>" --body "<body>"
+   elif echo "$REMOTE_URL" | grep -qE 'dev\.azure\.com|visualstudio\.com'; then
+     az repos pr create --target-branch "$TARGET" --title "<title>" --description "<body>"
    else
-     # GitLab (any hostname; picks up GITLAB_TOKEN / GITLAB_HOST from env)
      glab mr create \
        --source-branch "$BRANCH" \
        --target-branch "$TARGET" \

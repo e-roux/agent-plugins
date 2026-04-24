@@ -47,6 +47,21 @@ If a pull requests is emitted:
 - the feature branch can then be safely be removed
 - if relevant and if not closed, the issue must be closed
 
+## Tool Routing
+
+When MCP git-ops tools are available, ALWAYS prefer them over bash equivalents.
+If an MCP tool fails, fall back to the bash command shown in the table.
+
+| Operation | MCP tool | Bash fallback |
+|-----------|----------|---------------|
+| Push | `mcp__git-ops__push` | `git push origin <branch>` |
+| Create PR/MR | `mcp__git-ops__create_pr` | `gh pr create` / `glab mr create` / `az repos pr create` |
+| Merge PR/MR | `mcp__git-ops__merge_pr` | `gh pr merge` / `glab mr merge` / `az repos pr update --status completed` |
+| PR status | `mcp__git-ops__pr_status` | `gh pr view` / `glab mr view` / `az repos pr show` |
+
+MCP tools auto-detect the platform and enforce branch protection.
+Raw bash commands bypass these guards (except the existing branch-guard in hooks).
+
 ## Git Subcommands
 
 For detailed workflows and guidelines by operation, see the relevant resource file:
