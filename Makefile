@@ -11,6 +11,7 @@ JQ         := jq
 .PHONY: test test.unit test.integration test.e2e
 .PHONY: verify verify-pi
 .PHONY: update update.list
+.PHONY: build install
 
 check: fmt lint typecheck
 qa: check test
@@ -106,6 +107,20 @@ update.list:
 		printf "  ⚠ claude not found\n"
 	fi
 
+build:
+	for p in $(PLUGINS); do \
+		[ -f "plugins/$$p/Makefile" ] && \
+		$(MAKE) -C "plugins/$$p" -n build >/dev/null 2>&1 && \
+		$(MAKE) -C "plugins/$$p" build || true; \
+	done
+
+install:
+	for p in $(PLUGINS); do \
+		[ -f "plugins/$$p/Makefile" ] && \
+		$(MAKE) -C "plugins/$$p" -n install >/dev/null 2>&1 && \
+		$(MAKE) -C "plugins/$$p" install || true; \
+	done
+
 help:
 	printf "\033[36m"
 	printf "╔═╗╦  ╦ ╦╔═╗ ╦ ╔╗╔╔═╗\n"
@@ -131,3 +146,7 @@ help:
 	printf "\033[1;35mAgents:\033[0m\n"
 	printf "  update       - Update all installed plugins (copilot + claude)\n"
 	printf "  update.list  - List installed plugins for all agents\n"
+	printf "\n"
+	printf "\033[1;35mBuild:\033[0m\n"
+	printf "  build        - Build MCP servers across all plugins\n"
+	printf "  install      - Install MCP servers to XDG_BIN_HOME\n"
