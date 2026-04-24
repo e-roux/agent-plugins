@@ -11,19 +11,19 @@
     {
       "name": "vulcan",
       "description": "Expert agent for GitHub Copilot CLI plugins, extensions, and standalone SDK applications (TypeScript)",
-      "version": "0.21.0",
+      "version": "0.21.1",
       "source": "./plugins/vulcan"
     },
     {
       "name": "make-first",
       "description": "Makefile-centric project workflow with .SILENT, .ONESHELL, mandatory qa target",
-      "version": "0.11.8",
+      "version": "0.12.0",
       "source": "./plugins/make"
     },
     {
       "name": "dev",
       "description": "General-purpose development guards: no hardcoded secrets, no direct main pushes, self-documenting code",
-      "version": "0.8.0",
+      "version": "0.9.0",
       "source": "./plugins/dev"
     },
     {
