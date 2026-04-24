@@ -1,8 +1,10 @@
 {
   "mcpServers": {
     "git-ops": {
+      "type": "local",
       "command": "bash",
-      "args": ["-lc", "exec mcp-git-ops"]
+      "args": ["-c", "exec \"${XDG_BIN_HOME:-$HOME/.local/bin}/mcp-git-ops\""],
+      "tools": ["*"]
     }
   }
 }
