@@ -4,14 +4,14 @@ Hooks fire at well-defined points in the Copilot session lifecycle. The core lif
 
 > **Portability note:** File-based hooks are GitHub/copilot-cli specific — there is no portable project-level hook mechanism. SDK programmatic hooks are tool-agnostic (they run wherever your TypeScript application runs).
 
-> **Empirically verified through CLI v1.0.18** for the core synchronous hook lifecycle. `permissionRequest` (v1.0.16) and asynchronous `notification` hooks (v1.0.18) are newer release-note additions; public docs still lag their exact payload schema, so capture sample stdin before depending on field names. In v1.0.21, hooks configured with PascalCase event names receive VS Code-compatible snake_case payloads with `hook_event_name`, `session_id`, and ISO 8601 timestamps. In v1.0.22, `sessionStart` and `sessionEnd` fire once per session in interactive mode (not once per prompt). In v1.0.24, `preToolUse` hooks now respect `modifiedArgs`/`updatedInput` and `additionalContext` fields — hooks can modify tool arguments or inject additional context that the runtime will apply before executing the tool. In v1.0.25, skill instructions persist correctly across conversation turns and custom instruction files preserve special characters like `&` and `<placeholders>`. In v1.0.26, the `notification` hook for permission prompts only fires when a prompt is actually shown to the user (no longer fires for auto-approved actions), and plugin hooks receive three new env vars: `PLUGIN_ROOT`, `COPILOT_PLUGIN_ROOT`, and `CLAUDE_PLUGIN_ROOT` pointing to the plugin's installation directory.
+> **Empirically verified through CLI v1.0.18** for the core synchronous hook lifecycle. `permissionRequest` (v1.0.16) and asynchronous `notification` hooks (v1.0.18) are newer release-note additions; public docs still lag their exact payload schema, so capture sample stdin before depending on field names. In v1.0.21, hooks configured with PascalCase event names receive VS Code-compatible snake_case payloads with `hook_event_name`, `session_id`, and ISO 8601 timestamps. In v1.0.22, `sessionStart` and `sessionEnd` fire once per session in interactive mode (not once per prompt). In v1.0.24, `preToolUse` hooks now respect `modifiedArgs`/`updatedInput` and `additionalContext` fields — hooks can modify tool arguments or inject additional context that the runtime will apply before executing the tool. In v1.0.25, skill instructions persist correctly across conversation turns and custom instruction files preserve special characters like `&` and `<placeholders>`. In v1.0.26, the `notification` hook for permission prompts only fires when a prompt is actually shown to the user (no longer fires for auto-approved actions), and plugin hooks receive three new env vars: `PLUGIN_ROOT`, `COPILOT_PLUGIN_ROOT`, and `CLAUDE_PLUGIN_ROOT` pointing to the plugin's installation directory. In v1.0.29, shell commands and MCP servers receive `COPILOT_AGENT_SESSION_ID` as an environment variable. In v1.0.35/v1.0.41, **HTTP hook type** is supported — hooks can POST JSON payloads to a configured URL instead of running a local command. In v1.0.36, the `preToolUse.matcher` regex bug was fixed — hooks with a `matcher` field now run only for tool names that fully match the regex (before v1.0.36, `matcher` was silently ignored). In v1.0.44, `userPromptSubmitted` hooks can now handle requests directly by returning a `response` field, bypassing the LLM entirely and returning the response to the user without making a model call.
 
 ## Hook Types
 
 | Hook                    | When it fires                                   | Typical use cases                             |
 |-------------------------|------------------------------------------------|-----------------------------------------------|
 | `sessionStart`          | Session begins or resumes                      | Inject context (via additionalContext), load preferences |
-| `userPromptSubmitted`   | User sends a prompt                            | Log input, validate, audit                    |
+| `userPromptSubmitted`   | User sends a prompt                            | Log input, validate, audit, **or handle directly (bypass LLM, v1.0.44)** |
 | `preToolUse`            | Before a tool executes                         | Allow/deny, enforce policy, audit             |
 | `permissionRequest`     | When the runtime is about to surface a permission prompt (v1.0.16+) | Auto-approve/deny, bridge approval into custom UIs |
 | `postToolUse`           | After a tool returns **successfully**          | Audit results, redact secrets, track stats    |
@@ -109,7 +109,28 @@ The **only** supported format (flat object syntax does not work):
 }
 ```
 
-Per hook entry fields: `type` (required, always `"command"`), `bash`, `powershell`, `cwd`, `env`, `timeoutSec` (default: 30).
+Per hook entry fields: `type` (required, always `"command"` for shell hooks or `"http"` for HTTP hooks), `bash`, `powershell`, `cwd`, `env`, `timeoutSec` (default: 30).
+
+### HTTP Hook Type (v1.0.35+)
+
+Hooks can POST JSON payloads to a configured URL instead of running a local command. Useful for sending events to webhook receivers, monitoring systems, or external approval APIs:
+
+```json
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "type": "http",
+        "url": "https://my-approval-service.example.com/hooks/pre-tool",
+        "timeoutSec": 10
+      }
+    ]
+  }
+}
+```
+
+The runtime POSTs the same JSON payload that would be sent to stdin for a `"command"` hook. The HTTP endpoint should return a JSON body with the same fields as a command hook's stdout (`permissionDecision`, `additionalContext`, etc.).
 
 ### Template Variables (v1.0.12+)
 
@@ -191,6 +212,22 @@ silently ignored.
 > **Hook stderr is NOT shown in the terminal** — the CLI captures it and routes it to
 > `~/.copilot/logs/`. `additionalContext` via stdout is the only way to pass information
 > from `sessionStart` into the session. Empirically verified v1.0.11.
+
+## `userPromptSubmitted` — Direct Response (Bypass LLM, v1.0.44+)
+
+The `userPromptSubmitted` hook can now handle requests directly by returning a `response` field. The runtime returns this response to the user without making a model call at all. This enables hooks to answer simple questions, inject automated replies, or short-circuit the LLM for specific prompt patterns:
+
+```bash
+PROMPT=$(echo "$INPUT" | jq -r '.prompt // ""')
+
+if echo "$PROMPT" | grep -qi "^/status"; then
+  jq -n --arg r "System status: all clear. Last deploy: 2026-05-18." \
+    '{"response": $r}'
+  exit 0
+fi
+```
+
+Return `null` or omit the `response` field to let the prompt proceed to the LLM normally.
 
 ## `preToolUse` — Output for Permission Control
 

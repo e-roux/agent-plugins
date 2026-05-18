@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.12.1]
+
+- chore(meta): verified against copilot-cli v1.0.48 / sdk v0.2.2
+- note: multiple skills can now be invoked in a single message; slash commands can appear mid-input (v1.0.44)
+- note: skill content injected to the model no longer includes YAML frontmatter metadata (v1.0.48)
+
 ## [0.11.8]
 
 - Remove stale `.mcp.json` — `mcp-banner` was replaced by `skills/banner/` in v0.11.4; zombie file caused `claude mcp list` to report a failed server

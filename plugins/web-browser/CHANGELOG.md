@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.1]
+
+- chore(meta): verified against copilot-cli v1.0.48 / sdk v0.2.2
+
 ## [0.1.0]
 
 - Initial release of `agent-plugin-web-browser`

@@ -741,3 +741,27 @@ Three files must be bumped atomically with every release:
 ~~Previously, `.github/agents/` (Copilot CLI) and `.claude/agents/` (Claude Code) had no overlap.~~
 
 **Update:** Copilot CLI now discovers `.claude/agents/` for project agents. Use `.claude/agents/` as the DRY path with the `.agent.md` extension (required by Copilot CLI, accepted by Claude Code since `*.agent.md` matches `*.md` glob).
+
+---
+
+### `preToolUse.matcher` was silently ignored before v1.0.36
+
+Before CLI v1.0.36, the `matcher` field in `preToolUse` hook entries was silently ignored — the hook ran for **all** tool calls regardless of the matcher value. After v1.0.36, matcher works correctly: it is treated as a regex and the hook only fires for tool names that fully match.
+
+**Impact:** Any hook that relied on `matcher` for filtering was actually running universally before v1.0.36. After upgrading, hooks with narrow matchers will no longer fire for tools they were accidentally catching. Review all `preToolUse` entries with `matcher` when upgrading from pre-v1.0.36.
+
+---
+
+### Custom agents, skills, and commands from `~/.claude/` no longer loaded (v1.0.36)
+
+Starting with v1.0.36, Copilot CLI no longer loads custom agents, skills, or commands from `~/.claude/` (the Claude Code user directory). Only `~/.copilot/` and project-local paths are recognized by Copilot CLI.
+
+**Rule:** Do not put Copilot CLI user-level customizations in `~/.claude/`. Use `~/.copilot/` instead.
+
+---
+
+### Skill YAML frontmatter is NOT sent to the model (v1.0.48)
+
+Starting with v1.0.48, the YAML frontmatter block at the top of a skill file is stripped before the skill content is injected into the model context. Only the markdown body is sent.
+
+**Impact:** Do not put user-facing instructions in the frontmatter — they will not be seen by the model. All instructions must be in the markdown body below the frontmatter block.
