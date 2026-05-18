@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.8]
+
+- chore(meta): verified against copilot-cli v1.0.48 / sdk v0.2.2
+
 ## [0.1.7]
 
 - Split dual-manifest schema: root `plugin.json` for Copilot CLI (full format with `_meta`, `hooks`, `skills`), `.claude-plugin/plugin.json` for Claude Code (minimal: name, description, version, author, license, keywords only)

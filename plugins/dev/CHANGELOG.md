@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.2]
+
+- chore(meta): verified against copilot-cli v1.0.48 / sdk v0.2.2
+- note: `userPromptSubmitted` hooks can now handle requests directly, bypassing the LLM (v1.0.44)
+- note: HTTP hook type supported — hooks can POST JSON payloads to a URL instead of running a local command (v1.0.41)
+- note: `preToolUse.matcher` regex now works correctly — hooks with matcher run only for matching tool names (v1.0.36 fix)
+
 ## [0.8.0]
 
 - feat(mcp): integrate mcp-git-ops server for platform-agnostic push, create_pr, merge_pr, pr_status

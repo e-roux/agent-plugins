@@ -24,7 +24,21 @@ copilot -p "deploy" --autopilot               # no confirmations, fully autonomo
 ```bash
 copilot --autopilot                          # auto-approve all tool calls
 copilot --allow-all                          # alias for --autopilot
-copilot --max-autopilot-continues 50         # limit agent turns (default: varies)
+copilot --max-autopilot-continues 5          # limit agent turns (default: 5, v1.0.33+)
+```
+
+### Working Directory Override (v1.0.42+)
+
+```bash
+copilot -C /path/to/project                  # change working directory before starting (like git -C)
+copilot -C /path/to/project "fix the bug"    # combine with initial prompt
+```
+
+### File Attachments in Non-Interactive Mode (v1.0.41+)
+
+```bash
+copilot -p "describe this image" --attachment screenshot.png
+copilot -p "review this doc" --attachment report.pdf
 ```
 
 ### Planning Mode (v1.0.23+)
@@ -37,14 +51,24 @@ copilot --mode execute        # default — agent acts directly
 
 ## Session Management
 
-### Continue / Resume
+### Session Management
 
 ```bash
 copilot --continue                   # resume most recent session
-copilot --resume=<session-id>        # resume specific session by ID
+copilot --resume=<session-id>        # resume specific session by ID (also accepts 7+ char hex prefix)
+copilot --name="my-session"          # name a session
+copilot --resume=my-session          # resume by name
 ```
 
 Sessions persist tool history, file context, and conversation state. The agent picks up exactly where it left off.
+
+### Session Deletion
+
+```bash
+/session delete                      # delete current session
+/session delete my-session           # delete session by name
+/session delete-all                  # delete all sessions
+```
 
 ### Session Sharing and Export
 
@@ -82,7 +106,7 @@ ACP bridges the CLI to IDE clients (VS Code, JetBrains). The CLI acts as an agen
 
 Since v1.0.25, ACP clients can provide MCP servers (stdio, HTTP, SSE) when starting or loading sessions, enabling IDE-hosted MCP servers to be forwarded into the CLI runtime.
 
-## Built-In Slash Commands
+### Built-In Slash Commands
 
 ### Session Control
 
@@ -92,6 +116,10 @@ Since v1.0.25, ACP clients can provide MCP servers (stdio, HTTP, SSE) when start
 | `/compact` | Compress conversation context (frees token budget) |
 | `/model` | Switch active model mid-session |
 | `/mode` | Toggle between plan and execute modes |
+| `/autopilot` | Toggle between interactive and autopilot modes (v1.0.45) |
+| `/fork [name]` | Fork current session into a new independent session; forked sessions show their origin (v1.0.45/v1.0.47) |
+| `/statusline` | Customize status bar items (directory, branch, effort, context window, quota) (v1.0.30) |
+| `/keep-alive` | Prevent system sleep while Copilot CLI is active (v1.0.36) |
 
 ### Agent Collaboration
 
@@ -111,6 +139,10 @@ Since v1.0.25, ACP clients can provide MCP servers (stdio, HTTP, SSE) when start
 | `/help` | Show available commands |
 | `/env` | Show loaded environment details: instructions, MCP servers, skills, agents, plugins (v1.0.25) |
 | `/ask` | Ask a quick question without affecting conversation history (v1.0.27) |
+| `/context` | Show context window usage and token limits for the active model (v1.0.48) |
+| `/usage` | Show usage statistics and quota information |
+| `/session delete [name]` | Delete current or named session (v1.0.35) |
+| `/session delete-all` | Delete all sessions (v1.0.35) |
 
 ### `/fleet` — Parallel Multi-Agent
 
@@ -182,6 +214,38 @@ Automatically reviews plans and implementations using a complementary model. The
 | Variable | Description |
 |----------|-------------|
 | `COPILOT_CLI_MODEL` | Override default model |
-| `COPILOT_CLI_CONFIG_DIR` | Custom config directory |
+| `COPILOT_HOME` | Custom config/data directory (replaces deprecated `--config-dir`, v1.0.40) |
+| `COPILOT_CLI_CONFIG_DIR` | Legacy alias for `COPILOT_HOME` (deprecated) |
 | `GITHUB_TOKEN` | Authentication token (auto-detected from `gh auth`) |
 | `COPILOT_CLI_LOG_LEVEL` | Logging verbosity (`debug`, `info`, `warn`, `error`) |
+| `COPILOT_AGENT_SESSION_ID` | Session UUID injected into shell commands and MCP server environments (v1.0.29) |
+| `GITHUB_COPILOT_PROMPT_MODE_EXTENSIONS` | Set to `true` to load project extensions and management tools in `-p` mode (v1.0.41) |
+| `GITHUB_COPILOT_PROMPT_MODE_REPO_HOOKS` | Set to `true` to enable repo hooks in `-p` mode (v1.0.40) |
+| `GITHUB_COPILOT_PROMPT_MODE_WORKSPACE_MCP` | Set to `true` to enable workspace MCP in `-p` mode (v1.0.40) |
+| `COPILOT_DISABLE_TERMINAL_TITLE` | Set to opt out of terminal title updates (v1.0.28) |
+
+## Shell Completions (v1.0.37+)
+
+Generate static shell completion scripts for subcommands, flags, and known choice values:
+
+```bash
+copilot completion bash   # generate Bash completion script
+copilot completion zsh    # generate Zsh completion script
+copilot completion fish   # generate Fish completion script
+```
+
+Completions are automatically installed on first run and updated after `copilot update`.
+
+## Configuration Options
+
+| Option | Description |
+|--------|-------------|
+| `continueOnAutoMode` | When set, automatically switches to the `auto` model on rate limit instead of pausing (v1.0.40) |
+
+Configure in `~/.copilot/settings.json`:
+
+```json
+{
+  "continueOnAutoMode": true
+}
+```

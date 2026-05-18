@@ -1,3 +1,25 @@
+## [0.21.3]
+
+- chore(meta): verified against copilot-cli v1.0.48 / sdk v0.2.2
+- feat(agent): add `/autopilot` slash command (toggle interactive/autopilot modes, v1.0.45)
+- feat(agent): add `/fork` command with optional name, forked sessions show origin (v1.0.45/v1.0.47)
+- feat(agent): add `/session delete` and `delete-all` subcommands (v1.0.35)
+- feat(agent): add HTTP hook type — hooks can POST JSON to a URL (v1.0.35/v1.0.41)
+- feat(agent): `userPromptSubmitted` hooks can handle requests directly, bypassing the LLM (v1.0.44)
+- feat(agent): `--attachment` flag for file attachments in non-interactive mode (v1.0.41)
+- feat(agent): `-C` flag to change working directory before starting (v1.0.42)
+- feat(agent): `COPILOT_HOME` env var replaces `--config-dir` (v1.0.40)
+- feat(agent): `continueOnAutoMode` config — auto-switch to auto model on rate limit (v1.0.40)
+- feat(agent): `client_credentials` OAuth grant type for MCP servers (fully headless auth, v1.0.40)
+- feat(agent): `COPILOT_AGENT_SESSION_ID` env var available to shell commands and MCP servers (v1.0.29)
+- feat(agent): extensions load in prompt mode (`-p`) by default for user extensions (v1.0.41)
+- feat(agent): experimental MCP Tasks support — `taskSupport: "required"` tools run as background agents (v1.0.41)
+- feat(agent): skill content no longer includes YAML frontmatter metadata (v1.0.48)
+- feat(agent): `applyTo` with unquoted glob patterns now work correctly (v1.0.48)
+- fix(resources/hook-lifecycle): document HTTP hook type and `userPromptSubmitted` LLM bypass
+- fix(resources/cli-flags-and-sessions): add new commands, flags, and env vars
+- fix(resources/known-pitfalls): add `preToolUse.matcher` fix (v1.0.36) and `~/.claude/` no longer loaded
+
 ## [0.21.0]
 
 - fix(known-pitfalls): update `preToolUse` format — it now delivers a `toolCalls` array (not flat `toolName`/`toolArgs`); update dual-tool hook payload comparison table; add incident 2026-04-24
