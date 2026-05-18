@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.9.3]
+
+- fix(hooks/post-tool): move MCP git-ops circuit breaker before bash-only guard — it was dead code, never reachable
+- fix(hooks/pipeline-chainguard): handle `mcp__git-ops__push` postToolUse events; CI monitoring now fires for MCP-based pushes, not only bash `git push`
+- refactor(hooks/pipeline-chainguard): extract `_ci_context` helper to eliminate duplicated CI instruction blocks
+
 ## [0.9.2]
 
 - chore(meta): verified against copilot-cli v1.0.48 / sdk v0.2.2

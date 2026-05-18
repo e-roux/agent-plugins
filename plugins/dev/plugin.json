@@ -1,7 +1,7 @@
 {
   "name": "dev",
   "description": "General-purpose development guards: blocks hardcoded secrets, direct main pushes, destructive SQL migrations, --no-verify bypasses, comment lines in source code, and monitors CI pipeline status after every push. Works with any project.",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "author": {
     "name": "Emmanuel Roux"
   },
@@ -30,8 +30,13 @@
     "git-ops": {
       "type": "local",
       "command": "bash",
-      "args": ["-c", "exec \"${XDG_BIN_HOME:-$HOME/.local/bin}/mcp-git-ops\""],
-      "tools": ["*"]
+      "args": [
+        "-c",
+        "exec \"${XDG_BIN_HOME:-$HOME/.local/bin}/mcp-git-ops\""
+      ],
+      "tools": [
+        "*"
+      ]
     }
   }
 }

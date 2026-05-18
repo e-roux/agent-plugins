@@ -4,7 +4,7 @@
     "name": "e-roux"
   },
   "metadata": {
-    "description": "Agent plugins by e-roux \u2014 works with both GitHub Copilot CLI and Claude Code",
+    "description": "Agent plugins by e-roux — works with both GitHub Copilot CLI and Claude Code",
     "version": "1.0.0"
   },
   "plugins": [
@@ -23,7 +23,7 @@
     {
       "name": "dev",
       "description": "General-purpose development guards: no hardcoded secrets, no direct main pushes, self-documenting code",
-      "version": "0.9.2",
+      "version": "0.9.3",
       "source": "./plugins/dev"
     },
     {

@@ -561,3 +561,25 @@ _make_main_repo() {
   [ "$status" -eq 0 ]
   [[ "$output" == *"gh run"* ]]
 }
+
+@test "chainguard: detects mcp__git-ops__push and returns additionalContext" {
+  local input='{"toolName":"mcp__git-ops__push","toolArgs":{"branch":"feat/mcp-test","remote":"origin"},"toolResult":{"textResultForLlm":"pushed feat/mcp-test to origin/feat/mcp-test (github)","resultType":"success","isError":false}}'
+  run bash -c "echo '$input' | '$SCRIPTS_DIR/pipeline-chainguard.sh'"
+  [ "$status" -eq 0 ]
+  echo "$output" | jq -e '.additionalContext' >/dev/null
+  [[ "$output" == *"Pipeline Chainguard"* ]]
+}
+
+@test "chainguard: detects failed mcp__git-ops__push and warns" {
+  local input='{"toolName":"mcp__git-ops__push","toolArgs":{"branch":"feat/bad","remote":"origin"},"toolResult":{"textResultForLlm":"push failed (github): authentication failed — fallback: git push origin feat/bad","resultType":"error","isError":true}}'
+  run bash -c "echo '$input' | '$SCRIPTS_DIR/pipeline-chainguard.sh'"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"push FAILED"* ]]
+}
+
+@test "chainguard: reads branch from mcp__git-ops__push toolArgs" {
+  local input='{"toolName":"mcp__git-ops__push","toolArgs":{"branch":"fix/some-bug","remote":"upstream"},"toolResult":{"textResultForLlm":"pushed fix/some-bug to upstream/fix/some-bug (gitlab)","resultType":"success","isError":false}}'
+  run bash -c "echo '$input' | '$SCRIPTS_DIR/pipeline-chainguard.sh'"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"upstream/fix/some-bug"* ]]
+}
