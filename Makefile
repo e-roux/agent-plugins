@@ -15,7 +15,7 @@ CLEAN_PLUGINS   := $(addprefix clean/,$(PLUGIN_DIRS))
 
 .PHONY: help sync fmt lint typecheck check qa clean distclean
 .PHONY: test test.unit test.integration test.e2e
-.PHONY: verify verify-pi
+.PHONY: verify verify-pi verify-gemini
 .PHONY: update update.list
 .PHONY: build install
 
@@ -31,12 +31,12 @@ sync:
 
 fmt:
 	fail=0
-	for f in $$(find plugins -name "plugin.json" -o -name "package.json") .claude-plugin/marketplace.json; do
+	for f in $$(find plugins -name "plugin.json" -o -name "package.json" -o -name "gemini-extension.json") .claude-plugin/marketplace.json; do
 		$(JQ) . "$$f" >/dev/null 2>&1 || { printf "FAIL: invalid JSON: %s\n" "$$f"; fail=1; }
 	done
 	[ $$fail -eq 0 ] && printf "  OK JSON valid\n" || exit 1
 
-lint: verify verify-pi
+lint: verify verify-pi verify-gemini
 
 typecheck:
 	printf "  OK no compiled sources\n"
@@ -72,7 +72,24 @@ verify-pi:
 	done
 	[ $$fail -eq 0 ] || exit 1
 
-test.unit: verify verify-pi
+verify-gemini:
+	fail=0
+	for plugin in $(PLUGINS); do
+		dir="plugins/$$plugin"
+		if [ ! -f "$$dir/gemini-extension.json" ]; then
+			printf "FAIL: %s/gemini-extension.json missing\n" "$$dir"; fail=1; continue
+		fi
+		ext_ver=$$($(JQ) -r .version "$$dir/gemini-extension.json" 2>/dev/null)
+		plugin_ver=$$($(JQ) -r .version "$$dir/plugin.json" 2>/dev/null)
+		if [ "$$ext_ver" != "$$plugin_ver" ]; then
+			printf "FAIL: %-14s gemini-extension.json=v%s but plugin.json=v%s\n" "$$plugin" "$$ext_ver" "$$plugin_ver"; fail=1
+		else
+			printf "  OK %-14s gemini-v%s\n" "$$plugin" "$$ext_ver"
+		fi
+	done
+	[ $$fail -eq 0 ] || exit 1
+
+test.unit: verify verify-pi verify-gemini
 
 test.integration:
 	printf "  OK no integration tests\n"
@@ -111,6 +128,12 @@ update.list:
 	else
 		printf "  ⚠ claude not found\n"
 	fi
+	if command -v gemini >/dev/null 2>&1; then
+		printf "gemini:\n"
+		gemini extensions list 2>/dev/null | sed 's/^/  /' || printf "  (none)\n"
+	else
+		printf "  ⚠ gemini not found\n"
+	fi
 
 build: $(BUILD_PLUGINS)
 
@@ -142,8 +165,9 @@ help:
 	printf "\033[1;35mValidation:\033[0m\n"
 	printf "  verify       - Version drift: plugin.json vs marketplace.json\n"
 	printf "  verify-pi    - pi-enabled plugins have package.json with pi key\n"
+	printf "  verify-gemini - all plugins have gemini-extension.json aligned with plugin.json\n"
 	printf "  fmt          - Validate all JSON files are well-formed\n"
-	printf "  lint         - verify + verify-pi\n"
+	printf "  lint         - verify + verify-pi + verify-gemini\n"
 	printf "  check        - fmt + lint + typecheck\n"
 	printf "  qa           - check + test + qa in all plugins (use -j for parallel)\n"
 	printf "\n"
