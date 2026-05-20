@@ -1,14 +1,54 @@
 {
-  "BeforeTool": [
-    {
-      "hooks": [
-        {
-          "type": "command",
-          "command": "bash \"${extensionPath}/hooks/scripts/gemini-pre-tool.sh\"",
-          "name": "dev-guards",
-          "timeout": 15000
-        }
-      ]
-    }
-  ]
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${extensionPath}/hooks/scripts/gemini-session-start.sh\"",
+            "timeout": 10000
+          }
+        ]
+      }
+    ],
+    "BeforeAgent": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${extensionPath}/hooks/scripts/gemini-before-agent.sh\"",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "BeforeTool": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${extensionPath}/hooks/scripts/gemini-pre-tool.sh\"",
+            "name": "dev-guards",
+            "timeout": 15000
+          }
+        ]
+      }
+    ],
+    "AfterTool": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${extensionPath}/hooks/scripts/gemini-post-tool.sh\"",
+            "timeout": 10000
+          },
+          {
+            "type": "command",
+            "command": "bash \"${extensionPath}/hooks/scripts/gemini-pipeline-chainguard.sh\"",
+            "timeout": 5000
+          }
+        ]
+      }
+    ]
+  }
 }

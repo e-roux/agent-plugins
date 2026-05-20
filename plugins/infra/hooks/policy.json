@@ -5,19 +5,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${extensionPath}/scripts/inject-memory.sh\"",
-            "timeout": 10000
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/session-start.sh\""
           }
         ]
       }
     ],
-    "SessionEnd": [
+    "PreToolUse": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${extensionPath}/scripts/version-check.sh\"",
-            "timeout": 15000
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-tool.sh\""
           }
         ]
       }
