@@ -9,15 +9,17 @@ import (
 // --- mock platform ---
 
 type mockPlatform struct {
-	name         string
-	pushResult   *CommandResult
-	pushErr      error
-	createResult *CommandResult
-	createErr    error
-	mergeResult  *CommandResult
-	mergeErr     error
-	statusResult *PRInfo
-	statusErr    error
+	name          string
+	pushResult    *CommandResult
+	pushErr       error
+	createResult  *CommandResult
+	createErr     error
+	mergeResult   *CommandResult
+	mergeErr      error
+	statusResult  *PRInfo
+	statusErr     error
+	releaseResult *ReleaseInfo
+	releaseErr    error
 }
 
 func (m *mockPlatform) PlatformName() string { return m.name }
@@ -36,6 +38,10 @@ func (m *mockPlatform) MergePR(_ context.Context, _ PRMergeOptions) (*CommandRes
 
 func (m *mockPlatform) PRStatus(_ context.Context, _ PRStatusOptions) (*PRInfo, error) {
 	return m.statusResult, m.statusErr
+}
+
+func (m *mockPlatform) CreateRelease(_ context.Context, _ ReleaseCreateOptions) (*ReleaseInfo, error) {
+	return m.releaseResult, m.releaseErr
 }
 
 // --- interface compliance ---
@@ -147,6 +153,8 @@ func TestToolDefinitions(t *testing.T) {
 		{"create_pr", func() interface{ GetName() string } { t := createPRTool(); return &t }},
 		{"merge_pr", func() interface{ GetName() string } { t := mergePRTool(); return &t }},
 		{"pr_status", func() interface{ GetName() string } { t := prStatusTool(); return &t }},
+		{"release_status", func() interface{ GetName() string } { t := releaseStatusTool(); return &t }},
+		{"create_release", func() interface{ GetName() string } { t := createReleaseTool(); return &t }},
 	}
 
 	for _, tc := range tools {
@@ -265,5 +273,47 @@ func TestMockPlatformFailure(t *testing.T) {
 	}
 	if result.Success {
 		t.Error("expected failure")
+	}
+}
+
+func TestMockPlatformCreateRelease(t *testing.T) {
+	mock := &mockPlatform{
+		name:          "test",
+		releaseResult: &ReleaseInfo{Tag: "v1.0.0", Title: "v1.0.0", URL: "https://example.com/releases/v1.0.0"},
+	}
+
+	info, err := mock.CreateRelease(context.Background(), ReleaseCreateOptions{
+		Tag:   "v1.0.0",
+		Title: "v1.0.0",
+		Notes: "## Fixed\n- **scope**: description",
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if info.URL != "https://example.com/releases/v1.0.0" {
+		t.Errorf("URL = %q", info.URL)
+	}
+}
+
+func TestInferNextVersion(t *testing.T) {
+	cases := []struct {
+		latestTag string
+		sections  []string
+		wantBump  string
+	}{
+		{"v1.2.3", []string{"Fixed"}, "v1.2.4"},
+		{"v1.2.3", []string{"Added"}, "v1.3.0"},
+		{"v1.2.3", []string{"Changed"}, "v1.3.0"},
+		{"v1.2.3", []string{"Removed"}, "v2.0.0"},
+		{"v1.2.3", []string{"Added", "Fixed"}, "v1.3.0"},
+		{"v1.2.3", []string{"Security"}, "v1.2.4"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.latestTag+"/"+tc.sections[0], func(t *testing.T) {
+			got := inferNextVersion(tc.latestTag, tc.sections)
+			if got != tc.wantBump {
+				t.Errorf("inferNextVersion(%q, %v) = %q, want %q", tc.latestTag, tc.sections, got, tc.wantBump)
+			}
+		})
 	}
 }

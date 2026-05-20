@@ -15,14 +15,16 @@ if [[ "$TOOL_NAME" == mcp__git-ops__* ]]; then
   exit 0
 fi
 
-# Only scan bash tool output for secrets
 [[ "$TOOL_NAME" == "bash" ]] || exit 0
 
 RESULT="$(printf '%s' "$INPUT" | jq -r '.toolResult.textResultForLlm // .toolResult // empty')"
 [[ -n "$RESULT" ]] || exit 0
 
+CMD_INPUT="$(printf '%s' "$INPUT" | jq -r '.toolInput.command // empty' 2>/dev/null)"
+
 REDACTED="$RESULT"
 FOUND=0
+ADDITIONAL_CTX=""
 
 # GitHub PATs
 if echo "$REDACTED" | grep -qE 'gh[ps]_[a-zA-Z0-9]{36}'; then
@@ -60,7 +62,26 @@ if echo "$REDACTED" | grep -qE '[0-9a-f]{64}'; then
   FOUND=1
 fi
 
-if [[ "$FOUND" -eq 1 ]]; then
+# ── release-reminder: after successful git tag, prompt for platform release ────
+if [[ -n "$CMD_INPUT" ]] && printf '%s' "$CMD_INPUT" | grep -qE 'git[[:space:]]+tag\b.*v[0-9]'; then
+  RESULT_TYPE="$(printf '%s' "$INPUT" | jq -r '.toolResult.resultType // empty' 2>/dev/null)"
+  if [[ "$RESULT_TYPE" != "error" ]]; then
+    TAG_VER=$(printf '%s' "$CMD_INPUT" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+([-.][a-zA-Z0-9]+)?' | head -1)
+    TAG_REF="${TAG_VER:-<tag>}"
+    ADDITIONAL_CTX="Tag ${TAG_REF} created locally. Next steps:
+1. Push the tag: git push origin ${TAG_REF}
+2. Build artifacts if applicable: make release
+3. Create platform release: use mcp__git-ops__create_release (preferred) or gh/glab release create
+   See the git-release skill resource for the complete workflow and capability-based enhancements."
+  fi
+fi
+
+if [[ "$FOUND" -eq 1 ]] && [[ -n "$ADDITIONAL_CTX" ]]; then
+  jq -n --arg result "$REDACTED" --arg ctx "$ADDITIONAL_CTX" \
+    '{"modifiedResult":{"textResultForLlm":$result,"resultType":"success"},"additionalContext":$ctx}'
+elif [[ "$FOUND" -eq 1 ]]; then
   jq -n --arg result "$REDACTED" \
     '{"modifiedResult":{"textResultForLlm":$result,"resultType":"success"},"additionalContext":"⚠️ Secrets were detected and redacted from tool output. Never include credentials in code or commit messages."}'
+elif [[ -n "$ADDITIONAL_CTX" ]]; then
+  jq -n --arg ctx "$ADDITIONAL_CTX" '{"additionalContext":$ctx}'
 fi

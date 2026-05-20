@@ -12,9 +12,9 @@ MCP_DIR      := mcp-git-ops
 VERSION := $(shell jq -r .version plugin.json 2>/dev/null || echo "unknown")
 
 .PHONY: help sync fmt lint typecheck check qa clean distclean
-.PHONY: test test.unit build install
+.PHONY: test test.unit build install changelog
 
-check: lint
+check: lint changelog
 qa: check test
 test: test.unit
 
@@ -29,6 +29,14 @@ fmt:
 
 lint:
 	find $(HOOKS_SCRIPTS) -name '*.sh' -exec shellcheck {} +
+
+changelog:
+	cl="CHANGELOG.md"
+	[ -f "$$cl" ] || { printf "FAIL: %s not found\n" "$$cl"; exit 1; }
+	grep -q '^## \[Unreleased\]' "$$cl" || { printf "FAIL: %s missing [Unreleased] section\n" "$$cl"; exit 1; }
+	bad=$$(grep -E '^### ' "$$cl" | grep -vE '^### (Added|Changed|Deprecated|Removed|Fixed|Security)$$' | head -1)
+	[ -z "$$bad" ] || { printf "FAIL: invalid changelog section header: %s\n" "$$bad"; exit 1; }
+	printf "  OK changelog\n"
 
 typecheck:
 	$(MAKE) -C $(MCP_DIR) typecheck

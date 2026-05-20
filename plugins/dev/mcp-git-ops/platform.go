@@ -48,12 +48,28 @@ type PRInfo struct {
 	Target     string
 }
 
+type ReleaseCreateOptions struct {
+	Tag        string
+	Title      string
+	Notes      string
+	Draft      bool
+	Prerelease bool
+	Target     string
+}
+
+type ReleaseInfo struct {
+	Tag   string
+	Title string
+	URL   string
+}
+
 type Platform interface {
 	PlatformName() string
 	Push(ctx context.Context, opts PushOptions) (*CommandResult, error)
 	CreatePR(ctx context.Context, opts PRCreateOptions) (*CommandResult, error)
 	MergePR(ctx context.Context, opts PRMergeOptions) (*CommandResult, error)
 	PRStatus(ctx context.Context, opts PRStatusOptions) (*PRInfo, error)
+	CreateRelease(ctx context.Context, opts ReleaseCreateOptions) (*ReleaseInfo, error)
 }
 
 var protectedBranches = parseProtectedBranches()

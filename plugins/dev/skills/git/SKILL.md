@@ -60,6 +60,8 @@ If an MCP tool fails, fall back to the bash command shown in the table.
 | Create PR/MR | `mcp__git-ops__create_pr` | `gh pr create` / `glab mr create` / `az repos pr create` |
 | Merge PR/MR | `mcp__git-ops__merge_pr` | `gh pr merge` / `glab mr merge` / `az repos pr update --status completed` |
 | PR status | `mcp__git-ops__pr_status` | `gh pr view` / `glab mr view` / `az repos pr show` |
+| Release status | `mcp__git-ops__release_status` | manual git + CHANGELOG inspection |
+| Create release | `mcp__git-ops__create_release` | `gh release create` / `glab release create` |
 
 MCP tools auto-detect the platform and enforce branch protection.
 Raw bash commands bypass these guards (except the existing branch-guard in hooks).
@@ -70,5 +72,6 @@ For detailed workflows and guidelines by operation, see the relevant resource fi
 
 - **`git commit`** → See [resources/git-commit.md](resources/git-commit.md)
 - **Pull requests** → See [resources/git-pull-request.md](resources/git-pull-request.md)
+- **Releases** → See [resources/git-release.md](resources/git-release.md)
 
-**MANDATORY**: When the user requests a commit or pull request, you MUST read the corresponding resource file to ensure you follow the complete workflow and formatting requirements.
+**MANDATORY**: When the user requests a commit, pull request, or release, you MUST read the corresponding resource file to ensure you follow the complete workflow and formatting requirements.

@@ -87,6 +87,22 @@ func (g *GitLabPlatform) PRStatus(_ context.Context, opts PRStatusOptions) (*PRI
 	return parseGitLabMROutput(output), nil
 }
 
+func (g *GitLabPlatform) CreateRelease(_ context.Context, opts ReleaseCreateOptions) (*ReleaseInfo, error) {
+	args := []string{"release", "create", opts.Tag, "--notes", opts.Notes}
+	if opts.Title != "" {
+		args = append(args, "--name", opts.Title)
+	}
+	if opts.Prerelease {
+		args = append(args, "--prerelease")
+	}
+
+	output, err := runExternalCommand(g.Dir, "glab", args...)
+	if err != nil {
+		return nil, fmt.Errorf("glab release create: %s", output)
+	}
+	return &ReleaseInfo{Tag: opts.Tag, Title: opts.Title, URL: extractURL(output)}, nil
+}
+
 func parseGitLabMROutput(output string) *PRInfo {
 	info := &PRInfo{}
 	for _, line := range strings.Split(output, "\n") {
