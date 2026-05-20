@@ -1,6 +1,6 @@
 # agent-plugins
 
-Mono-repo for agent plugins — works with **GitHub Copilot CLI**, **Claude Code**, and **pi coding agent**.
+Mono-repo for agent plugins — works with **GitHub Copilot CLI**, **Claude Code**, **Gemini CLI**, and **pi coding agent**.
 
 ## Install
 
@@ -8,6 +8,18 @@ Mono-repo for agent plugins — works with **GitHub Copilot CLI**, **Claude Code
 
 ```bash
 copilot plugin marketplace add e-roux/agent-plugins
+```
+
+### Gemini CLI
+
+Install individual plugins by pointing to their directory:
+
+```bash
+gemini extensions install https://github.com/e-roux/agent-plugins/plugins/dev
+gemini extensions install https://github.com/e-roux/agent-plugins/plugins/make
+gemini extensions install https://github.com/e-roux/agent-plugins/plugins/infra
+gemini extensions install https://github.com/e-roux/agent-plugins/plugins/vulcan
+gemini extensions install https://github.com/e-roux/agent-plugins/plugins/web-browser
 ```
 
 ### Pi coding agent
@@ -24,22 +36,23 @@ pi install git:github.com/e-roux/agent-plugins --skill plugins/dev/skills
 
 ## Plugins
 
-| Plugin | Copilot CLI | Claude Code | Pi | Description |
-|--------|:-----------:|:-----------:|:--:|-------------|
-| `make` | ✅ | ✅ | ✅ | Make-first workflow enforcement |
-| `dev` | ✅ | ✅ | ✅ | Development guards (secrets, comments, branches, migrations, CI pipeline) |
-| `infra` | ✅ | ✅ | ✅ | Infrastructure & deployment guards (Ansible, Molecule) |
-| `web-browser` | ✅ | ✅ | ✅ | CDP-based Chrome automation for web design verification |
-| `vulcan` | ✅ | ✅ | — | Copilot CLI plugin development expert |
+| Plugin | Copilot CLI | Claude Code | Gemini CLI | Pi | Description |
+|--------|:-----------:|:-----------:|:----------:|:--:|-------------|
+| `make` | ✅ | ✅ | ✅ | ✅ | Make-first workflow enforcement |
+| `dev` | ✅ | ✅ | ✅ | ✅ | Development guards (secrets, comments, branches, migrations, CI pipeline) |
+| `infra` | ✅ | ✅ | ✅ | ✅ | Infrastructure & deployment guards (Ansible, Molecule) |
+| `web-browser` | ✅ | ✅ | ✅ | ✅ | CDP-based Chrome automation for web design verification |
+| `vulcan` | ✅ | ✅ | ✅ | — | Copilot CLI plugin development expert |
 
 ### Agent compatibility
 
-All plugins use the [Agent Skills](https://agentskills.io) open standard (`SKILL.md`), which is portable across all three agents with zero modification.
+All plugins use the [Agent Skills](https://agentskills.io) open standard (`SKILL.md`), which is portable across all agents with zero modification.
 
-Hooks and extensions are agent-specific:
-- **Copilot CLI**: `hooks/*.copilot.json` + `.mjs` extensions
-- **Claude Code**: `hooks/hooks.json` in `.claude-plugin/`
-- **Pi**: TypeScript extensions in `extensions/pi/`
+Hooks, extensions, and manifests are agent-specific:
+- **Copilot CLI**: `plugin.json` manifest + `hooks/*.copilot.json` + `.mjs` extensions
+- **Claude Code**: `.claude-plugin/plugin.json` manifest + `hooks/policy.json`
+- **Gemini CLI**: `gemini-extension.json` manifest + `GEMINI.md` context + `hooks/hooks.json`
+- **Pi**: `package.json` manifest + TypeScript extensions in `extensions/pi/`
 
 ## Companion tools
 

@@ -1,6 +1,6 @@
 # agent-plugins — Agent Instructions
 
-Mono-repo of agent plugins for **GitHub Copilot CLI**, **Claude Code**, and **pi** coding agent.
+Mono-repo of agent plugins for **GitHub Copilot CLI**, **Claude Code**, **Gemini CLI**, and **pi** coding agent.
 
 ## Repository layout
 
@@ -20,6 +20,8 @@ agent-plugins/
 
 Each plugin directory contains:
 - `plugin.json` — Copilot CLI / Claude Code manifest; carries `_meta.copilotCliVersion` and `_meta.copilotSdkVersion`
+- `gemini-extension.json` — Gemini CLI manifest; version must match `plugin.json`
+- `GEMINI.md` — Gemini CLI context file (standalone behavioral instructions loaded at session start)
 - `package.json` — Pi manifest (plugins that support pi only); carries a `"pi"` key
 - `AGENTS.md` (when present) — plugin-specific agent instructions (supersede these root instructions for that plugin)
 
@@ -74,7 +76,8 @@ For each plugin with a version gap:
 2. Update agents, hooks, skills, resources, and MCP configuration to reflect the changelog delta.
 3. Update `_meta.copilotCliVersion`, `_meta.copilotSdkVersion`, and `_meta.lastVerified` in `plugin.json`.
 4. Bump `plugin.json` → `version` (patch unless the change is breaking or adds features).
-5. Update the plugin's `CHANGELOG.md` with top-level bullets describing what changed.
+5. **Sync `gemini-extension.json` version** to match `plugin.json` → `version`.
+6. Update the plugin's `CHANGELOG.md` with top-level bullets describing what changed.
 
 ### 5. Sync the marketplace
 
@@ -91,7 +94,7 @@ jq '(.plugins[] | select(.source == "./plugins/<name>") | .version) = "<new-vers
 make qa
 ```
 
-`make qa` validates JSON, checks version alignment between `plugin.json` and `marketplace.json`, and confirms pi plugins have a valid `package.json`.
+`make qa` validates JSON, checks version alignment between `plugin.json` and `marketplace.json`, confirms pi plugins have a valid `package.json`, and verifies `gemini-extension.json` versions match `plugin.json`.
 
 Fix every failure and every warning before proceeding.
 
@@ -129,5 +132,6 @@ Pi-enabled plugins: `make`, `dev`, `infra`, `web-browser`.
 | `make qa` | Full quality gate (fmt + lint + typecheck + test) |
 | `make verify` | Version drift check: plugin.json vs marketplace.json |
 | `make verify-pi` | Pi plugins have valid package.json with `pi` key |
+| `make verify-gemini` | All plugins have gemini-extension.json aligned with plugin.json |
 | `make fmt` | Validate all JSON files |
-| `make update.list` | List currently installed plugins (copilot + claude) |
+| `make update.list` | List currently installed plugins (copilot + claude + gemini) |

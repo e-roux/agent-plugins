@@ -1,0 +1,14 @@
+{
+  "BeforeTool": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash \"${extensionPath}/hooks/scripts/gemini-pre-tool.sh\"",
+          "name": "make-first-guards",
+          "timeout": 15000
+        }
+      ]
+    }
+  ]
+}
