@@ -3,7 +3,7 @@ set -euo pipefail
 
 PLUGIN_JSON="plugin.json"
 
-PLUGIN_DIR="${COPILOT_PLUGIN_ROOT:-${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-}}}"
+PLUGIN_DIR="${extensionPath:-${COPILOT_PLUGIN_ROOT:-${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-}}}}"
 if [[ -n "$PLUGIN_DIR" && -f "${PLUGIN_DIR}/${PLUGIN_JSON}" ]]; then
   cd "$PLUGIN_DIR"
 elif [[ -n "${CLAUDE_PROJECT_DIR:-}" && -f "${CLAUDE_PROJECT_DIR}/${PLUGIN_JSON}" ]]; then

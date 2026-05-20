@@ -63,4 +63,8 @@ CTX+="- Lessons → \`.agents/memory/lessons/<slug>.md\`\n"
 CTX+="- Read existing pitfalls BEFORE making changes\n"
 CTX+="- Read relevant requirement specs BEFORE implementing features\n"
 
-jq -cn --arg ctx "$CTX" '{"additionalContext":$ctx}'
+if [[ -n "${extensionPath:-}" ]]; then
+  jq -cn --arg ctx "$CTX" '{hookSpecificOutput: {additionalContext: $ctx}}'
+else
+  jq -cn --arg ctx "$CTX" '{"additionalContext":$ctx}'
+fi
