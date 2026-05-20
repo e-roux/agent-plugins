@@ -15,7 +15,7 @@ CLEAN_PLUGINS   := $(addprefix clean/,$(PLUGIN_DIRS))
 
 .PHONY: help sync fmt lint typecheck check qa clean distclean
 .PHONY: test test.unit test.integration test.e2e
-.PHONY: verify verify-pi verify-gemini
+.PHONY: verify verify-pi verify-gemini changelog
 .PHONY: update update.list
 .PHONY: build install
 
@@ -36,7 +36,7 @@ fmt:
 	done
 	[ $$fail -eq 0 ] && printf "  OK JSON valid\n" || exit 1
 
-lint: verify verify-pi verify-gemini
+lint: verify verify-pi verify-gemini changelog
 
 typecheck:
 	printf "  OK no compiled sources\n"
@@ -89,7 +89,15 @@ verify-gemini:
 	done
 	[ $$fail -eq 0 ] || exit 1
 
-test.unit: verify verify-pi verify-gemini
+changelog:
+	cl="CHANGELOG.md"
+	[ -f "$$cl" ] || { printf "FAIL: %s not found\n" "$$cl"; exit 1; }
+	grep -q '^## \[Unreleased\]' "$$cl" || { printf "FAIL: %s missing [Unreleased] section\n" "$$cl"; exit 1; }
+	bad=$$(grep -E '^### ' "$$cl" | grep -vE '^### (Added|Changed|Deprecated|Removed|Fixed|Security)$$' | head -1)
+	[ -z "$$bad" ] || { printf "FAIL: invalid changelog section header: %s\n" "$$bad"; exit 1; }
+	printf "  OK changelog\n"
+
+test.unit: verify verify-pi verify-gemini changelog changelog
 
 test.integration:
 	printf "  OK no integration tests\n"

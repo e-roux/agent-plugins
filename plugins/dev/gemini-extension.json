@@ -1,6 +1,6 @@
 {
   "name": "dev",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "description": "General-purpose development guards: blocks hardcoded secrets, direct main pushes, destructive SQL migrations, --no-verify bypasses, comment lines in source code, and monitors CI pipeline status after every push. Works with any project.",
   "contextFileName": "GEMINI.md"
 }

@@ -157,6 +157,20 @@ _guard_one_call() {
     fi
   fi
 
+  # ── changelog-guard: block git tag vX.Y.Z if version absent from CHANGELOG ──
+  if printf '%s' "$CMD" | grep -qE 'git[[:space:]]+tag\b'; then
+    VERSION=$(printf '%s' "$CMD" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+([-.][a-zA-Z0-9]+)?' | head -1)
+    if [ -n "$VERSION" ]; then
+      CHANGELOG="$CWD/CHANGELOG.md"
+      if [ ! -f "$CHANGELOG" ]; then
+        deny "Changelog guard: CHANGELOG.md not found in $CWD — create it with an [Unreleased] section via a release PR before tagging. See the git-release skill resource."
+      fi
+      if ! grep -qE "^## \[${VERSION}\]|^## \[${VERSION#v}\]" "$CHANGELOG" 2>/dev/null; then
+        deny "Changelog guard: ${VERSION} not found as a heading in CHANGELOG.md — update CHANGELOG.md with a [${VERSION}] section via a release PR before tagging."
+      fi
+    fi
+  fi
+
   # ── qa-gate-guard: make qa MUST pass before any commit ────────────────────────
   if printf '%s' "$CMD" | grep -qE 'git[[:space:]]+commit\b'; then
     if [ -f "$CWD/Makefile" ]; then

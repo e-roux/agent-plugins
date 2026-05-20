@@ -13,6 +13,8 @@ func registerAllTools(s *server.MCPServer) {
 	s.AddTool(createPRTool(), handleCreatePR)
 	s.AddTool(mergePRTool(), handleMergePR)
 	s.AddTool(prStatusTool(), handlePRStatus)
+	s.AddTool(releaseStatusTool(), handleReleaseStatus)
+	s.AddTool(createReleaseTool(), handleCreateRelease)
 }
 
 func pushTool() mcp.Tool {

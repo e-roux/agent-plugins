@@ -1,143 +1,125 @@
 # Changelog
 
-## [0.9.3]
+All notable changes to this project will be documented in this file.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-- fix(hooks/post-tool): move MCP git-ops circuit breaker before bash-only guard — it was dead code, never reachable
-- fix(hooks/pipeline-chainguard): handle `mcp__git-ops__push` postToolUse events; CI monitoring now fires for MCP-based pushes, not only bash `git push`
-- refactor(hooks/pipeline-chainguard): extract `_ci_context` helper to eliminate duplicated CI instruction blocks
+## [Unreleased]
 
-## [0.9.2]
-
-- chore(meta): verified against copilot-cli v1.0.48 / sdk v0.2.2
-- note: `userPromptSubmitted` hooks can now handle requests directly, bypassing the LLM (v1.0.44)
-- note: HTTP hook type supported — hooks can POST JSON payloads to a URL instead of running a local command (v1.0.41)
-- note: `preToolUse.matcher` regex now works correctly — hooks with matcher run only for matching tool names (v1.0.36 fix)
-
-## [0.8.0]
-
-- feat(mcp): integrate mcp-git-ops server for platform-agnostic push, create_pr, merge_pr, pr_status
-- feat(hooks/pre-tool): circuit breaker redirects bash git-push/pr-create/pr-merge to MCP tools when available
-- feat(hooks/post-tool): trip circuit breaker on MCP tool failures to prevent deadlock
-- feat(skills/git): tool routing table — MCP preferred, bash fallback
-- feat(skills/git): git-pull-request resource updated with MCP-first workflow + Azure DevOps
-- chore(config): add .mcp.json and mcpServers to plugin.json
-
-## [0.7.1]
-
-- fix(hooks/pre-tool): branch-first guard now falls back to `CWD` when `FILE_DIR` doesn't exist — previously, creating a file in a new subdirectory bypassed the guard entirely because the parent directory hadn't been created yet
-- test(hooks): add test for creating a file in a non-existent subdirectory on `main`
-
-## [0.7.0]
-
-- fix(hooks/pre-tool): read `toolCalls` array from `preToolUse` input (was incorrectly reading `.toolName`/`.toolArgs` — all guards were silently bypassed)
-- fix(hooks/pre-tool): handle unborn branches via `symbolic-ref` fallback in `_current_branch_for_path`
-- feat(hooks/pre-tool): add `.bats` and `/test/` to exemption patterns in `_is_test_or_config`
-- feat(hooks/pre-tool): extract `CWD` from hook input for branch-first bash guard
-- test(hooks): update all pre-tool tests to `toolCalls` input format
-- test(hooks): add 4 branch-first-guard tests for `edit`/`create` on main branch
-
-
-
-- feat(hooks/pre-tool): add `branch-first-guard` — blocks `edit`/`create` when current branch is `main`/`master`, requires feature branch creation first
-- feat(hooks/pre-tool): extend `branch-first-guard` to `bash` tool — also blocks shell-level file writes (`echo >`, `cat >`, `tee`, `sed -i`) on `main`/`master`
-- feat(hooks/scripts): add `branch-check-turn.sh` — Claude Code `UserPromptSubmit` hook injects branch status before every turn (proactive, not just at session start)
-- feat(hooks/policy.json): add `UserPromptSubmit` hook for Claude Code with `branch-check-turn.sh`
-- feat(skills/git): add branch-first workflow as first core principle with naming convention
-- feat(skills/dev): document dual-layer enforcement, updated guard table, expanded branch guard section
-- feat(doc/requirements): add `git-workflow.md` — acceptance criteria for branch-first enforcement
-
-## [0.5.0]
-
-- Add `git` skill: opinionated commit/PR workflow with `make qa` quality gate, scoped conventional commits, and branch safety rules
-
-## [0.4.5]
-
-- Split dual manifests: `plugin.json` (root, full Copilot CLI format) and `.claude-plugin/plugin.json` (minimal, Claude Code compatible — name/description/version/author/license/keywords only)
-- Split hooks: `hooks/policy.copilot.json` (camelCase, Copilot CLI) and `hooks/policy.json` (PascalCase, Claude Code auto-discover format using `${CLAUDE_PLUGIN_ROOT}`)
-
-## [0.4.4]
-
-- Move plugin manifest to `.claude-plugin/plugin.json` — DRY path for both Copilot CLI and Claude Code
-
-## [0.4.3]
-
-- Align with Vulcan v0.18.0 dual-tool DRY guidance (no changes needed — plugin has no `.agents/skills/` references)
-- Bump patch version for metadata alignment
-
-## [0.4.2]
-
-- Bump Copilot CLI version to 1.0.27 (SDK unchanged at 0.2.2)
-- Hook scripts use `COPILOT_PLUGIN_ROOT` env var (CLI 1.0.26) for log paths with fallback to dirname-based resolution
-- Document `COPILOT_PLUGIN_ROOT` availability in skill description
-
-## [0.4.1]
-
-- Bump Copilot CLI version to 1.0.25, add SDK version 0.2.2 to metadata
-- Document `/env` command in skill for verifying guards are loaded (CLI 1.0.25)
-- Note remote session (`--remote`/`/remote`) compatibility in skill and extension docs
-- Skill instructions now persist correctly across conversation turns (CLI 1.0.25 fix)
-
-## [0.4.0]
+## [0.9.4](https://github.com/e-roux/agent-plugins/compare/0.9.3...0.9.4) - 2026-05-20
 
 ### Added
 
-- **pipeline-chainguard** (Layer 1): `postToolUse` shell hook that detects
-  `git push` and injects `additionalContext` instructing the agent to check CI
-  status via `gh run list` (GitHub) or `glab ci status` (GitLab). Handles
-  failed pushes, bare pushes, and explicit remote/branch arguments.
-- **pipeline-chainguard** (Layer 2): opt-in CLI extension
-  (`extensions/pipeline-chainguard/extension.mjs`) that autonomously monitors
-  CI after push — waits for pipeline registration, polls status, and sends
-  failure logs back to the agent via `session.send()`. Registers a
-  `check_ci_pipeline` custom tool for manual checks with optional wait mode.
-- 6 bats tests covering chainguard detection, failed push handling, bare push
-  fallback, and provider-specific output.
-- Session-start banner now mentions pipeline-chainguard guard.
-
-## [0.3.2]
-
-- Add `postToolUse` output redaction hook: detects and strips GitHub PATs, AWS keys, OpenAI keys, private keys, and long hex tokens from bash output before the LLM sees them via `modifiedResult` (CLI v1.0.24)
-
-## [0.3.1]
-
-- Bump Copilot CLI version to 1.0.24; no content changes
-
-## [0.2.1]
-
-- Bump Copilot CLI version to 1.0.22; no content changes
-
-## [0.2.0] - 2026-04-02
-
-### Added
-
-- **no-comments-guard**: new `preToolUse` guard that blocks comment lines (`//`, `/*`, `*/`, `#`) in
-  source code files (`.go`, `.ts`, `.tsx`, `.js`, `.jsx`, `.py`, `.rs`, `.java`, `.c`, `.cpp`, `.h`,
-  `.cs`, `.rb`, `.swift`, `.kt`). Shebang lines (`#!/`), test files, Makefiles, shell scripts, and
-  config files are excluded. Rationale: comments can conflict with code, confusing the LLM about
-  which to follow ([AMPECO Infinite Engineer](https://p.ampeco.com/infinite-engineer/infinite-engineer)).
-- **skills directory restructured**: `copilot-cli/skill/SKILL.md` → `copilot-cli/skills/dev/SKILL.md`
-  per the latest copilot-cli plugin spec (skills must live in named subdirectories).
-- **plugin.json**: `"skills"` path updated to `"skills/"`, version bumped to `0.2.0`, added
-  `"self-documenting"` keyword.
-- **session-start.sh**: banner updated to list `no-comments-guard`.
-- **hooks.bats**: 7 new tests for `no-comments-guard` (27 tests total, 0 failures).
+- **mcp/release**: add `release_status` tool — read-only report of clean tree, latest tag, changelog validity, inferred next version, and CI detection
+- **mcp/release**: add `create_release` tool — creates a platform release for an already-pushed tag (GitHub: `gh release create`, GitLab: `glab release create`, Azure DevOps: unsupported with guidance)
+- **skills/git**: add `git-release.md` skill resource — standardized two-phase release workflow (release PR → tag → publish) with changelog format rules, version inference, capability-based enhancements (signed tags, SBOM, attestations), and platform-specific guidance for BoschDevCloud personal repos (no runners)
+- **hooks/pre-tool**: add `changelog-guard` — blocks `git tag vX.Y.Z` when the version heading is absent from `CHANGELOG.md`; first-time tagger guided to run the release PR workflow
+- **hooks/post-tool**: add release reminder — injects `additionalContext` after a successful `git tag` command with next-step instructions (push tag, build artifacts, create platform release)
+- **makefile**: add `changelog` target — validates CHANGELOG.md has `[Unreleased]` section and only allowed subsection headers (`Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`); wired into `make check` (dev plugin) and `make lint` (root)
 
 ### Changed
 
-- **pre-tool.sh**: refactored to extract `CONTENT` once at the top (shared between `secrets-guard`
-  and `no-comments-guard`), eliminating duplicate `jq` calls. Added `_is_test_or_config()` helper
-  to deduplicate the file-exclusion check.
+- **skills/git**: extend tool routing table with `release_status` and `create_release` MCP tools; add `git-release.md` to mandatory resource list
+- **hooks/post-tool**: refactor secret-redaction output path to support simultaneous `modifiedResult` + `additionalContext` in a single JSON response
 
-## [0.1.0] - 2026-03-28
+## [0.9.3](https://github.com/e-roux/agent-plugins/compare/0.9.2...0.9.3) - 2026-05-18
+
+### Fixed
+
+- **hooks/post-tool**: move MCP git-ops circuit breaker before bash-only guard — it was dead code, never reachable
+- **hooks/pipeline-chainguard**: handle `mcp__git-ops__push` postToolUse events; CI monitoring now fires for MCP-based pushes, not only bash `git push`
+- **hooks/pipeline-chainguard**: extract `_ci_context` helper to eliminate duplicated CI instruction blocks
+
+## [0.9.2](https://github.com/e-roux/agent-plugins/compare/0.9.1...0.9.2) - 2026-05-18
+
+### Changed
+
+- **meta**: verified against copilot-cli v1.0.48 / sdk v0.2.2
+- **meta**: `userPromptSubmitted` hooks can now handle requests directly, bypassing the LLM (v1.0.44)
+- **meta**: HTTP hook type supported — hooks can POST JSON payloads to a URL instead of running a local command (v1.0.41)
+- **meta**: `preToolUse.matcher` regex now works correctly — hooks with matcher run only for matching tool names (v1.0.36 fix)
+
+## [0.9.1](https://github.com/e-roux/agent-plugins/compare/0.9.0...0.9.1) - 2026-04-24
+
+### Fixed
+
+- **hooks/pre-tool**: qa-gate-guard now surfaces full `make qa` output in denial message for immediate visibility
+- **mcp/platform**: improve platform probe fallback when remote URL is inconclusive
+
+## [0.9.0](https://github.com/e-roux/agent-plugins/compare/0.8.0...0.9.0) - 2026-04-24
 
 ### Added
 
-- Initial release of `agent-plugin-dev`.
-- **copilot-cli plugin**
-  - `session-start` hook: injects "Dev Guards Active" policy banner with all three guard names.
-  - `preToolUse` hook (`pre-tool.sh`):
-    - **secrets-guard**: detects hardcoded credentials (`JWT_SECRET`, `API_KEY`, `CLIENT_SECRET`, `DB_PASSWORD`, etc.) in `edit`/`create` tool calls on code files. Skips test files, templates, and markdown.
-    - **branch-guard**: blocks `git push/merge ... main` (with boundary-aware `[^&|;]*\bmain\b` regex to avoid false positives across `&&` chains), and `git commit --no-verify`.
-    - **migration-guard**: blocks `DROP TABLE`, `TRUNCATE TABLE`, `DELETE FROM` in bash commands that reference migration file paths.
-  - Skill definition (`SKILL.md`) documenting all three guards with examples.
-- **Test suite**: 19 bats unit tests (19/19 passing).
+- **hooks/pre-tool**: add blocking `qa-gate-guard` — `git commit` is denied unless `make qa` passes with zero errors when a `Makefile` exists
+
+### Changed
+
+- **hooks/pre-tool**: enforce warnings policy in qa-gate-guard; warnings must be fixed when feasible, not silently ignored
+- **hooks/pre-tool**: allow PEP 723 script blocks (`# ///`) and `# noqa` annotations in no-comments guard
+
+## [0.8.0](https://github.com/e-roux/agent-plugins/compare/0.7.1...0.8.0) - 2026-04-24
+
+### Added
+
+- **mcp**: integrate `mcp-git-ops` server for platform-agnostic push, create_pr, merge_pr, pr_status
+- **hooks/pre-tool**: circuit breaker redirects bash git-push/pr-create/pr-merge to MCP tools when available
+- **hooks/post-tool**: trip circuit breaker on MCP tool failures to prevent deadlock
+- **skills/git**: tool routing table — MCP preferred, bash fallback
+- **skills/git**: git-pull-request resource updated with MCP-first workflow + Azure DevOps
+
+## [0.7.1](https://github.com/e-roux/agent-plugins/compare/0.7.0...0.7.1) - 2026-04-23
+
+### Fixed
+
+- **hooks/pre-tool**: branch-first guard now falls back to `CWD` when `FILE_DIR` doesn't exist — previously, creating a file in a new subdirectory bypassed the guard entirely
+
+## [0.7.0](https://github.com/e-roux/agent-plugins/compare/0.6.0...0.7.0) - 2026-04-23
+
+### Added
+
+- **hooks/pre-tool**: add `branch-first-guard` — blocks `edit`/`create` when current branch is `main`/`master`
+- **hooks/pre-tool**: extend `branch-first-guard` to `bash` tool — also blocks shell-level file writes on `main`/`master`
+- **hooks/scripts**: add `branch-check-turn.sh` — Claude Code `UserPromptSubmit` hook injects branch status before every turn
+- **skills/git**: add branch-first workflow as first core principle with naming convention
+
+### Fixed
+
+- **hooks/pre-tool**: read `toolCalls` array from `preToolUse` input (was incorrectly reading `.toolName`/`.toolArgs` — all guards were silently bypassed)
+- **hooks/pre-tool**: handle unborn branches via `symbolic-ref` fallback in `_current_branch_for_path`
+
+## [0.6.0](https://github.com/e-roux/agent-plugins/compare/0.5.0...0.6.0) - 2026-04-23
+
+### Added
+
+- **hooks/pre-tool**: add `branch-first-guard` to `bash` tool — blocks shell-level file writes (`echo >`, `tee`, `sed -i`) on `main`/`master`
+
+## [0.5.0](https://github.com/e-roux/agent-plugins/compare/0.4.5...0.5.0) - 2026-04-22
+
+### Added
+
+- **skills/git**: add `git` skill — opinionated commit/PR workflow with `make qa` quality gate, scoped conventional commits, and branch safety rules
+
+## [0.4.5](https://github.com/e-roux/agent-plugins/compare/0.4.4...0.4.5) - 2026-04-16
+
+### Changed
+
+- **config**: split dual manifests — `plugin.json` (root, full Copilot CLI format) and `.claude-plugin/plugin.json` (minimal, Claude Code compatible)
+- **hooks**: split hook policies — `hooks/policy.copilot.json` (camelCase) and `hooks/policy.json` (PascalCase, Claude Code auto-discover)
+
+## [0.2.0](https://github.com/e-roux/agent-plugins/compare/0.1.0...0.2.0) - 2026-04-02
+
+### Added
+
+- **hooks/pre-tool**: add `no-comments-guard` — blocks comment lines in source code files (`.go`, `.ts`, `.tsx`, `.js`, `.jsx`, `.py`, `.rs`, `.java`, `.c`, `.cpp`, `.h`, `.cs`, `.rb`, `.swift`, `.kt`); shebang lines, test files, Makefiles, and config files excluded
+- **hooks/post-tool**: add `postToolUse` output redaction hook — strips GitHub PATs, AWS keys, OpenAI keys, private keys, and long hex tokens from bash output before the LLM sees them
+
+## [0.1.0](https://github.com/e-roux/agent-plugins/releases/tag/0.1.0) - 2026-03-28
+
+### Added
+
+- **hooks/pre-tool**: initial `secrets-guard` — detects hardcoded credentials in `edit`/`create` tool calls
+- **hooks/pre-tool**: initial `branch-guard` — blocks `git push/merge ... main` and `git commit --no-verify`
+- **hooks/pre-tool**: initial `migration-guard` — blocks `DROP TABLE`, `TRUNCATE TABLE`, `DELETE FROM` in bash commands that reference migration file paths
+- **hooks/scripts**: `session-start` hook — injects "Dev Guards Active" policy banner
+- **skills/dev**: skill definition documenting all three guards with examples
+

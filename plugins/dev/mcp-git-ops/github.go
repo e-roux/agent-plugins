@@ -104,3 +104,22 @@ func (g *GitHubPlatform) PRStatus(_ context.Context, opts PRStatusOptions) (*PRI
 		Target:     data.BaseRefName,
 	}, nil
 }
+
+func (g *GitHubPlatform) CreateRelease(_ context.Context, opts ReleaseCreateOptions) (*ReleaseInfo, error) {
+	args := []string{"release", "create", opts.Tag, "--title", opts.Title, "--notes", opts.Notes}
+	if opts.Draft {
+		args = append(args, "--draft")
+	}
+	if opts.Prerelease {
+		args = append(args, "--prerelease")
+	}
+	if opts.Target != "" {
+		args = append(args, "--target", opts.Target)
+	}
+
+	output, err := runExternalCommand(g.Dir, "gh", args...)
+	if err != nil {
+		return nil, fmt.Errorf("gh release create: %s", output)
+	}
+	return &ReleaseInfo{Tag: opts.Tag, Title: opts.Title, URL: extractURL(output)}, nil
+}

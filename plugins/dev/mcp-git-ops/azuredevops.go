@@ -119,3 +119,7 @@ func (a *AzureDevOpsPlatform) PRStatus(_ context.Context, opts PRStatusOptions) 
 		Target:     strings.TrimPrefix(data.TargetRefName, "refs/heads/"),
 	}, nil
 }
+
+func (a *AzureDevOpsPlatform) CreateRelease(_ context.Context, opts ReleaseCreateOptions) (*ReleaseInfo, error) {
+	return nil, fmt.Errorf("Azure DevOps does not support releases via CLI — push tag %s and create the release in the Azure DevOps portal under Pipelines > Releases", opts.Tag)
+}
