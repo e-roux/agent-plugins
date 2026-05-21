@@ -1,0 +1,25 @@
+{
+  "name": "billing",
+  "description": "Track Copilot CLI token consumption, model usage, and premium request spend — per session and aggregated over time. Reads session.shutdown events from session-state. Copilot CLI only.",
+  "version": "1.1.0",
+  "author": {
+    "name": "e-roux"
+  },
+  "license": "MIT",
+  "keywords": [
+    "copilot-cli",
+    "billing",
+    "token-usage",
+    "premium-requests",
+    "observability"
+  ],
+  "category": "development",
+  "_meta": {
+    "copilotCliVersion": "1.0.51",
+    "copilotSdkVersion": "0.2.2",
+    "lastVerified": "2026-05-21",
+    "notes": "Copilot CLI only. Reads ~/.copilot/session-state/*/events.jsonl via session.shutdown events. Requires jq. No Gemini/Pi/Claude support."
+  },
+  "skills": "skills/",
+  "hooks": "hooks/hooks.copilot.json"
+}

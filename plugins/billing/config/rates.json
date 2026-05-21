@@ -1,0 +1,32 @@
+{
+  "effective_date": "2026-06-01",
+  "billing_model": "ai_credits_token_based",
+  "notes": "Rates are model multipliers relative to standard (1x = Sonnet). Under AI Credits, actual cost depends on tokens consumed at published API rates. These multipliers provide relative cost guidance only.",
+  "multipliers": {
+    "gpt-4.1": 0,
+    "gpt-5-mini": 0,
+    "gpt-5.4-mini": 0,
+    "gpt-4o": 0,
+    "gemini-2.0-flash": 0.25,
+    "claude-sonnet-4": 1,
+    "claude-sonnet-4.5": 1,
+    "claude-sonnet-4.6": 1,
+    "claude-opus-4": 10,
+    "claude-opus-4.5": 10,
+    "claude-opus-4.6": 10,
+    "claude-opus-4.7": 10,
+    "gpt-5.2": 1,
+    "gpt-5.2-codex": 1,
+    "gpt-5.3-codex": 1,
+    "gpt-5.4": 1,
+    "gpt-5.5": 50,
+    "gpt-4.5": 50
+  },
+  "tiers": {
+    "included": { "multiplier": 0, "label": "Free (included)" },
+    "budget": { "multiplier": 0.25, "label": "Budget" },
+    "standard": { "multiplier": 1, "label": "Standard" },
+    "premium": { "multiplier": 10, "label": "Premium" },
+    "ultra": { "multiplier": 50, "label": "Ultra" }
+  }
+}
