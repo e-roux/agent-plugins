@@ -33,6 +33,11 @@ PLUGIN_DIR="$BATS_TEST_DIRNAME/.."
   jq -e '.version' "$PLUGIN_DIR/$hooks_key" >/dev/null
 }
 
+@test "session-start hook script exists and is executable" {
+  [ -f "$PLUGIN_DIR/hooks/scripts/session-start.sh" ]
+  [ -x "$PLUGIN_DIR/hooks/scripts/session-start.sh" ]
+}
+
 @test "session-end hook script exists and is executable" {
   [ -f "$PLUGIN_DIR/hooks/scripts/session-end.sh" ]
   [ -x "$PLUGIN_DIR/hooks/scripts/session-end.sh" ]
@@ -51,4 +56,20 @@ PLUGIN_DIR="$BATS_TEST_DIRNAME/.."
 @test "report script --help exits 0" {
   run bash "$PLUGIN_DIR/scripts/report.sh" --help
   [ "$status" -eq 0 ]
+}
+
+@test "session-start hook outputs valid JSON with additionalContext" {
+  run bash -c 'echo "{}" | bash "$0"' "$PLUGIN_DIR/hooks/scripts/session-start.sh"
+  [ "$status" -eq 0 ]
+  echo "$output" | jq -e '.additionalContext' >/dev/null
+}
+
+@test "rates config is valid JSON with multipliers" {
+  [ -f "$PLUGIN_DIR/config/rates.json" ]
+  jq -e '.multipliers' "$PLUGIN_DIR/config/rates.json" >/dev/null
+  jq -e '.effective_date' "$PLUGIN_DIR/config/rates.json" >/dev/null
+}
+
+@test "cost-optimization skill exists" {
+  [ -f "$PLUGIN_DIR/skills/cost-optimization/SKILL.md" ]
 }

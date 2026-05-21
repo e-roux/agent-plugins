@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-05-21
+
+### Added
+- `sessionStart` hook injects minimal cost-aware context (AOP pattern — ~25 tokens, model-agnostic)
+- `cost-optimization` skill with model hierarchy table, token compounding formula, and optimization checklist
+- `config/rates.json` versioned model multiplier configuration (0× included → 50× ultra)
+- `--drivers` flag for `report.sh` — shows cost drivers: tier breakdown, premium %, avg tokens/request, optimization warnings
+- Actionable warnings when premium usage >50% or avg tokens/request >50K
+
 ## [1.0.0] - 2026-05-21
 
 ### Added

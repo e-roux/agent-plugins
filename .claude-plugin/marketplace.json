@@ -41,7 +41,7 @@
     {
       "name": "billing",
       "description": "Track GitHub Copilot CLI token consumption and premium request spend from local session data",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "source": "./plugins/billing"
     }
   ]

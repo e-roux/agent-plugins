@@ -1,18 +1,20 @@
 #!/usr/bin/env bash
 # Report Copilot CLI token usage by aggregating session.shutdown events.
-# Usage: report.sh [--period=day|week|month] [--days=N] [--help]
+# Usage: report.sh [--period=day|week|month] [--days=N] [--drivers] [--help]
 set -euo pipefail
 
 command -v jq >/dev/null 2>&1 || { printf "ERROR: jq is required\n" >&2; exit 1; }
 
 DAYS=7
+SHOW_DRIVERS=0
 for arg in "$@"; do
   case "$arg" in
     --period=day)   DAYS=1  ;;
     --period=week)  DAYS=7  ;;
     --period=month) DAYS=30 ;;
     --days=*)       DAYS="${arg#*=}" ;;
-    --help|-h) printf "Usage: report.sh [--period=day|week|month] [--days=N]\n"; exit 0 ;;
+    --drivers)      SHOW_DRIVERS=1 ;;
+    --help|-h) printf "Usage: report.sh [--period=day|week|month] [--days=N] [--drivers]\n"; exit 0 ;;
   esac
 done
 
@@ -108,3 +110,90 @@ printf "\n"
 printf "PREM    = premium request units consumed (GitHub billing metric)\n"
 printf "CACHE-W = cache write tokens (billed at higher rates, first call in context)\n"
 printf "CACHE-R = cache read tokens (cheap, reuses prior context)\n"
+
+if [ "$SHOW_DRIVERS" -eq 1 ]; then
+  SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+  RATES_FILE="$SCRIPT_DIR/../config/rates.json"
+
+  printf "\n=== Cost Drivers ===\n\n"
+
+  DRIVERS=$(printf '%s' "$REPORT" | jq -r --argjson rates "$(cat "$RATES_FILE" 2>/dev/null || echo '{}')" '
+    .models | to_entries |
+    # Compute weighted cost per model
+    map({
+      model: .key,
+      reqs: .value.reqs,
+      cost: .value.cost,
+      input: .value.input,
+      output: .value.output,
+      cache_w: .value.cache_w,
+      cache_r: .value.cache_r,
+      reason: .value.reason,
+      total_tokens: (.value.input + .value.output + .value.cache_w + .value.cache_r + .value.reason),
+      multiplier: ($rates.multipliers[.key] // 1),
+      tier: (
+        if ($rates.multipliers[.key] // 1) == 0 then "included"
+        elif ($rates.multipliers[.key] // 1) <= 0.25 then "budget"
+        elif ($rates.multipliers[.key] // 1) <= 1 then "standard"
+        elif ($rates.multipliers[.key] // 1) <= 10 then "premium"
+        else "ultra" end
+      )
+    }) |
+    # Aggregate by tier
+    group_by(.tier) | map({
+      tier: .[0].tier,
+      multiplier: .[0].multiplier,
+      reqs: (map(.reqs) | add),
+      tokens: (map(.total_tokens) | add),
+      weighted: (map(.total_tokens * .multiplier) | add)
+    }) |
+    sort_by(-.weighted) |
+    # Top cost driver
+    (.[0] // {tier:"none",reqs:0,tokens:0,weighted:0}) as $top |
+    # Total tokens and requests
+    (map(.tokens) | add // 0) as $total_tokens |
+    (map(.reqs) | add // 0) as $total_reqs |
+    (map(.weighted) | add // 0) as $total_weighted |
+    # Premium ratio
+    (map(select(.tier == "premium" or .tier == "ultra")) | map(.reqs) | add // 0) as $premium_reqs |
+    {
+      top_tier: $top.tier,
+      top_multiplier: $top.multiplier,
+      top_weighted_pct: (if $total_weighted > 0 then (($top.weighted / $total_weighted) * 100 | round) else 0 end),
+      premium_pct: (if $total_reqs > 0 then (($premium_reqs / $total_reqs) * 100 | round) else 0 end),
+      total_tokens: $total_tokens,
+      avg_tokens_per_req: (if $total_reqs > 0 then ($total_tokens / $total_reqs | round) else 0 end),
+      tiers: .
+    }
+  ')
+
+  TOP_TIER=$(printf '%s' "$DRIVERS" | jq -r '.top_tier')
+  TOP_PCT=$(printf '%s' "$DRIVERS" | jq -r '.top_weighted_pct')
+  PREMIUM_PCT=$(printf '%s' "$DRIVERS" | jq -r '.premium_pct')
+  AVG_TOK=$(printf '%s' "$DRIVERS" | jq -r '.avg_tokens_per_req')
+  TOTAL_TOK=$(printf '%s' "$DRIVERS" | jq -r '.total_tokens')
+
+  printf "  Highest cost tier   : %s (%s%% of weighted spend)\n" "$TOP_TIER" "$TOP_PCT"
+  printf "  Premium model usage : %s%% of requests\n" "$PREMIUM_PCT"
+  printf "  Avg tokens/request  : %s\n" "$(_fmt "$AVG_TOK")"
+  printf "  Total token exposure: %s\n\n" "$(_fmt "$TOTAL_TOK")"
+
+  printf "%-12s %6s %10s %12s %8s\n" "TIER" "REQS" "TOKENS" "WEIGHTED" "MULT"
+  printf '%0.s─' {1..52}; printf "\n"
+
+  printf '%s' "$DRIVERS" | jq -r '
+    .tiers[] | [.tier, .reqs, .tokens, .weighted, .multiplier] | @tsv
+  ' | while IFS=$'\t' read -r tier reqs tokens weighted mult; do
+    printf "%-12s %6s %10s %12s %8s×\n" \
+      "$tier" "$reqs" "$(_fmt "${tokens:-0}")" "$(_fmt "${weighted:-0}")" "$mult"
+  done
+
+  printf "\n"
+  if [ "$PREMIUM_PCT" -gt 50 ]; then
+    printf "⚠ OPTIMIZATION: >50%% premium model usage. Consider Sonnet for routine tasks.\n"
+  fi
+  if [ "$AVG_TOK" -gt 50000 ]; then
+    printf "⚠ OPTIMIZATION: High avg tokens/request (%sK). Consider shorter sessions or delegation.\n" "$(( AVG_TOK / 1000 ))"
+  fi
+  printf "Note: Only cleanly shutdown sessions are included.\n"
+fi

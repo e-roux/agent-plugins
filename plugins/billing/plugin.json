@@ -1,7 +1,7 @@
 {
   "name": "billing",
   "description": "Track Copilot CLI token consumption, model usage, and premium request spend — per session and aggregated over time. Reads session.shutdown events from session-state. Copilot CLI only.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": {
     "name": "e-roux"
   },
