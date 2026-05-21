@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PLUGIN_ROOT="${extensionPath:-$(cd "$(dirname "$0")/../.." && pwd)}"
-CWD=$(pwd)
+# PLUGIN_ROOT="${extensionPath:-$(cd "$(dirname "$0")/../.." && pwd)}"
+# CWD=$(pwd)
 
 CTX="## Dev Guards Active\n\n"
 CTX+="Rules enforced:\n"
