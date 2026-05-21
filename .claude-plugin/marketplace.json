@@ -37,6 +37,12 @@
       "description": "CDP-based Chrome automation for web design verification: navigate, interact, and inspect live browser state",
       "version": "0.1.1",
       "source": "./plugins/web-browser"
+    },
+    {
+      "name": "billing",
+      "description": "Track GitHub Copilot CLI token consumption and premium request spend from local session data",
+      "version": "1.0.0",
+      "source": "./plugins/billing"
     }
   ]
 }
