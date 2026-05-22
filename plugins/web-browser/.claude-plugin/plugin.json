@@ -1,7 +1,7 @@
 {
   "name": "web-browser",
   "description": "CDP-based Chrome automation for web design verification: navigate, interact, and inspect live browser state. Essential for agents that must validate UI implementations in a real browser.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": {
     "name": "Emmanuel Roux"
   },
