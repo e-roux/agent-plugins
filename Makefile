@@ -47,6 +47,7 @@ verify.versions:
 		dir="plugins/$$plugin"
 		pjson="$$dir/plugin.json"
 		gext="$$dir/gemini-extension.json"
+		cjson="$$dir/.claude-plugin/plugin.json"
 		[ ! -f "$$pjson" ] && { printf "FAIL: %s missing\n" "$$pjson"; fail=1; continue; }
 		[ ! -f "$$gext"  ] && { printf "FAIL: %s missing\n" "$$gext";  fail=1; continue; }
 		plugin_ver=$$($(JQ) -r .version "$$pjson")
@@ -56,7 +57,11 @@ verify.versions:
 		[ -z "$$market_ver" ] && { printf "FAIL: %-14s not found in marketplace.json\n" "$$plugin"; fail=1; ok=0; }
 		[ "$$plugin_ver" != "$$gemini_ver"  ] && { printf "FAIL: %-14s plugin.json=v%s gemini-extension.json=v%s\n"  "$$plugin" "$$plugin_ver" "$$gemini_ver";  fail=1; ok=0; }
 		[ "$$plugin_ver" != "$$market_ver"  ] && { printf "FAIL: %-14s plugin.json=v%s marketplace.json=v%s\n"       "$$plugin" "$$plugin_ver" "$$market_ver";   fail=1; ok=0; }
-		[ $$ok -eq 1 ] && printf "  OK %-14s v%s (plugin.json = gemini-extension.json = marketplace.json)\n" "$$plugin" "$$plugin_ver"
+		if [ -f "$$cjson" ]; then
+			claude_ver=$$($(JQ) -r .version "$$cjson")
+			[ "$$plugin_ver" != "$$claude_ver" ] && { printf "FAIL: %-14s plugin.json=v%s .claude-plugin/plugin.json=v%s\n" "$$plugin" "$$plugin_ver" "$$claude_ver"; fail=1; ok=0; }
+		fi
+		[ $$ok -eq 1 ] && printf "  OK %-14s v%s\n" "$$plugin" "$$plugin_ver"
 	done
 	[ $$fail -eq 0 ] || exit 1
 
@@ -110,7 +115,11 @@ update:
 	if command -v claude >/dev/null 2>&1; then
 		printf "  → claude\n"
 		claude plugin list --json 2>/dev/null | $(JQ) -r '.[].id' | \
-		while IFS= read -r p; do claude plugin update "$$p" 2>&1; done
+		while IFS= read -r p; do
+			claude plugin marketplace update 2>/dev/null
+			claude plugin uninstall "$$p" 2>/dev/null
+			claude plugin install "$$p" 2>&1
+		done
 	else
 		printf "  ⚠ claude not found\n"
 	fi
