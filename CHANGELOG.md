@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- fix(Makefile/verify): replace verify + verify-gemini + verify-pi with verify.versions + verify.pi; add Gemini to update/update.list; fix update.list to use JSON output for all agents; no hyphenated target names
 - feat(repo/makefile): add silent `build`/`install` targets — probe each plugin with `make -n` before delegating, no explicit MCP_PLUGINS list needed; fix `override GOBIN` in mcp-git-ops to always install to `$XDG_BIN_HOME`
 
 - feat(dev/mcp): migrate mcp-git-ops source into mono-repo at `plugins/dev/mcp-git-ops/`; update module path, add skill-conformant Makefile, delegate sync/test/typecheck from `plugins/dev/Makefile`
