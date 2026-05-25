@@ -105,17 +105,17 @@ _guard_shell() {
 }
 
 case "$TOOL_NAME" in
-  write_file)
-    FILE=$(printf '%s' "$TOOL_INPUT" | jq -r '.file_path // ""' 2>/dev/null) || FILE=""
-    CONTENT=$(printf '%s' "$TOOL_INPUT" | jq -r '.content // ""' 2>/dev/null) || CONTENT=""
+  write_file|Write|create)
+    FILE=$(printf '%s' "$TOOL_INPUT" | jq -r '.file_path // .path // ""' 2>/dev/null) || FILE=""
+    CONTENT=$(printf '%s' "$TOOL_INPUT" | jq -r '.content // .file_text // ""' 2>/dev/null) || CONTENT=""
     _guard_file "$FILE" "$CONTENT"
     ;;
-  replace)
-    FILE=$(printf '%s' "$TOOL_INPUT" | jq -r '.file_path // ""' 2>/dev/null) || FILE=""
-    CONTENT=$(printf '%s' "$TOOL_INPUT" | jq -r '.new_string // ""' 2>/dev/null) || CONTENT=""
+  replace|Edit|edit)
+    FILE=$(printf '%s' "$TOOL_INPUT" | jq -r '.file_path // .path // ""' 2>/dev/null) || FILE=""
+    CONTENT=$(printf '%s' "$TOOL_INPUT" | jq -r '.new_string // .new_str // ""' 2>/dev/null) || CONTENT=""
     _guard_file "$FILE" "$CONTENT"
     ;;
-  run_shell_command)
+  run_shell_command|Bash|bash)
     CMD=$(printf '%s' "$TOOL_INPUT" | jq -r '.command // ""' 2>/dev/null) || CMD=""
     _guard_shell "$CMD"
     ;;

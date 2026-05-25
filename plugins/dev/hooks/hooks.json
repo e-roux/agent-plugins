@@ -11,7 +11,7 @@
         ]
       }
     ],
-    "BeforeAgent": [
+    "UserPromptSubmit": [
       {
         "hooks": [
           {
@@ -22,7 +22,7 @@
         ]
       }
     ],
-    "BeforeTool": [
+    "PreToolUse": [
       {
         "hooks": [
           {
@@ -34,7 +34,7 @@
         ]
       }
     ],
-    "AfterTool": [
+    "PostToolUse": [
       {
         "hooks": [
           {

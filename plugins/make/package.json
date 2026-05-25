@@ -1,12 +1,18 @@
 {
   "name": "@e-roux/pi-plugin-make",
-  "version": "0.11.8",
+  "version": "0.12.2",
   "description": "Make-centric development plugin: enforces Makefile structure, TDD practices, shell scripting standards, and the uv/Python toolchain",
-  "keywords": ["pi-package"],
+  "keywords": [
+    "pi-package"
+  ],
   "license": "MIT",
   "author": "Emmanuel Roux",
   "pi": {
-    "extensions": ["./extensions/pi"],
-    "skills": ["./skills"]
+    "extensions": [
+      "./extensions/pi"
+    ],
+    "skills": [
+      "./skills"
+    ]
   }
 }
