@@ -5,7 +5,7 @@ INPUT="$(cat)"
 TOOL_NAME=$(printf '%s' "$INPUT" | jq -r '.tool_name // ""' 2>/dev/null) || TOOL_NAME=""
 TOOL_INPUT=$(printf '%s' "$INPUT" | jq -c '.tool_input // {}' 2>/dev/null) || TOOL_INPUT="{}"
 
-[[ "$TOOL_NAME" == "run_shell_command" ]] || exit 0
+[[ "$TOOL_NAME" == "run_shell_command" || "$TOOL_NAME" == "Bash" || "$TOOL_NAME" == "bash" ]] || exit 0
 
 COMMAND=$(printf '%s' "$TOOL_INPUT" | jq -r '.command // ""' 2>/dev/null) || COMMAND=""
 [[ -n "$COMMAND" ]] || exit 0

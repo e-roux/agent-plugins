@@ -1,12 +1,18 @@
 {
   "name": "@e-roux/pi-plugin-dev",
-  "version": "0.8.0",
+  "version": "0.9.5",
   "description": "Development guards: blocks hardcoded secrets, direct main pushes, destructive SQL migrations, --no-verify bypasses, comment lines, and monitors CI pipelines",
-  "keywords": ["pi-package"],
+  "keywords": [
+    "pi-package"
+  ],
   "license": "MIT",
   "author": "Emmanuel Roux",
   "pi": {
-    "extensions": ["./extensions/pi"],
-    "skills": ["./skills"]
+    "extensions": [
+      "./extensions/pi"
+    ],
+    "skills": [
+      "./skills"
+    ]
   }
 }

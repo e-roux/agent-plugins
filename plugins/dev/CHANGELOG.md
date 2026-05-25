@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.5] - 2026-05-25
+
+### Fixed
+
+- Fix hooks.json: migrate deprecated event names (`BeforeTool`/`AfterTool`/`BeforeAgent`) to standard (`PreToolUse`/`PostToolUse`/`UserPromptSubmit`) — fixes Claude Code v2.1 plugin load failure
+- Extend pre-tool hook scripts to handle both Gemini CLI and Claude Code tool names (`write_file`/`Write`/`create`, `replace`/`Edit`/`edit`, `run_shell_command`/`Bash`/`bash`)
+
+### Removed
+
+- Remove redundant `hooks/policy.json` — content merged into unified `hooks/hooks.json`
+
 ## [0.9.4](https://github.com/e-roux/agent-plugins/compare/0.9.3...0.9.4) - 2026-05-20
 
 ### Added

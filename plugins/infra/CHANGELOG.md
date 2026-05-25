@@ -1,6 +1,10 @@
 # Changelog
 
-## [0.1.8]
+## [0.1.9] - 2026-05-25
+
+- Fix hooks.json: migrate `BeforeTool` to `PreToolUse` — fixes Claude Code v2.1 plugin load failure
+- Extend pre-tool script to handle Claude Code tool names (`Bash`/`bash`) alongside Gemini (`run_shell_command`)
+- Remove redundant `hooks/policy.json`
 
 - chore(meta): verified against copilot-cli v1.0.48 / sdk v0.2.2
 

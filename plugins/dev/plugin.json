@@ -1,7 +1,7 @@
 {
   "name": "dev",
   "description": "General-purpose development guards: blocks hardcoded secrets, direct main pushes, destructive SQL migrations, --no-verify bypasses, comment lines in source code, and monitors CI pipeline status after every push. Works with any project.",
-  "version": "0.9.4",
+  "version": "0.9.5",
   "author": {
     "name": "Emmanuel Roux"
   },
@@ -19,9 +19,9 @@
   ],
   "category": "development",
   "_meta": {
-    "copilotCliVersion": "1.0.48",
+    "copilotCliVersion": "1.0.54",
     "copilotSdkVersion": "0.2.2",
-    "lastVerified": "2026-05-18",
+    "lastVerified": "2026-05-25",
     "notes": "Root manifest for Copilot CLI. mcpServers uses type:local + bash -c + XDG_BIN_HOME path (mirrors mcp-rb-resources pattern). Install binary: GOBIN=$XDG_BIN_HOME go install ... or ln -sf ~/.local/share/go/bin/mcp-git-ops ~/.local/bin/mcp-git-ops. Minimal manifest for Claude Code lives in .claude-plugin/plugin.json."
   },
   "skills": "skills/",

@@ -17,19 +17,19 @@
     {
       "name": "make-first",
       "description": "Makefile-centric project workflow with .SILENT, .ONESHELL, mandatory qa target",
-      "version": "0.12.1",
+      "version": "0.12.2",
       "source": "./plugins/make"
     },
     {
       "name": "dev",
       "description": "General-purpose development guards: no hardcoded secrets, no direct main pushes, self-documenting code",
-      "version": "0.9.4",
+      "version": "0.9.5",
       "source": "./plugins/dev"
     },
     {
       "name": "infra",
       "description": "Infrastructure automation agent for cloud and on-premise environments",
-      "version": "0.1.8",
+      "version": "0.1.9",
       "source": "./plugins/infra"
     },
     {
