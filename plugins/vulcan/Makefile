@@ -3,8 +3,10 @@ SHELL := /bin/bash
 .ONESHELL:
 .DEFAULT_GOAL := help
 
-BATS    := bats
-VERSION := $(shell jq -r .version plugin.json 2>/dev/null || echo "0.0.0")
+BATS        := bats
+VERSION     := $(shell jq -r .version plugin.json 2>/dev/null || echo "0.0.0")
+PLUGIN_NAME := $(shell jq -r .name plugin.json 2>/dev/null || echo "vulcan")
+MARKETPLACE := e-roux-plugins
 
 .PHONY: help sync fmt lint typecheck check qa clean distclean install
 .PHONY: test test.unit test.integrity
@@ -34,7 +36,8 @@ clean:
 	true
 
 install:
-	true
+	copilot plugin install $(PLUGIN_NAME)@$(MARKETPLACE)
+	printf "  OK %s installed from marketplace\n" "$(PLUGIN_NAME)"
 
 distclean: clean
 

@@ -17,7 +17,7 @@ CLEAN_PLUGINS   := $(addprefix clean/,$(PLUGIN_DIRS))
 .PHONY: test test.unit test.integration test.e2e
 .PHONY: verify.versions verify.pi changelog
 .PHONY: update update.list
-.PHONY: build install
+.PHONY: build install install.agents
 
 check: fmt lint typecheck
 qa: check test $(QA_PLUGINS)
@@ -148,6 +148,13 @@ build: $(BUILD_PLUGINS)
 
 install: $(INSTALL_PLUGINS)
 
+install.agents:
+	@plugins=$$($(JQ) -r '.plugins[].name' .claude-plugin/marketplace.json); \
+	for name in $$plugins; do \
+		printf "  → copilot plugin install %s@e-roux-plugins\n" "$$name"; \
+		copilot plugin install "$$name@e-roux-plugins" 2>&1 || true; \
+	done
+
 qa/%:
 	printf "\033[1;34m── qa: %s ──\033[0m\n" "$*"
 	$(MAKE) --no-print-directory -C plugins/$* qa
@@ -191,3 +198,4 @@ help:
 	printf "\033[1;35mBuild:\033[0m\n"
 	printf "  build           Build MCP servers across all plugins (parallel)\n"
 	printf "  install         Install MCP servers to XDG_BIN_HOME (parallel)\n"
+	printf "  install.agents  Install all plugins from marketplace (e-roux-plugins)\n"
