@@ -1,7 +1,7 @@
 {
-  "name": "make-first",
+  "name": "infra",
   "description": "Make-centric development plugin: enforces Makefile structure, TDD practices, shell scripting standards, and the uv/Python toolchain. Auto-redirects direct tool invocations to make targets.",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "author": {
     "name": "Emmanuel Roux"
   },

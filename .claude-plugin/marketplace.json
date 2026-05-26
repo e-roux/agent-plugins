@@ -15,9 +15,9 @@
       "source": "./plugins/vulcan"
     },
     {
-      "name": "make-first",
+      "name": "make",
       "description": "Makefile-centric project workflow with .SILENT, .ONESHELL, mandatory qa target",
-      "version": "0.12.4",
+      "version": "0.12.5",
       "source": "./plugins/make"
     },
     {
@@ -29,7 +29,7 @@
     {
       "name": "infra",
       "description": "Infrastructure automation agent for cloud and on-premise environments",
-      "version": "0.1.11",
+      "version": "0.1.12",
       "source": "./plugins/infra"
     },
     {
