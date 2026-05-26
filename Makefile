@@ -102,21 +102,22 @@ distclean: clean
 update:
 	if command -v copilot >/dev/null 2>&1; then
 		printf "  → copilot\n"
+		copilot plugin marketplace update 2>/dev/null
 		copilot plugin update --all 2>&1
 	else
 		printf "  ⚠ copilot not found\n"
 	fi
 	if command -v gemini >/dev/null 2>&1; then
 		printf "  → gemini\n"
-		gemini extensions update --all 2>&1
+		gemini extensions update --all 2>&1 | grep -v "^No extensions" || printf "  ✔ local extensions up-to-date\n"
 	else
 		printf "  ⚠ gemini not found\n"
 	fi
 	if command -v claude >/dev/null 2>&1; then
 		printf "  → claude\n"
+		claude plugin marketplace update 2>/dev/null
 		claude plugin list --json 2>/dev/null | $(JQ) -r '.[].id' | \
 		while IFS= read -r p; do
-			claude plugin marketplace update 2>/dev/null
 			claude plugin uninstall "$$p" 2>/dev/null
 			claude plugin install "$$p" 2>&1
 		done
