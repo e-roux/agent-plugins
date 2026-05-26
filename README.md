@@ -50,8 +50,8 @@ All plugins use the [Agent Skills](https://agentskills.io) open standard (`SKILL
 
 Hooks, extensions, and manifests are agent-specific:
 - **Copilot CLI**: `plugin.json` manifest + `hooks/*.copilot.json` + `.mjs` extensions
-- **Claude Code**: `.claude-plugin/plugin.json` manifest + `hooks/policy.json`
-- **Gemini CLI**: `gemini-extension.json` manifest + `GEMINI.md` context + `hooks/hooks.json`
+- **Claude Code**: `.claude-plugin/plugin.json` manifest + `hooks/hooks.copilot.json` (Claude Code event names: `preToolUse`/`postToolUse`/`userPromptSubmit`)
+- **Gemini CLI**: `gemini-extension.json` manifest + `GEMINI.md` context + `hooks/hooks.json` (Gemini event names: `BeforeTool`/`AfterTool`/`BeforeAgent`)
 - **Pi**: `package.json` manifest + TypeScript extensions in `extensions/pi/`
 
 ## Companion tools
