@@ -146,7 +146,7 @@ update.list:
 
 build: $(BUILD_PLUGINS)
 
-install: $(INSTALL_PLUGINS)
+install: $(INSTALL_PLUGINS) install.agents
 
 install.agents:
 	@plugins=$$($(JQ) -r '.plugins[].name' .claude-plugin/marketplace.json); \
