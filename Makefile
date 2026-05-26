@@ -133,7 +133,7 @@ update.list:
 	fi
 	if command -v gemini >/dev/null 2>&1; then
 		printf "gemini:\n"
-		gemini extensions list -o json 2>&1 | $(JQ) -r '.[] | "  • \(.name) (v\(.version))"' || printf "  (none)\n"
+		gemini extensions list -o json 2>&1 | grep -v '^\[TELEMETRY\]\|^Timeout of\|^The .metricReader' | $(JQ) -r '.[] | "  • \(.name) (v\(.version))"' || printf "  (none)\n"
 	else
 		printf "  ⚠ gemini not found\n"
 	fi
