@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.6] - 2026-05-26
+
+### Fixed
+
+- Revert hooks.json event names back to Gemini CLI values (`BeforeTool`, `AfterTool`, `BeforeAgent`) — previous rename to Claude Code names broke Gemini CLI v0.43.0
+
 ## [0.9.5] - 2026-05-25
 
 ### Fixed

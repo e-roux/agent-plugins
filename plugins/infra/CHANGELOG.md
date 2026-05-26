@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.10] - 2026-05-26
+
+### Fixed
+
+- Revert hooks.json `PreToolUse` back to `BeforeTool` — previous rename broke Gemini CLI v0.43.0
+
 ## [0.1.9] - 2026-05-25
 
 - Fix hooks.json: migrate `BeforeTool` to `PreToolUse` — fixes Claude Code v2.1 plugin load failure
