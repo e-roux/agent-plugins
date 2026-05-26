@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.11] - 2026-05-26
+
+### Fixed
+
+- Restore `hooks/hooks.copilot.json` for Claude Code (deleted by #51) — `preToolUse`, `sessionStart`
+
 ## [0.1.10] - 2026-05-26
 
 ### Fixed

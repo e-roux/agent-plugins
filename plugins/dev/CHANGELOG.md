@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.7] - 2026-05-26
+
+### Fixed
+
+- Restore `hooks/hooks.copilot.json` for Claude Code (deleted by #51) — `preToolUse`, `postToolUse`, `userPromptSubmit`, `sessionStart` pointing to Claude Code scripts
+
 ## [0.9.6] - 2026-05-26
 
 ### Fixed

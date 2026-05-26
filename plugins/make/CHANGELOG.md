@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.12.4] - 2026-05-26
+
+### Fixed
+
+- Add `hooks/hooks.copilot.json` for Claude Code (missing since #51) — `preToolUse`, `sessionStart`
+
 ## [0.12.3] - 2026-05-26
 
 ### Fixed
