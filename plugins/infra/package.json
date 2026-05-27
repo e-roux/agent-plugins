@@ -1,6 +1,6 @@
 {
   "name": "@e-roux/pi-plugin-infra",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "Infrastructure development plugin: Ansible roles and collections with Molecule testing, Podman driver, and Make-centric workflow",
   "keywords": [
     "pi-package"

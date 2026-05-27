@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${extensionPath}/scripts/inject-memory.sh\"",
+            "command": "bash \"$CLAUDE_PLUGIN_ROOT/scripts/inject-memory.sh\"",
             "timeout": 10000
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${extensionPath}/scripts/version-check.sh\"",
+            "command": "bash \"$CLAUDE_PLUGIN_ROOT/scripts/version-check.sh\"",
             "timeout": 15000
           }
         ]
