@@ -1,0 +1,15 @@
+{
+  "name": "billing",
+  "description": "Track Copilot CLI token consumption, model usage, and premium request spend.",
+  "version": "1.1.2",
+  "author": {
+    "name": "Emmanuel Roux"
+  },
+  "license": "MIT",
+  "keywords": [
+    "billing",
+    "token-usage",
+    "premium-requests",
+    "observability"
+  ]
+}
