@@ -1,6 +1,6 @@
 {
   "name": "@e-roux/pi-plugin-make",
-  "version": "0.12.5",
+  "version": "0.12.7",
   "description": "Make-centric development plugin: enforces Makefile structure, TDD practices, shell scripting standards, and the uv/Python toolchain",
   "keywords": [
     "pi-package"
@@ -14,5 +14,10 @@
     "skills": [
       "./skills"
     ]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*",
+    "typebox": "*"
   }
 }

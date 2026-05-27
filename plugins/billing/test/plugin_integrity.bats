@@ -9,11 +9,11 @@ PLUGIN_DIR="$BATS_TEST_DIRNAME/.."
   jq -e '._meta.copilotCliVersion'  "$PLUGIN_DIR/plugin.json" >/dev/null
 }
 
-@test "gemini-extension.json version matches plugin.json" {
-  local plugin_ver ext_ver
+@test "marketplace.json version matches plugin.json" {
+  local plugin_ver mkt_ver
   plugin_ver=$(jq -r .version "$PLUGIN_DIR/plugin.json")
-  ext_ver=$(jq -r .version    "$PLUGIN_DIR/gemini-extension.json")
-  [ "$plugin_ver" = "$ext_ver" ]
+  mkt_ver=$(jq -r ".plugins[] | select(.source == \"./plugins/billing\") | .version" "$PLUGIN_DIR/../../.claude-plugin/marketplace.json")
+  [ "$plugin_ver" = "$mkt_ver" ]
 }
 
 @test "skills directories contain SKILL.md" {

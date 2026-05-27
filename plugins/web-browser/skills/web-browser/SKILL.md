@@ -9,6 +9,16 @@ license: Mario Zechner
 CDP-based Chrome automation. All scripts live in `scripts/` and connect to Chrome on `localhost:9222`.
 Full script reference: `references/commands.md`.
 
+## Setup
+
+Run once before first use (installs the `ws` WebSocket dependency):
+
+```bash
+cd <skill-base-dir>/scripts && npm install
+```
+
+> **Always check first:** if `scripts/node_modules/ws` already exists, skip this step.
+
 ## Quick start
 
 ```bash

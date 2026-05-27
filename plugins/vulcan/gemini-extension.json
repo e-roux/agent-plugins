@@ -1,6 +1,0 @@
-{
-  "name": "vulcan",
-  "version": "0.21.3",
-  "description": "Expert agent for GitHub Copilot CLI — project-local customization (agents, skills, hooks, MCP, instructions), CLI extensions, plugin development, and standalone SDK applications (TypeScript).",
-  "contextFileName": "GEMINI.md"
-}

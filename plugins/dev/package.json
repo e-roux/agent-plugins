@@ -1,6 +1,6 @@
 {
   "name": "@e-roux/pi-plugin-dev",
-  "version": "0.9.7",
+  "version": "0.9.9",
   "description": "Development guards: blocks hardcoded secrets, direct main pushes, destructive SQL migrations, --no-verify bypasses, comment lines, and monitors CI pipelines",
   "keywords": [
     "pi-package"
@@ -14,5 +14,10 @@
     "skills": [
       "./skills"
     ]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*",
+    "typebox": "*"
   }
 }

@@ -1,6 +1,0 @@
-{
-  "name": "make",
-  "version": "0.12.5",
-  "description": "Make-centric development plugin: enforces Makefile structure, TDD practices, shell scripting standards, and the uv/Python toolchain. Auto-redirects direct tool invocations to make targets.",
-  "contextFileName": "GEMINI.md"
-}

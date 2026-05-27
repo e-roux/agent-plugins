@@ -1,0 +1,30 @@
+{
+  "name": "@e-roux/pi-plugins",
+  "version": "1.0.0",
+  "description": "Pi coding agent distribution: development guards, Make-centric workflow, infrastructure, and web browser skills",
+  "keywords": ["pi-package"],
+  "license": "MIT",
+  "author": "Emmanuel Roux",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/e-roux/agent-plugins.git"
+  },
+  "pi": {
+    "extensions": [
+      "./plugins/dev/extensions/pi",
+      "./plugins/make/extensions/pi",
+      "./plugins/infra/extensions/pi"
+    ],
+    "skills": [
+      "./plugins/dev/skills",
+      "./plugins/infra/skills",
+      "./plugins/make/skills",
+      "./plugins/web-browser/skills"
+    ]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*",
+    "typebox": "*"
+  }
+}
