@@ -5,19 +5,19 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${extensionPath}/hooks/scripts/gemini-session-start.sh\"",
+            "command": "bash \"hooks/scripts/session-start.sh\"",
             "timeout": 10000
           }
         ]
       }
     ],
-    "BeforeTool": [
+    "PreToolUse": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${extensionPath}/hooks/scripts/gemini-pre-tool.sh\"",
-            "timeout": 15000
+            "command": "bash \"hooks/scripts/pre-tool.sh\"",
+            "timeout": 10000
           }
         ]
       }
