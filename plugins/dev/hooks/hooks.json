@@ -5,46 +5,49 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${extensionPath}/hooks/scripts/gemini-session-start.sh\"",
+            "command": "bash \"hooks/scripts/session-start.sh\"",
             "timeout": 10000
           }
         ]
       }
     ],
-    "BeforeAgent": [
+    "UserPromptSubmit": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${extensionPath}/hooks/scripts/gemini-before-agent.sh\"",
+            "command": "bash \"hooks/scripts/branch-check-turn.sh\"",
             "timeout": 5000
           }
         ]
       }
     ],
-    "BeforeTool": [
+    "PreToolUse": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${extensionPath}/hooks/scripts/gemini-pre-tool.sh\"",
-            "name": "dev-guards",
+            "command": "bash \"hooks/scripts/pre-tool.sh\"",
             "timeout": 15000
           }
         ]
       }
     ],
-    "AfterTool": [
+    "PostToolUse": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${extensionPath}/hooks/scripts/gemini-post-tool.sh\"",
+            "command": "bash \"hooks/scripts/post-tool.sh\"",
             "timeout": 10000
-          },
+          }
+        ]
+      },
+      {
+        "hooks": [
           {
             "type": "command",
-            "command": "bash \"${extensionPath}/hooks/scripts/gemini-pipeline-chainguard.sh\"",
+            "command": "bash \"hooks/scripts/pipeline-chainguard.sh\"",
             "timeout": 5000
           }
         ]
