@@ -31,7 +31,7 @@ sync:
 
 fmt:
 	fail=0
-	for f in $$(find plugins -name "plugin.json" -o -name "package.json" -o -name "gemini-extension.json") .claude-plugin/marketplace.json; do
+	for f in $$(find plugins -name "plugin.json" -o -name "package.json" -o -name "copilot.json" -o -name "hooks.json") .claude-plugin/marketplace.json marketplace.json; do
 		$(JQ) . "$$f" >/dev/null 2>&1 || { printf "FAIL: invalid JSON: %s\n" "$$f"; fail=1; }
 	done
 	[ $$fail -eq 0 ] && printf "  OK JSON valid\n" || exit 1
@@ -46,20 +46,22 @@ verify.versions:
 	for plugin in $(PLUGINS); do
 		dir="plugins/$$plugin"
 		pjson="$$dir/plugin.json"
-		gext="$$dir/gemini-extension.json"
 		cjson="$$dir/.claude-plugin/plugin.json"
 		[ ! -f "$$pjson" ] && { printf "FAIL: %s missing\n" "$$pjson"; fail=1; continue; }
-		[ ! -f "$$gext"  ] && { printf "FAIL: %s missing\n" "$$gext";  fail=1; continue; }
 		plugin_ver=$$($(JQ) -r .version "$$pjson")
-		gemini_ver=$$($(JQ) -r .version "$$gext")
 		market_ver=$$($(JQ) -r ".plugins[] | select(.source == \"./$$dir\") | .version" .claude-plugin/marketplace.json)
+		root_mkt_ver=$$($(JQ) -r ".plugins[] | select(.source == \"./$$dir\") | .version" marketplace.json 2>/dev/null)
 		ok=1
-		[ -z "$$market_ver" ] && { printf "FAIL: %-14s not found in marketplace.json\n" "$$plugin"; fail=1; ok=0; }
-		[ "$$plugin_ver" != "$$gemini_ver"  ] && { printf "FAIL: %-14s plugin.json=v%s gemini-extension.json=v%s\n"  "$$plugin" "$$plugin_ver" "$$gemini_ver";  fail=1; ok=0; }
-		[ "$$plugin_ver" != "$$market_ver"  ] && { printf "FAIL: %-14s plugin.json=v%s marketplace.json=v%s\n"       "$$plugin" "$$plugin_ver" "$$market_ver";   fail=1; ok=0; }
+		[ -z "$$market_ver" ] && { printf "FAIL: %-14s not found in .claude-plugin/marketplace.json\n" "$$plugin"; fail=1; ok=0; }
+		[ "$$plugin_ver" != "$$market_ver" ] && { printf "FAIL: %-14s plugin.json=v%s .claude-plugin/marketplace.json=v%s\n" "$$plugin" "$$plugin_ver" "$$market_ver"; fail=1; ok=0; }
+		[ -n "$$root_mkt_ver" ] && [ "$$plugin_ver" != "$$root_mkt_ver" ] && { printf "FAIL: %-14s plugin.json=v%s marketplace.json=v%s\n" "$$plugin" "$$plugin_ver" "$$root_mkt_ver"; fail=1; ok=0; }
 		if [ -f "$$cjson" ]; then
 			claude_ver=$$($(JQ) -r .version "$$cjson")
 			[ "$$plugin_ver" != "$$claude_ver" ] && { printf "FAIL: %-14s plugin.json=v%s .claude-plugin/plugin.json=v%s\n" "$$plugin" "$$plugin_ver" "$$claude_ver"; fail=1; ok=0; }
+		fi
+		if [ -f "$$dir/package.json" ]; then
+			pkg_ver=$$($(JQ) -r .version "$$dir/package.json")
+			[ "$$plugin_ver" != "$$pkg_ver" ] && { printf "FAIL: %-14s plugin.json=v%s package.json=v%s\n" "$$plugin" "$$plugin_ver" "$$pkg_ver"; fail=1; ok=0; }
 		fi
 		[ $$ok -eq 1 ] && printf "  OK %-14s v%s\n" "$$plugin" "$$plugin_ver"
 	done
@@ -106,12 +108,6 @@ update:
 		copilot plugin update --all 2>&1
 	else
 		printf "  ⚠ copilot not found\n"
-	fi
-	if command -v gemini >/dev/null 2>&1; then
-		printf "  → gemini\n"
-		gemini extensions update --all 2>&1 | grep -v "^No extensions" || printf "  ✔ local extensions up-to-date\n"
-	else
-		printf "  ⚠ gemini not found\n"
 	fi
 	if command -v claude >/dev/null 2>&1; then
 		printf "  → claude\n"

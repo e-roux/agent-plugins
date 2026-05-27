@@ -4,14 +4,14 @@
     "sessionStart": [
       {
         "type": "command",
-        "bash": "bash \"$COPILOT_PLUGIN_ROOT/hooks/scripts/session-start.sh\"",
+        "bash": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/session-start.sh\"",
         "timeoutSec": 5
       }
     ],
     "sessionEnd": [
       {
         "type": "command",
-        "bash": "bash \"$COPILOT_PLUGIN_ROOT/hooks/scripts/session-end.sh\"",
+        "bash": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/session-end.sh\"",
         "timeoutSec": 15
       }
     ]

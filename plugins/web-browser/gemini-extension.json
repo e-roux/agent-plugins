@@ -1,6 +1,0 @@
-{
-  "name": "web-browser",
-  "version": "0.1.1",
-  "description": "CDP-based Chrome automation for web design verification: navigate, interact, and inspect live browser state.",
-  "contextFileName": "GEMINI.md"
-}
