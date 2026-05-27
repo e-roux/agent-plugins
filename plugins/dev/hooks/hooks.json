@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"hooks/scripts/session-start.sh\"",
+            "command": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/session-start.sh\"",
             "timeout": 10000
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"hooks/scripts/branch-check-turn.sh\"",
+            "command": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/branch-check-turn.sh\"",
             "timeout": 5000
           }
         ]
@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"hooks/scripts/pre-tool.sh\"",
+            "command": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/pre-tool.sh\"",
             "timeout": 15000
           }
         ]
@@ -38,7 +38,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"hooks/scripts/post-tool.sh\"",
+            "command": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/post-tool.sh\"",
             "timeout": 10000
           }
         ]
@@ -47,7 +47,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"hooks/scripts/pipeline-chainguard.sh\"",
+            "command": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/pipeline-chainguard.sh\"",
             "timeout": 5000
           }
         ]
