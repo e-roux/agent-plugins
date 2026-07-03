@@ -9,12 +9,6 @@
   },
   "plugins": [
     {
-      "name": "vulcan",
-      "description": "Expert agent for GitHub Copilot CLI plugins, extensions, and standalone SDK applications (TypeScript)",
-      "version": "0.21.6",
-      "source": "./plugins/vulcan"
-    },
-    {
       "name": "make",
       "description": "Makefile-centric project workflow with .SILENT, .ONESHELL, mandatory qa target",
       "version": "0.12.9",
@@ -31,18 +25,6 @@
       "description": "Infrastructure automation agent for cloud and on-premise environments",
       "version": "0.1.16",
       "source": "./plugins/infra"
-    },
-    {
-      "name": "web-browser",
-      "description": "CDP-based Chrome automation for web design verification: navigate, interact, and inspect live browser state",
-      "version": "0.1.2",
-      "source": "./plugins/web-browser"
-    },
-    {
-      "name": "billing",
-      "description": "Track GitHub Copilot CLI token consumption and premium request spend from local session data",
-      "version": "1.1.2",
-      "source": "./plugins/billing"
     }
   ]
 }
