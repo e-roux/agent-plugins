@@ -3,8 +3,8 @@ SHELL := /bin/bash
 .ONESHELL:
 .DEFAULT_GOAL := help
 
-PLUGINS    := make dev vulcan infra web-browser billing
-PI_PLUGINS := make dev infra web-browser
+PLUGINS    := make dev vulcan infra
+PI_PLUGINS := make dev infra
 JQ         := jq
 
 PLUGIN_DIRS  := $(patsubst plugins/%/Makefile,%,$(wildcard plugins/*/Makefile))

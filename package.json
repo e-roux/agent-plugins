@@ -1,7 +1,7 @@
 {
   "name": "@e-roux/pi-plugins",
   "version": "1.0.0",
-  "description": "Pi coding agent distribution: development guards, Make-centric workflow, infrastructure, and web browser skills",
+  "description": "Pi coding agent distribution: development guards, Make-centric workflow, and infrastructure skills",
   "keywords": ["pi-package"],
   "license": "MIT",
   "author": "Emmanuel Roux",
@@ -18,8 +18,7 @@
     "skills": [
       "./plugins/dev/skills",
       "./plugins/infra/skills",
-      "./plugins/make/skills",
-      "./plugins/web-browser/skills"
+      "./plugins/make/skills"
     ]
   },
   "peerDependencies": {
