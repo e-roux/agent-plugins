@@ -10,8 +10,7 @@ agent-plugins/
 │   ├── dev/           # development guards (secrets, comments, branches, migrations, CI)
 │   ├── infra/         # infrastructure & deployment guards (Ansible, Molecule)
 │   ├── make/          # Makefile-first workflow enforcement
-│   ├── vulcan/        # Copilot CLI plugin-development expert
-│   └── web-browser/   # CDP-based Chrome automation
+│   └── vulcan/        # Copilot CLI plugin-development expert
 ├── .claude-plugin/
 │   └── marketplace.json   # version registry consumed by `copilot plugin update` and `claude plugin update`
 ├── Makefile               # top-level QA: fmt / lint / typecheck / test / qa
@@ -24,6 +23,14 @@ Each plugin directory contains:
 - `GEMINI.md` — Gemini CLI context file (standalone behavioral instructions loaded at session start)
 - `package.json` — Pi manifest (plugins that support pi only); carries a `"pi"` key
 - `AGENTS.md` (when present) — plugin-specific agent instructions (supersede these root instructions for that plugin)
+
+Skill content (`SKILL.md` + resources) for `dev`, `infra`, and `make` lives in the sibling
+[`e-roux/agent-skills`](https://github.com/e-roux/agent-skills) repo, not under `plugins/*/skills/`
+in this repo — install it separately with `skills add e-roux/agent-skills`. `vulcan` is the
+exception: its skills describe how to build plugins *in this repo*, so they stay local under
+`plugins/vulcan/skills/`. The `mcp-git-ops` MCP server used by `dev` similarly lives in its own
+repo, [`e-roux/mcp-git-ops`](https://github.com/e-roux/mcp-git-ops) — installed via
+`go install github.com/e-roux/mcp-git-ops@latest`, not vendored here.
 
 ## Agent version tracking
 
@@ -123,7 +130,7 @@ For plugins with compiled Go MCP servers, run `make release` in the plugin direc
 
 Pi support is indicated by `package.json` containing a `"pi"` key. Pi plugins do not use `_meta` version fields — keep `package.json` → `version` in sync with `plugin.json` → `version` manually when bumping.
 
-Pi-enabled plugins: `make`, `dev`, `infra`, `web-browser`.
+Pi-enabled plugins: `make`, `dev`, `infra`.
 
 ## Quick reference
 

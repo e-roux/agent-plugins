@@ -7,7 +7,8 @@ BATS         := bats
 SHELLCHECK   := shellcheck
 TEST_DIR     := test
 HOOKS_SCRIPTS := hooks/scripts
-MCP_DIR      := mcp-git-ops
+MCP_MODULE   := github.com/e-roux/mcp-git-ops
+override GOBIN := $(or $(XDG_BIN_HOME),$(HOME)/.local/bin)
 
 VERSION := $(shell jq -r .version plugin.json 2>/dev/null || echo "unknown")
 
@@ -21,8 +22,7 @@ test: test.unit
 sync:
 	command -v bats       >/dev/null || brew install bats-core
 	command -v shellcheck >/dev/null || brew install shellcheck
-	$(MAKE) -C $(MCP_DIR) sync
-	$(MAKE) -C $(MCP_DIR) install
+	printf "  OK dependencies present (run 'make install' for mcp-git-ops binary)\n"
 
 fmt:
 	find $(HOOKS_SCRIPTS) -name '*.sh' -exec shellcheck -f gcc {} + 2>/dev/null || true
@@ -39,21 +39,19 @@ changelog:
 	printf "  OK changelog\n"
 
 typecheck:
-	$(MAKE) -C $(MCP_DIR) typecheck
+	printf "  OK no local compiled sources (mcp-git-ops lives in github.com/e-roux/mcp-git-ops)\n"
 
-build:
-	$(MAKE) -C $(MCP_DIR) build
+build: install
 
 install:
-	$(MAKE) -C $(MCP_DIR) install
+	GOBIN=$(GOBIN) go install $(MCP_MODULE)@latest
+	printf "  OK installed mcp-git-ops -> %s/mcp-git-ops\n" "$(GOBIN)"
 
 test.unit:
 	$(BATS) $(TEST_DIR)/copilot-cli/hooks.bats
-	$(MAKE) -C $(MCP_DIR) test.unit
 
 clean:
 	rm -f hooks/logs/*.log
-	$(MAKE) -C $(MCP_DIR) clean
 
 distclean: clean
 
@@ -65,19 +63,19 @@ help:
 	printf "\033[0m\n"
 	printf "Usage: make [target]\n\n"
 	printf "\033[1;35mSetup:\033[0m\n"
-	printf "  sync            - Install deps (bats, shellcheck) + build mcp-git-ops\n"
-	printf "  install         - Install mcp-git-ops binary to XDG_BIN_HOME\n"
+	printf "  sync            - Install deps (bats, shellcheck)\n"
+	printf "  install         - go install mcp-git-ops (github.com/e-roux/mcp-git-ops) to XDG_BIN_HOME\n"
 	printf "\n"
 	printf "\033[1;35mDev:\033[0m\n"
-	printf "  build           - Build mcp-git-ops binary\n"
+	printf "  build           - Alias for install (no local Go sources, binary is go-installed)\n"
 	printf "  fmt             - Format shell scripts\n"
 	printf "  lint            - Lint shell scripts\n"
-	printf "  check           - lint\n"
+	printf "  check           - lint + changelog\n"
 	printf "  qa              - check + test (quality gate)\n"
 	printf "\n"
 	printf "\033[1;35mTest:\033[0m\n"
-	printf "  test            - Run all tests (bats + Go)\n"
-	printf "  test.unit       - bats + Go unit tests\n"
+	printf "  test            - Run all tests (bats)\n"
+	printf "  test.unit       - bats unit tests\n"
 	printf "\n"
 	printf "\033[1;35mCleanup:\033[0m\n"
 	printf "  clean           - Remove artifacts\n"
