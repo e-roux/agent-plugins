@@ -84,7 +84,7 @@ For each plugin with a version gap:
 3. Update `_meta.copilotCliVersion`, `_meta.copilotSdkVersion`, and `_meta.lastVerified` in `plugin.json`.
 4. Bump `plugin.json` → `version` (patch unless the change is breaking or adds features).
 5. **Sync `gemini-extension.json` version** to match `plugin.json` → `version`.
-6. Update the plugin's `CHANGELOG.md` with top-level bullets describing what changed.
+6. Update the plugin's `CHANGELOG.md` with top-level bullets only (no nested/sub-bullets), following [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — see the `git` skill's `resources/git-release.md` (in [`e-roux/agent-skills`](https://github.com/e-roux/agent-skills)) for the full format spec.
 
 ### 5. Sync the marketplace
 
@@ -105,7 +105,9 @@ make qa
 
 Fix every failure and every warning before proceeding.
 
-### 7. Commit, push, and open a PR
+### 7. Commit, push, and open the release PR
+
+Follow **Phase 1** of the `git` skill's release workflow (`skills/git/resources/git-release.md`):
 
 ```bash
 git add -A
@@ -113,18 +115,23 @@ git commit -m "chore(<plugin>): bump to v<new-version> — copilot-cli v<cli> / 
 
 Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
 git push -u origin chore/<plugin-name>-v<new-version>
-gh pr create --title "chore(<plugin>): bump to v<new-version>" --body "..."
-gh pr merge --squash --delete-branch
 ```
 
-### 8. Tag and release
+Open the PR with `mcp__git-ops__create_pr` (preferred, platform-agnostic) or `gh pr create`; merge with `mcp__git-ops__merge_pr` (preferred) or `gh pr merge --squash --delete-branch`.
+
+### 8. Tag and publish the release
+
+Follow **Phases 2–3** of the same release workflow. Monorepo tags are scoped per plugin:
 
 ```bash
 git checkout main && git pull --ff-only
-gh release create <plugin>/v<new-version> --title "<plugin> v<new-version>" --notes "$(cat plugins/<plugin>/CHANGELOG.md | head -20)"
+git tag -a <plugin>/v<new-version> -m "Release <plugin> v<new-version>"
+git push origin <plugin>/v<new-version>
 ```
 
-For plugins with compiled Go MCP servers, run `make release` in the plugin directory before tagging (cross-compiles and attaches binaries).
+For plugins with compiled Go MCP servers, run `make release` in the plugin directory **before** tagging — it cross-compiles and must attach binaries at release-creation time, not separately after.
+
+Create the platform release with `mcp__git-ops__create_release` (preferred — auto-detects GitHub/GitLab/Azure DevOps) or the platform CLI (`gh release create` / `glab release create`), using the plugin's `CHANGELOG.md` section for this version as release notes.
 
 ## Pi plugins
 
