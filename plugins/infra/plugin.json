@@ -22,6 +22,5 @@
     "lastVerified": "2026-05-25",
     "notes": "manifest moved to .claude-plugin/plugin.json — DRY path discovered by both Copilot CLI and Claude Code; pre-tool hook uses modifiedArgs to auto-redirect direct tool calls to make targets with additionalContext for agent learning; CLI 1.0.26 provides COPILOT_PLUGIN_ROOT env var to hooks — used for robust path resolution"
   },
-  "skills": "skills/",
   "hooks": "hooks/copilot.json"
 }
