@@ -15,7 +15,7 @@ To get to know what is Vulcan, please read the README.md.
   3. `plugins/<name>/plugin.json` — bump `version` (both tools read the full manifest)
   After squash-merge, tag the marketplace repo: `git tag <plugin-name>/v<version> && git push origin <plugin-name>/v<version>` (e.g. `vulcan/v0.19.7`).
   The marketplace is **user-specific** — it is not a public registry or awesome-list. Locate it by scanning sibling directories (same parent as the plugin repo) for a repo containing `.claude-plugin/marketplace.json`.
-- **release**: create a GitHub release (`gh release create`) tagged with the new version; use the changelog diff as release notes
+- **release**: create the platform release via `mcp__git-ops__create_release` (preferred — auto-detects GitHub/GitLab/Azure DevOps) or `gh release create`, tagged with the new version, using the changelog diff as release notes — see the `git` skill's `resources/git-release.md` (in `e-roux/agent-skills`) for the full workflow
 - switch back to main, clean branches in the repo
 
 ## Cascade Update to Dependent Plugins
@@ -42,7 +42,8 @@ Each subagent MUST:
 5. Bump the plugin version (patch unless the change is breaking)
 6. Update the plugin's changelog with top-level bullets
 7. Create branch `chore/<plugin-name>-v<version>` in the marketplace repo, commit, push,
-   create PR via `gh pr create`, squash-merge via `gh pr merge --squash --delete-branch`,
+   open the PR via `mcp__git-ops__create_pr` (preferred) or `gh pr create`, merge via
+   `mcp__git-ops__merge_pr` (preferred) or `gh pr merge --squash --delete-branch`,
    then tag: `git tag <plugin-name>/v<version> && git push origin <plugin-name>/v<version>`
 8. Return to clean `main`
 

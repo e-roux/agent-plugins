@@ -1,5 +1,13 @@
 # Changelog
 
+All notable changes to this project will be documented in this file.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+- refactor(skills): remove `skills/{banner,makefile,python,shell,testing}` — now canonical in [`e-roux/agent-skills`](https://github.com/e-roux/agent-skills); drop the `"skills"` field from `plugin.json`/`package.json`
+
 ## [0.12.4] - 2026-05-26
 
 ### Fixed
@@ -117,9 +125,7 @@
   at `copilot-cli/skills/python/SKILL.md`, alongside the existing Makefile skill. Includes all
   assets (`conftest.py`, `pyproject.toml.template`, `python.md`, `ruff.toml`) and resources
   (`scripts.md`, `build.md`).
-- **pre-tool.sh**: merged Python toolchain guards from `agent-plugin-python`:
-  - blocks direct `python`/`python3`, `pip`/`pip3`, `virtualenv` — use `uv` instead
-  - blocks direct `mypy` — use `zmypy` (zuban drop-in) instead
+- **pre-tool.sh**: merged Python toolchain guards from `agent-plugin-python` — blocks direct `python`/`python3`, `pip`/`pip3`, `virtualenv` (use `uv` instead) and direct `mypy` (use `zmypy`, zuban drop-in, instead)
 - **skills directory restructured**: `copilot-cli/skill/` → `copilot-cli/skills/makefile/` per the
   latest copilot-cli plugin spec (skills must live in named subdirectories).
 - **plugin.json**: `"skills"` path updated to `"skills/"`, version bumped to `0.4.0`, description
@@ -174,20 +180,14 @@
 ### Added
 
 - Initial release of `agent-plugin-makefile`.
-- **copilot-cli plugin**
-  - `session-start` hook: displays Makefile policy banner (`.SILENT:`, `.ONESHELL:`, no `@`, `qa` required).
-  - `preToolUse` hook (`pre-tool.sh`):
-    - Blocks direct tool invocations via `bash`: `pytest`, `ruff format`, `ruff check`, `go test`, `go build`, `golangci-lint`, `eslint`, `jest`, `bun test`, `black`.
-    - Validates Makefile content on `create` tool: enforces `.SILENT:`, `.ONESHELL:`, `.DEFAULT_GOAL`, no `@` in recipes, `qa` target.
-    - Validates Makefile edits on `edit` tool: blocks adding `@` to recipes and removing required directives.
-  - Skill definition (`SKILL.md`) with Makefile evaluation scale (1–8).
-  - `Makefile.template` with all required directives.
-  - `validate.sh` static Makefile validator.
-- **opencode plugin** (`opencode-makefile-enforcer`)
-  - Pure TypeScript rule engine (`core.ts`): `CommandRule`, `MakefileCheck`, `intercept()`, `validateMakefile()`.
-  - Plugin entry point (`index.ts`): enforces the same policy as the copilot-cli hook for `bash`, `create`, and `edit` tools.
-  - `/makefile` command documentation.
-- **Test suite**
-  - 34 bats unit tests for copilot-cli hooks.
-  - 42 bun unit tests for opencode core rule engine.
-  - E2E bats tests for both agents (real CLI invocations).
+- **copilot-cli plugin**: `session-start` hook displays Makefile policy banner (`.SILENT:`, `.ONESHELL:`, no `@`, `qa` required)
+- **copilot-cli plugin**: `preToolUse` hook (`pre-tool.sh`) blocks direct tool invocations via `bash` (`pytest`, `ruff format`, `ruff check`, `go test`, `go build`, `golangci-lint`, `eslint`, `jest`, `bun test`, `black`), validates Makefile content on `create` (enforces `.SILENT:`, `.ONESHELL:`, `.DEFAULT_GOAL`, no `@` in recipes, `qa` target), and validates Makefile edits on `edit` (blocks adding `@` to recipes and removing required directives)
+- **copilot-cli plugin**: skill definition (`SKILL.md`) with Makefile evaluation scale (1–8)
+- **copilot-cli plugin**: `Makefile.template` with all required directives
+- **copilot-cli plugin**: `validate.sh` static Makefile validator
+- **opencode plugin** (`opencode-makefile-enforcer`): pure TypeScript rule engine (`core.ts`) — `CommandRule`, `MakefileCheck`, `intercept()`, `validateMakefile()`
+- **opencode plugin** (`opencode-makefile-enforcer`): plugin entry point (`index.ts`) enforces the same policy as the copilot-cli hook for `bash`, `create`, and `edit` tools
+- **opencode plugin** (`opencode-makefile-enforcer`): `/makefile` command documentation
+- **Test suite**: 34 bats unit tests for copilot-cli hooks
+- **Test suite**: 42 bun unit tests for opencode core rule engine
+- **Test suite**: E2E bats tests for both agents (real CLI invocations)

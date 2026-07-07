@@ -1,3 +1,11 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
 ## [0.21.3]
 
 - chore(meta): verified against copilot-cli v1.0.48 / sdk v0.2.2
@@ -58,10 +66,7 @@
 ## [0.19.2]
 
 - fix(hooks/copilot): add version field and remove duplicate injection
-
-# Changelog
-
-- Fix dual-manifest schema: `.claude-plugin/plugin.json` is minimal (no agents/skills/hooks/_meta — Claude Code rejects them); root `plugin.json` is full Copilot CLI format (agents/skills/hooks/_meta); Copilot CLI reads root (priority 2), Claude Code reads .claude-plugin (only path it knows)
+- fix(schema): dual-manifest schema: `.claude-plugin/plugin.json` is minimal (no agents/skills/hooks/_meta — Claude Code rejects them); root `plugin.json` is full Copilot CLI format (agents/skills/hooks/_meta); Copilot CLI reads root (priority 2), Claude Code reads .claude-plugin (only path it knows)
 - Split hooks into `hooks/hooks.json` (PascalCase — Claude Code auto-discovers) and `hooks/hooks.copilot.json` (camelCase — Copilot CLI reads via root plugin.json); Claude Code rejects camelCase event names
 - Update `dual-tool-setup.md` plugin section: two-manifest pattern, auto-discovery table, two hook files pattern
 - Update `known-pitfalls.md`: correct manifest and hooks dual-tool pitfalls with split-file solutions

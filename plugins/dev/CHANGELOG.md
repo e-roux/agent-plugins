@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- refactor(skills): remove `skills/{dev,git}` — now canonical in [`e-roux/agent-skills`](https://github.com/e-roux/agent-skills); drop the `"skills"` field from `plugin.json`/`package.json`
+- refactor(mcp): remove embedded `mcp-git-ops` Go source — now maintained standalone at [`e-roux/mcp-git-ops`](https://github.com/e-roux/mcp-git-ops); `install`/`build` targets run `go install github.com/e-roux/mcp-git-ops@latest`
+
 ## [0.9.7] - 2026-05-26
 
 ### Fixed
