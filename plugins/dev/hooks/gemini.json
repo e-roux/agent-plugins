@@ -5,49 +5,46 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/session-start.sh\"",
+            "command": "bash \"${extensionPath}/hooks/scripts/gemini-session-start.sh\"",
             "timeout": 10000
           }
         ]
       }
     ],
-    "UserPromptSubmit": [
+    "BeforeAgent": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/branch-check-turn.sh\"",
+            "command": "bash \"${extensionPath}/hooks/scripts/gemini-before-agent.sh\"",
             "timeout": 5000
           }
         ]
       }
     ],
-    "PreToolUse": [
+    "BeforeTool": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/pre-tool.sh\"",
+            "command": "bash \"${extensionPath}/hooks/scripts/gemini-pre-tool.sh\"",
+            "name": "dev-guards",
             "timeout": 15000
           }
         ]
       }
     ],
-    "PostToolUse": [
+    "AfterTool": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/post-tool.sh\"",
+            "command": "bash \"${extensionPath}/hooks/scripts/gemini-post-tool.sh\"",
             "timeout": 10000
-          }
-        ]
-      },
-      {
-        "hooks": [
+          },
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/pipeline-chainguard.sh\"",
+            "command": "bash \"${extensionPath}/hooks/scripts/gemini-pipeline-chainguard.sh\"",
             "timeout": 5000
           }
         ]

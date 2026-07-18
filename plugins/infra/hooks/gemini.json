@@ -5,18 +5,18 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PLUGIN_ROOT/scripts/inject-memory.sh\"",
+            "command": "bash \"${extensionPath}/hooks/scripts/gemini-session-start.sh\"",
             "timeout": 10000
           }
         ]
       }
     ],
-    "SessionEnd": [
+    "BeforeTool": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PLUGIN_ROOT/scripts/version-check.sh\"",
+            "command": "bash \"${extensionPath}/hooks/scripts/gemini-pre-tool.sh\"",
             "timeout": 15000
           }
         ]

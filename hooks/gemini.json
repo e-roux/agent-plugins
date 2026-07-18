@@ -1,0 +1,104 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${extensionPath}/plugins/dev/hooks/scripts/gemini-session-start.sh\"",
+            "timeout": 10000
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${extensionPath}/plugins/infra/hooks/scripts/gemini-session-start.sh\"",
+            "timeout": 10000
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${extensionPath}/plugins/make/hooks/scripts/gemini-session-start.sh\"",
+            "timeout": 10000
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${extensionPath}/plugins/vulcan/scripts/inject-memory.sh\"",
+            "timeout": 10000
+          }
+        ]
+      }
+    ],
+    "BeforeAgent": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${extensionPath}/plugins/dev/hooks/scripts/gemini-before-agent.sh\"",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "BeforeTool": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${extensionPath}/plugins/dev/hooks/scripts/gemini-pre-tool.sh\"",
+            "name": "dev-guards",
+            "timeout": 15000
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${extensionPath}/plugins/infra/hooks/scripts/gemini-pre-tool.sh\"",
+            "timeout": 15000
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${extensionPath}/plugins/make/hooks/scripts/gemini-pre-tool.sh\"",
+            "name": "make-first-guards",
+            "timeout": 15000
+          }
+        ]
+      }
+    ],
+    "AfterTool": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${extensionPath}/plugins/dev/hooks/scripts/gemini-post-tool.sh\"",
+            "timeout": 10000
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${extensionPath}/plugins/dev/hooks/scripts/gemini-pipeline-chainguard.sh\"",
+            "timeout": 5000
+          }
+        ]
+      }
+    ]
+  }
+}

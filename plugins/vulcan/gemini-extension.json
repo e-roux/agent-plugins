@@ -1,0 +1,7 @@
+{
+  "name": "vulcan",
+  "description": "Vulcan development guidelines and workspace patterns",
+  "version": "1.0.0",
+  "contextFileName": "GEMINI.md",
+  "hooks": "hooks/gemini.json"
+}

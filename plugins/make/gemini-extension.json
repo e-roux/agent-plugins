@@ -1,0 +1,7 @@
+{
+  "name": "make",
+  "description": "Makefile-centric project workflow with .SILENT, .ONESHELL, mandatory qa target",
+  "version": "0.12.9",
+  "contextFileName": "GEMINI.md",
+  "hooks": "hooks/gemini.json"
+}

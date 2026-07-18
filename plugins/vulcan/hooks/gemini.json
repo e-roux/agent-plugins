@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${extensionPath}/scripts/inject-memory.sh\"",
+            "timeout": 10000
+          }
+        ]
+      }
+    ]
+  }
+}

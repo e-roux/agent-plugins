@@ -5,18 +5,19 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/session-start.sh\"",
+            "command": "bash \"${extensionPath}/hooks/scripts/gemini-session-start.sh\"",
             "timeout": 10000
           }
         ]
       }
     ],
-    "PreToolUse": [
+    "BeforeTool": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/pre-tool.sh\"",
+            "command": "bash \"${extensionPath}/hooks/scripts/gemini-pre-tool.sh\"",
+            "name": "make-first-guards",
             "timeout": 15000
           }
         ]
