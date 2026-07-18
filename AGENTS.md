@@ -149,3 +149,54 @@ Pi-enabled plugins: `make`, `dev`, `infra`.
 | `make verify-gemini` | All plugins have gemini-extension.json aligned with plugin.json |
 | `make fmt` | Validate all JSON files |
 | `make update.list` | List currently installed plugins (copilot + claude + gemini) |
+
+
+## Mac M (Apple Silicon) Compilation & GitHub Release Workflow
+
+Since we do not run a remote CI/CD pipeline, the release of pre-compiled binaries for Mac M (Apple Silicon - arm64, no Intel x64 support) must be performed manually and attached directly to the GitHub Release on every new version.
+
+### 1. Local Compilation & Installation (XDG_BIN_HOME Only)
+
+To compile the latest `mcp-git-ops` binary locally for Apple Silicon (Mac M) and install it into your local path, run:
+
+```bash
+CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 GOBIN=${XDG_BIN_HOME:-$HOME/.local/bin} go install ./plugins/dev/mcp-git-ops
+```
+
+This compiles the binary natively for `arm64` and places it directly into `${XDG_BIN_HOME:-$HOME/.local/bin}`. Ensure this directory is in your user shell's `$PATH` so Gemini CLI can execute the tool via the `"mcp-git-ops"` command.
+
+### 2. Packaging for GitHub Releases (Always on New Version)
+
+Whenever a new version of `e-roux-plugins-all` is released, you must create and upload a platform-specific tarball containing the root extension configuration and the compiled Mac M binary:
+
+1. **Clean compile the binary** locally for Mac M:
+   ```bash
+   CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o plugins/dev/mcp-git-ops/mcp-git-ops ./plugins/dev/mcp-git-ops
+   ```
+
+2. **Package the entire extension** root including the manifest, hooks, context instructions, and compiled binary into a rootless tarball:
+   ```bash
+   mkdir -p build
+   tar -czf build/darwin.arm64.e-roux-plugins-all.tar.gz \
+     gemini-extension.json \
+     hooks/ \
+     GEMINI.md \
+     plugins/dev/mcp-git-ops/mcp-git-ops \
+     plugins/dev/gemini-extension.json \
+     plugins/dev/hooks/ \
+     plugins/infra/gemini-extension.json \
+     plugins/infra/hooks/ \
+     plugins/make/gemini-extension.json \
+     plugins/make/hooks/ \
+     plugins/vulcan/gemini-extension.json \
+     plugins/vulcan/hooks/
+   ```
+
+3. **Delete the transient binary** from your local work tree to keep git clean:
+   ```bash
+   rm plugins/dev/mcp-git-ops/mcp-git-ops
+   ```
+
+4. **Attach the archive** `build/darwin.arm64.e-roux-plugins-all.tar.gz` to the GitHub Release (using `gh release create` or `mcp_git-ops_create_release`). 
+
+When users run `gemini extensions install https://github.com/e-roux/agent-plugins.git`, Gemini's installer automatically pulls the Mac M (`darwin.arm64`) tarball asset and installs it cleanly on their machine!
