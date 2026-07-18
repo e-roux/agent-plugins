@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+#
+# pre-push hook to prevent pushing tags if the corresponding GitHub Release does not exist.
+#
+# Standard input receives lines of the form:
+# <local ref> <local sha1> <remote ref> <remote sha1>
+
+set -euo pipefail
+
+if ! command -v gh >/dev/null 2>&1; then
+  exit 0
+fi
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  if [[ "$local_ref" =~ ^refs/tags/(.*)$ ]]; then
+    tag="${BASH_REMATCH[1]}"
+    
+    if ! gh release view "$tag" >/dev/null 2>&1; then
+      printf "\n\033[1;31m[REJECTED]\033[0m Pushing tag '%s' is blocked because the corresponding Release does not exist on GitHub.\n" "$tag"
+      printf "Please create the Release on GitHub first (which will automatically create the tag), or publish a draft release.\n\n"
+      exit 1
+    fi
+  fi
+done
+
+exit 0

@@ -27,7 +27,8 @@ sync:
 	command -v $(JQ) >/dev/null || { printf "FAIL: jq not found\n"; exit 1; }
 	command -v gh    >/dev/null || { printf "FAIL: gh not found\n"; exit 1; }
 	command -v git   >/dev/null || { printf "FAIL: git not found\n"; exit 1; }
-	printf "  OK tools present (jq, gh, git)\n"
+	mkdir -p .git/hooks && ln -sf ../../hooks/scripts/pre-push .git/hooks/pre-push
+	printf "  OK tools present and local pre-push Git hook installed\n"
 
 fmt:
 	fail=0

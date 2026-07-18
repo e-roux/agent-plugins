@@ -168,6 +168,9 @@ _guard_one_call() {
       if ! grep -qE "^## \[${VERSION}\]|^## \[${VERSION#v}\]" "$CHANGELOG" 2>/dev/null; then
         deny "Changelog guard: ${VERSION} not found as a heading in CHANGELOG.md — update CHANGELOG.md with a [${VERSION}] section via a release PR before tagging."
       fi
+      if ! gh release view "$VERSION" >/dev/null 2>&1; then
+        deny "Tag guard: The GitHub Release for tag '$VERSION' does not exist yet. Create the Release on GitHub first (which auto-creates the tag) before creating the local tag."
+      fi
     fi
   fi
 
