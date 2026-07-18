@@ -16,7 +16,6 @@ Install individual plugins by pointing to their directory:
 
 ```bash
 gemini extensions install https://github.com/e-roux/agent-plugins/plugins/dev
-gemini extensions install https://github.com/e-roux/agent-plugins/plugins/make
 gemini extensions install https://github.com/e-roux/agent-plugins/plugins/infra
 gemini extensions install https://github.com/e-roux/agent-plugins/plugins/vulcan
 ```
@@ -31,8 +30,7 @@ pi install git:github.com/e-roux/agent-plugins
 
 | Plugin | Copilot CLI | Claude Code | Gemini CLI | Pi | Description |
 |--------|:-----------:|:-----------:|:----------:|:--:|-------------|
-| `make` | ✅ | ✅ | ✅ | ✅ | Make-first workflow enforcement |
-| `dev` | ✅ | ✅ | ✅ | ✅ | Development guards (secrets, comments, branches, migrations, CI pipeline) |
+| `dev` | ✅ | ✅ | ✅ | ✅ | General-purpose command center (Makefile targets, git, python, shell, and testing) |
 | `infra` | ✅ | ✅ | ✅ | ✅ | Infrastructure & deployment guards (Ansible, Molecule) |
 | `vulcan` | ✅ | ✅ | ✅ | — | Copilot CLI plugin development expert |
 
@@ -40,23 +38,28 @@ pi install git:github.com/e-roux/agent-plugins
 
 Hooks, extensions, and manifests are agent-specific:
 - **Copilot CLI**: `plugin.json` manifest + `hooks/*.copilot.json` + `.mjs` extensions
-- **Claude Code**: `.claude-plugin/plugin.json` manifest + `hooks/hooks.copilot.json` (Claude Code event names: `preToolUse`/`postToolUse`/`userPromptSubmit`)
-- **Gemini CLI**: `gemini-extension.json` manifest + `GEMINI.md` context + `hooks/hooks.json` (Gemini event names: `BeforeTool`/`AfterTool`/`BeforeAgent`)
+- **Claude Code**: `.claude-plugin/plugin.json` manifest with inline hook configurations
+- **Gemini CLI**: `gemini-extension.json` manifest + `GEMINI.md` context + isolated `hooks/gemini.json` configuration
 - **Pi**: `package.json` manifest + TypeScript extensions in `extensions/pi/`
 
 ## Skills
 
-Skill content (`SKILL.md` + resources) for these plugins lives in a separate,
-agent-agnostic repository — [`e-roux/agent-skills`](https://github.com/e-roux/agent-skills) —
-following the [Agent Skills](https://agentskills.io) open standard. Install it independently
-of the plugins here:
+Skills are fully self-contained and bundled directly inside each respective plugin package to enforce maximum isolation and offline capability:
 
-```bash
-skills add e-roux/agent-skills
-```
+- **`dev` Plugin Skills** (`plugins/dev/skills/`):
+  - `git`: Enforces branch-first development, quality gating, and commit message scopes.
+  - `makefile`: Enforces `.SILENT`, `.ONESHELL`, explicit help banners, and make-only target execution.
+  - `python`: Python tooling conventions (using `uv`, `ruff`, and `mypy`).
+  - `shell`: Shell script guidelines and `shellcheck` robustness.
+  - `testing`: Local unit testing and test-assessment paradigms.
 
-`vulcan` is the one exception: its skills document how to build plugins in *this* repo, so
-they stay bundled locally under `plugins/vulcan/skills/`.
+- **`infra` Plugin Skills** (`plugins/infra/skills/`):
+  - `ansible`: Best practices for writing Ansible roles, Molecule test pipelines, and inventory structures.
+
+- **`vulcan` Plugin Skills** (`plugins/vulcan/skills/`):
+  - Bundles skills for Copilot CLI TypeScript SDK development and shell extension customization.
+
+All other general-purpose or platform-agnostic development skills live in the [`e-roux/agent-skills`](https://github.com/e-roux/agent-skills) repository.
 
 ## Companion tools
 

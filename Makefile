@@ -4,7 +4,7 @@ SHELL := /bin/bash
 .DEFAULT_GOAL := help
 
 PLUGINS    := dev vulcan infra
-PI_PLUGINS := make dev infra
+PI_PLUGINS := dev infra
 JQ         := jq
 
 PLUGIN_DIRS  := $(patsubst plugins/%/Makefile,%,$(wildcard plugins/*/Makefile))

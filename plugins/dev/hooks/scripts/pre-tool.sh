@@ -9,15 +9,20 @@ CWD=$(printf '%s' "$INPUT" | jq -r '.cwd // "."' 2>/dev/null) || CWD="."
 
 deny() {
   local reason="$1"
-  mkdir -p "$LOG_DIR" 2>/dev/null     && echo "denied at $(date -u +%Y-%m-%dT%H:%M:%SZ): $reason" >> "$LOG_DIR/pre-tool-denied.log" 2>/dev/null     || true
+  mkdir -p "$LOG_DIR" 2>/dev/null \
+    && echo "denied at $(date -u +%Y-%m-%dT%H:%M:%SZ): $reason" >> "$LOG_DIR/pre-tool-denied.log" 2>/dev/null \
+    || true
   jq -cn --arg reason "$reason" '{"permissionDecision":"deny","permissionDecisionReason":$reason}'
   exit 0
 }
 
 _redirect() {
   local original="$1" replacement="$2" target="$3"
-  mkdir -p "$LOG_DIR" 2>/dev/null     && echo "redirected at $(date -u +%Y-%m-%dT%H:%M:%SZ): $original -> $replacement" >> "$LOG_DIR/pre-tool-denied.log" 2>/dev/null     || true
-  jq -n --arg cmd "$replacement" --arg ctx "Redirected \`$original\` -> \`$replacement\`. Always use make targets (\`make $target\`) - never call tools directly."     '{"modifiedArgs":{"command":$cmd},"additionalContext":$ctx}'
+  mkdir -p "$LOG_DIR" 2>/dev/null \
+    && echo "redirected at $(date -u +%Y-%m-%dT%H:%M:%SZ): $original -> $replacement" >> "$LOG_DIR/pre-tool-denied.log" 2>/dev/null \
+    || true
+  jq -n --arg cmd "$replacement" --arg ctx "Redirected \`$original\` -> \`$replacement\`. Always use make targets (\`make $target\`) - never call tools directly." \
+    '{"modifiedArgs":{"command":$cmd},"additionalContext":$ctx}'
   exit 0
 }
 
@@ -83,17 +88,15 @@ _validate_makefile() {
     deny "Makefile missing required directive: '.DEFAULT_GOAL := help' - the default target must be 'help'."
   fi
 
-  if printf '%s' "$content" | grep -qP '^	@'; then
+  if printf '%s' "$content" | grep -qP '^\t@'; then
     deny "Makefile has '@' prefix in recipe lines - this is redundant with '.SILENT:' and FORBIDDEN. Remove all '@' prefixes from recipes."
   fi
 
-  if printf '%s' "$content" | grep -qP '^[a-zA-Z_.][a-zA-Z_.0-9]*[^#
-]*##'; then
+  if printf '%s' "$content" | grep -qP '^[a-zA-Z_.][a-zA-Z_.0-9]*[^#\n]*##'; then
     deny "Makefile has '##' inline annotations on target lines - Approach B (grep-parsed help) is FORBIDDEN. Use explicit printf entries in the help target instead (Approach A)."
   fi
 
-  if ! printf '%s' "$content" | grep -qP '(?:^\.PHONY:[^
-]*qa|^qa\s*:)'; then
+  if ! printf '%s' "$content" | grep -qP '(?:^\.PHONY:[^\n]*\bqa\b|^qa\s*:)'; then
     deny "Makefile missing required 'qa' target - add a 'qa:' recipe that runs 'check test' as the quality gate (e.g., 'qa: check test')."
   fi
 }
@@ -144,13 +147,13 @@ _guard_one_call() {
     if [ -n "$FILE" ]; then
       local base_name
       base_name="$(basename "$FILE")"
-      if _is_makefile "$base_name"; then
+      if _is_makefile "$base_name" && ! printf '%s' "$FILE" | grep -qE '(/tmp/|/private/tmp/|/var/folders/)'; then
         if [ "$TOOL" = "create" ]; then
           _validate_makefile "$CONTENT"
         else
           local old_str
           old_str=$(printf '%s' "$ARGS" | jq -r '.old_str // ""' 2>/dev/null)
-          if printf '%s' "$CONTENT" | grep -qP '^	@'; then
+          if printf '%s' "$CONTENT" | grep -qP '^\t@'; then
             deny "Adding '@' prefix to recipe lines is FORBIDDEN - '.SILENT:' already suppresses echoing. Remove the '@' prefix."
           fi
           if printf '%s' "$old_str" | grep -q '^\.SILENT' && ! printf '%s' "$CONTENT" | grep -q '^\.SILENT'; then
@@ -169,7 +172,7 @@ _guard_one_call() {
     if [ -n "$FILE" ] && ! _is_test_or_config "$FILE"; then
       local secret_keys
       secret_keys='(JWT_SECRET|API_KEY|CLIENT_SECRET|OIDC_CLIENT_SECRET|DB_PASS(WORD)?|MONGODB_URI|RABBITMQ_URL|PRIVATE_KEY|ACCESS_TOKEN_SECRET|SECRET_KEY|PASSWORD|PASSWD)'
-      if printf '%s' "$CONTENT" | grep -qE "${secret_keys}[[:space:]]*:?=[[:space:]]*["'][^"']{8,}["']"; then
+      if printf '%s' "$CONTENT" | grep -qE "${secret_keys}[[:space:]]*:?=[[:space:]]*[\"'][^\"']{8,}[\"']"; then
         deny "Secrets guard: potential hardcoded credential detected in $(basename "$FILE"). Use os.Getenv() / process.env / env vars instead."
       fi
     fi
@@ -193,7 +196,7 @@ _guard_one_call() {
   fi
 
   if [ "$TOOL" = "edit" ] || [ "$TOOL" = "create" ]; then
-    if [ -n "$FILE" ]; then
+    if [ -n "$FILE" ] && ! _is_test_or_config "$FILE"; then
       local file_dir
       file_dir=$(dirname "$FILE")
       [ -d "$file_dir" ] || file_dir="$CWD"
@@ -214,16 +217,16 @@ _guard_one_call() {
   if matches_cmd "pytest"; then
     _redirect "pytest" "make test" "test"
   fi
-  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)ruff[[:space:]]+format([[:space:]]|$)'; then
+  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)ruff[[:space:]]+format([[:space:]]|\$)'; then
     _redirect "ruff format" "make fmt" "fmt"
   fi
-  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)ruff[[:space:]]+check([[:space:]]|$)'; then
+  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)ruff[[:space:]]+check([[:space:]]|\$)'; then
     _redirect "ruff check" "make lint" "lint"
   fi
-  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)go[[:space:]]+test([[:space:]]|$)'; then
+  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)go[[:space:]]+test([[:space:]]|\$)'; then
     _redirect "go test" "make test" "test"
   fi
-  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)go[[:space:]]+build([[:space:]]|$)'; then
+  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)go[[:space:]]+build([[:space:]]|\$)'; then
     _redirect "go build" "make build" "build"
   fi
   if matches_cmd "golangci-lint"; then
@@ -232,13 +235,13 @@ _guard_one_call() {
   if matches_cmd "eslint"; then
     _redirect "eslint" "make lint" "lint"
   fi
-  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)biome[[:space:]]+format([[:space:]]|$)'; then
+  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)biome[[:space:]]+format([[:space:]]|\$)'; then
     _redirect "biome format" "make fmt" "fmt"
   fi
-  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)biome[[:space:]]+lint([[:space:]]|$)'; then
+  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)biome[[:space:]]+lint([[:space:]]|\$)'; then
     _redirect "biome lint" "make lint" "lint"
   fi
-  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)biome[[:space:]]+check([[:space:]]|$)'; then
+  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)biome[[:space:]]+check([[:space:]]|\$)'; then
     _redirect "biome check" "make check" "check"
   fi
   if matches_cmd "jest"; then
@@ -247,74 +250,74 @@ _guard_one_call() {
   if matches_cmd "vitest"; then
     _redirect "vitest" "make test" "test"
   fi
-  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)bun[[:space:]]+test([[:space:]]|$)'; then
+  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)bun[[:space:]]+test([[:space:]]|\$)'; then
     _redirect "bun test" "make test" "test"
   fi
   if matches_cmd "black"; then
     _redirect "black" "make fmt" "fmt"
   fi
   local forbidden_py
-  forbidden_py='(^|[;&|][[:space:]]*)(python3?|pip3?|virtualenv)([[:space:]]|$)'
+  forbidden_py='(^|[;&|][[:space:]]*)(python3?|pip3?|virtualenv)([[:space:]]|\$)'
   if printf '%s' "$CMD" | grep -qE "$forbidden_py"; then
     deny "Direct python/pip/virtualenv is forbidden. Use uv: uv run <script>, uv add <pkg>, uvx <tool>"
   fi
-  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)mypy([[:space:]]|$)'; then
+  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)mypy([[:space:]]|\$)'; then
     _redirect "mypy" "make typecheck" "typecheck"
   fi
-  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)tsc([[:space:]]|$)'; then
+  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)tsc([[:space:]]|\$)'; then
     _redirect "tsc" "make typecheck" "typecheck"
   fi
-  if matches_cmd "svelte-check" || printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)npx[[:space:]]+svelte-check([[:space:]]|$)'; then
+  if matches_cmd "svelte-check" || printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)npx[[:space:]]+svelte-check([[:space:]]|\$)'; then
     _redirect "svelte-check" "make typecheck" "typecheck"
   fi
-  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)npm[[:space:]]+run[[:space:]]+test([[:space:]]|$)'; then
+  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)npm[[:space:]]+run[[:space:]]+test([[:space:]]|\$)'; then
     _redirect "npm run test" "make test" "test"
   fi
-  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)npm[[:space:]]+test([[:space:]]|$)'; then
+  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)npm[[:space:]]+test([[:space:]]|\$)'; then
     _redirect "npm test" "make test" "test"
   fi
-  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)npm[[:space:]]+run[[:space:]]+check([[:space:]]|$)'; then
+  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)npm[[:space:]]+run[[:space:]]+check([[:space:]]|\$)'; then
     _redirect "npm run check" "make check" "check"
   fi
-  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)npm[[:space:]]+run[[:space:]]+lint([[:space:]]|$)'; then
+  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)npm[[:space:]]+run[[:space:]]+lint([[:space:]]|\$)'; then
     _redirect "npm run lint" "make lint" "lint"
   fi
-  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)npm[[:space:]]+run[[:space:]]+build([[:space:]]|$)'; then
+  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)npm[[:space:]]+run[[:space:]]+build([[:space:]]|\$)'; then
     _redirect "npm run build" "make build" "build"
   fi
-  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)npm[[:space:]]+run[[:space:]]+dev([[:space:]]|$)'; then
+  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)npm[[:space:]]+run[[:space:]]+dev([[:space:]]|\$)'; then
     _redirect "npm run dev" "make dev" "dev"
   fi
-  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)npm[[:space:]]+run[[:space:]]+format([[:space:]:]|$)'; then
+  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)npm[[:space:]]+run[[:space:]]+format([[:space:]:]|\$)'; then
     _redirect "npm run format" "make fmt" "fmt"
   fi
-  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)npx[[:space:]]+eslint([[:space:]]|$)'; then
+  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)npx[[:space:]]+eslint([[:space:]]|\$)'; then
     _redirect "npx eslint" "make lint" "lint"
   fi
-  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)npx[[:space:]]+jest([[:space:]]|$)'; then
+  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)npx[[:space:]]+jest([[:space:]]|\$)'; then
     _redirect "npx jest" "make test" "test"
   fi
-  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)npx[[:space:]]+vitest([[:space:]]|$)'; then
+  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)npx[[:space:]]+vitest([[:space:]]|\$)'; then
     _redirect "npx vitest" "make test" "test"
   fi
-  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)npx[[:space:]]+tsc([[:space:]]|$)'; then
+  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)npx[[:space:]]+tsc([[:space:]]|\$)'; then
     _redirect "npx tsc" "make typecheck" "typecheck"
   fi
-  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)npx[[:space:]]+biome([[:space:]]|$)'; then
+  if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)npx[[:space:]]+biome([[:space:]]|\$)'; then
     _redirect "npx biome" "make check" "check"
   fi
 
-  if printf '%s' "$CMD" | grep -qE 'git\s+push'; then
+  if printf '%s' "$CMD" | grep -qE 'git\s+push\b'; then
     if _mcp_git_ops_available; then
-      deny "Use the mcp__git-ops__push tool instead of bash git push. It enforces branch protection and triggers CI monitoring. If MCP failed previously, retry in a moment — the circuit breaker will allow bash through."
+      deny "Use the mcp__git-ops__push tool instead of bash git push. It enforces branch protection and triggers CI monitoring. If MCP failed previously, retry in a moment - the circuit breaker will allow bash through."
     fi
   fi
-  if printf '%s' "$CMD" | grep -qE '(gh\s+pr\s+create|glab\s+mr\s+create|az\s+repos\s+pr\s+create)'; then
+  if printf '%s' "$CMD" | grep -qE '(gh\s+pr\s+create|glab\s+mr\s+create|az\s+repos\s+pr\s+create)\b'; then
     if _mcp_git_ops_available; then
       deny "Use the mcp__git-ops__create_pr tool instead. It auto-detects the platform and enforces branch protection."
     fi
   fi
-  if printf '%s' "$CMD" | grep -qE '(gh\s+pr\s+merge|glab\s+mr\s+merge|az\s+repos\s+pr\s+update.*--status\s+completed)'; then
+  if printf '%s' "$CMD" | grep -qE '(gh\s+pr\s+merge|glab\s+mr\s+merge|az\s+repos\s+pr\s+update.*--status\s+completed)\b'; then
     if _mcp_git_ops_available; then
       deny "Use the mcp__git-ops__merge_pr tool instead. It auto-detects the platform."
     fi
@@ -334,22 +337,26 @@ _guard_one_call() {
     fi
   fi
 
-  if printf '%s' "$CMD" | grep -qE 'git[[:space:]]+tag'; then
-    local version
-    version=$(printf '%s' "$CMD" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+([-.][a-zA-Z0-9]+)?' | head -1)
-    if [ -n "$version" ]; then
-      local changelog
-      changelog="$CWD/CHANGELOG.md"
+  if printf '%s' "$CMD" | grep -qE 'git[[:space:]]+tag\b'; then
+    local version raw_version plugin
+    raw_version=$(printf '%s' "$CMD" | grep -oE '([a-zA-Z0-9_-]+/)?v[0-9]+\.[0-9]+\.[0-9]+([-.][a-zA-Z0-9]+)?' | head -1)
+    if [ -n "$raw_version" ]; then
+      version=$(printf '%s' "$raw_version" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+([-.][a-zA-Z0-9]+)?' | head -1)
+      plugin=$(printf '%s' "$raw_version" | grep -oE '^[^/]+' | grep -v 'v[0-9]' || true)
+      local changelog="$CWD/CHANGELOG.md"
+      if [ -n "$plugin" ] && [ -f "$CWD/plugins/$plugin/CHANGELOG.md" ]; then
+        changelog="$CWD/plugins/$plugin/CHANGELOG.md"
+      fi
       if [ ! -f "$changelog" ]; then
-        deny "Changelog guard: CHANGELOG.md not found in $CWD - create it with an [Unreleased] section via a release PR before tagging. See the git-release skill resource."
+        deny "Changelog guard: CHANGELOG.md not found for plugin '$plugin' - create it with an [Unreleased] section via a release PR before tagging."
       fi
       if ! grep -qE "^## \[${version}\]|^## \[${version#v}\]" "$changelog" 2>/dev/null; then
-        deny "Changelog guard: ${version} not found as a heading in CHANGELOG.md - update CHANGELOG.md with a [${version}] section via a release PR before tagging."
+        deny "Changelog guard: ${version} not found as a heading in changelog: $changelog - update it with a [${version}] section via a release PR before tagging."
       fi
     fi
   fi
 
-  if printf '%s' "$CMD" | grep -qE 'git[[:space:]]+commit'; then
+  if printf '%s' "$CMD" | grep -qE 'git[[:space:]]+commit\b'; then
     if [ -f "$CWD/Makefile" ]; then
       local qa_out qa_status
       qa_out=$(make -C "$CWD" qa 2>&1)
@@ -357,12 +364,13 @@ _guard_one_call() {
       if [ $qa_status -ne 0 ]; then
         deny "QA gate: make qa failed - fix ALL errors before committing. Zero failures required, regardless of error origin.\n\n${qa_out}"
       fi
-      jq -cn --arg ctx "QA gate passed. Output:\n\`\`\`\n${qa_out}\n\`\`\`\n\nWarnings MUST be fixed when feasible - do not ignore them."         '{"additionalContext":$ctx}'
+      jq -cn --arg ctx "QA gate passed. Output:\n\`\`\`\n${qa_out}\n\`\`\`\n\nWarnings MUST be fixed when feasible - do not ignore them." \
+        '{"additionalContext":$ctx}'
       exit 0
     fi
   fi
 
-  if printf '%s' "$CMD" | grep -qE 'git[[:space:]]+(push|merge)[[:space:]][^&|;]*main'; then
+  if printf '%s' "$CMD" | grep -qE 'git[[:space:]]+(push|merge)[[:space:]][^&|;]*\bmain\b'; then
     deny "Branch guard: never push/merge to main directly. Use a PR: gh pr create --base <default-branch>."
   fi
   if printf '%s' "$CMD" | grep -qE 'git[[:space:]]+commit[[:space:]]+.*--no-verify'; then
@@ -376,8 +384,8 @@ if [ -n "$TOOL_CALLS" ] && [ "$TOOL_CALLS" != "null" ] && [ "$TOOL_CALLS" != "[]
   CALL_COUNT=$(printf '%s' "$TOOL_CALLS" | jq 'length' 2>/dev/null) || CALL_COUNT=0
   i=0
   while [ "$i" -lt "$CALL_COUNT" ]; do
-    TOOL=$(printf '%s' "$TOOL_CALLS" | jq -r ".[$i].name // """ 2>/dev/null) || TOOL=""
-    ARGS=$(printf '%s' "$TOOL_CALLS" | jq -r ".[$i].args // "{}"" 2>/dev/null) || ARGS="{}"
+    TOOL=$(printf '%s' "$TOOL_CALLS" | jq -r --argjson idx "$i" '.[$idx].name // ""' 2>/dev/null) || TOOL=""
+    ARGS=$(printf '%s' "$TOOL_CALLS" | jq -r --argjson idx "$i" '.[$idx].args // "{}"' 2>/dev/null) || ARGS="{}"
     _guard_one_call "$TOOL" "$ARGS"
     i=$((i + 1))
   done

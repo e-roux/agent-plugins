@@ -1,0 +1,41 @@
+[project]
+name = "project-name"
+version = "0.1.0"
+description = "Project description"
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+dependencies = []
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.0",
+    "ruff>=0.4",
+    "zuban>=0.1",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "PT", "RET", "SIM", "PLC", "PLE", "PLW", "RUF", "ANN", "TC"]
+
+[tool.pytest.ini_options]
+testpaths = ["test"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-ra -q --doctest-modules"
+markers = [
+    "e2e: marks tests as end-to-end (assigned automatically if in test/e2e/)",
+    "benchmark: marks tests as benchmarks (assigned automatically if in test/benchmark/)",
+    "integration: marks tests as integration (assigned automatically if in test/integration/)",
+]
+
+# Zuban uses the mypy table for configuration
+[tool.mypy]
+strict = true
+ignore_missing_imports = true
+check_untyped_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+show_error_codes = true
