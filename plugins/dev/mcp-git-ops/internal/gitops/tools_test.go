@@ -1,59 +1,61 @@
-package main
+package gitops
 
 import (
 	"context"
 	"fmt"
 	"testing"
-)
 
-// --- mock platform ---
+	"github.com/e-roux/mcp-git-ops/internal/platform"
+)
 
 type mockPlatform struct {
 	name          string
-	pushResult    *CommandResult
+	pushResult    *platform.CommandResult
 	pushErr       error
-	createResult  *CommandResult
+	createResult  *platform.CommandResult
 	createErr     error
-	mergeResult   *CommandResult
+	mergeResult   *platform.CommandResult
 	mergeErr      error
-	statusResult  *PRInfo
+	statusResult  *platform.PRInfo
 	statusErr     error
-	releaseResult *ReleaseInfo
+	releaseResult *platform.ReleaseInfo
 	releaseErr    error
+	listResult    []platform.ReleaseInfo
+	listErr       error
 }
 
 func (m *mockPlatform) PlatformName() string { return m.name }
 
-func (m *mockPlatform) Push(_ context.Context, _ PushOptions) (*CommandResult, error) {
+func (m *mockPlatform) Push(_ context.Context, _ platform.PushOptions) (*platform.CommandResult, error) {
 	return m.pushResult, m.pushErr
 }
 
-func (m *mockPlatform) CreatePR(_ context.Context, _ PRCreateOptions) (*CommandResult, error) {
+func (m *mockPlatform) CreatePR(_ context.Context, _ platform.PRCreateOptions) (*platform.CommandResult, error) {
 	return m.createResult, m.createErr
 }
 
-func (m *mockPlatform) MergePR(_ context.Context, _ PRMergeOptions) (*CommandResult, error) {
+func (m *mockPlatform) MergePR(_ context.Context, _ platform.PRMergeOptions) (*platform.CommandResult, error) {
 	return m.mergeResult, m.mergeErr
 }
 
-func (m *mockPlatform) PRStatus(_ context.Context, _ PRStatusOptions) (*PRInfo, error) {
+func (m *mockPlatform) PRStatus(_ context.Context, _ platform.PRStatusOptions) (*platform.PRInfo, error) {
 	return m.statusResult, m.statusErr
 }
 
-func (m *mockPlatform) CreateRelease(_ context.Context, _ ReleaseCreateOptions) (*ReleaseInfo, error) {
+func (m *mockPlatform) CreateRelease(_ context.Context, _ platform.ReleaseCreateOptions) (*platform.ReleaseInfo, error) {
 	return m.releaseResult, m.releaseErr
 }
 
-// --- interface compliance ---
-
-func TestAllPlatformsSatisfyInterface(t *testing.T) {
-	var _ Platform = &GitHubPlatform{}
-	var _ Platform = &GitLabPlatform{}
-	var _ Platform = &AzureDevOpsPlatform{}
-	var _ Platform = &mockPlatform{}
+func (m *mockPlatform) ListReleases(_ context.Context, _ platform.ListReleasesOptions) ([]platform.ReleaseInfo, error) {
+	return m.listResult, m.listErr
 }
 
-// --- branch protection ---
+func TestAllPlatformsSatisfyInterface(t *testing.T) {
+	var _ platform.Platform = &platform.GitHubPlatform{}
+	var _ platform.Platform = &platform.GitLabPlatform{}
+	var _ platform.Platform = &platform.AzureDevOpsPlatform{}
+	var _ platform.Platform = &mockPlatform{}
+}
 
 func TestIsProtectedBranch(t *testing.T) {
 	cases := []struct {
@@ -70,15 +72,13 @@ func TestIsProtectedBranch(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.branch, func(t *testing.T) {
-			got := isProtectedBranch(tc.branch)
+			got := platform.IsProtectedBranch(tc.branch)
 			if got != tc.expected {
-				t.Errorf("isProtectedBranch(%q) = %v, want %v", tc.branch, got, tc.expected)
+				t.Errorf("IsProtectedBranch(%q) = %v, want %v", tc.branch, got, tc.expected)
 			}
 		})
 	}
 }
-
-// --- utility functions ---
 
 func TestExtractURL(t *testing.T) {
 	cases := []struct {
@@ -105,31 +105,29 @@ func TestExtractURL(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := extractURL(tc.input)
+			got := platform.ExtractURL(tc.input)
 			if got != tc.expected {
-				t.Errorf("extractURL() = %q, want %q", got, tc.expected)
+				t.Errorf("ExtractURL() = %q, want %q", got, tc.expected)
 			}
 		})
 	}
 }
 
 func TestBoolFlag(t *testing.T) {
-	if boolFlag(true) != "true" {
-		t.Error("boolFlag(true) should return \"true\"")
+	if platform.BoolFlag(true) != "true" {
+		t.Error("BoolFlag(true) should return \"true\"")
 	}
-	if boolFlag(false) != "false" {
-		t.Error("boolFlag(false) should return \"false\"")
+	if platform.BoolFlag(false) != "false" {
+		t.Error("BoolFlag(false) should return \"false\"")
 	}
 }
-
-// --- gitlab MR output parsing ---
 
 func TestParseGitLabMROutput(t *testing.T) {
 	output := `title: Fix login redirect
 state: merged
 url: https://gitlab.com/group/project/-/merge_requests/42
 `
-	info := parseGitLabMROutput(output)
+	info := platform.ParseGitLabMROutput(output)
 
 	if info.Title != "Fix login redirect" {
 		t.Errorf("Title = %q, want %q", info.Title, "Fix login redirect")
@@ -142,8 +140,6 @@ url: https://gitlab.com/group/project/-/merge_requests/42
 	}
 }
 
-// --- tool registration ---
-
 func TestToolDefinitions(t *testing.T) {
 	tools := []struct {
 		name string
@@ -155,6 +151,7 @@ func TestToolDefinitions(t *testing.T) {
 		{"pr_status", func() interface{ GetName() string } { t := prStatusTool(); return &t }},
 		{"release_status", func() interface{ GetName() string } { t := releaseStatusTool(); return &t }},
 		{"create_release", func() interface{ GetName() string } { t := createReleaseTool(); return &t }},
+		{"list_releases", func() interface{ GetName() string } { t := listReleasesTool(); return &t }},
 	}
 
 	for _, tc := range tools {
@@ -167,13 +164,9 @@ func TestToolDefinitions(t *testing.T) {
 	}
 }
 
-// --- mock-based handler tests ---
-
 func TestHandlePushProtectedBranch(t *testing.T) {
-	// handlePush reads branch from args or currentBranch()
-	// We test the protection logic directly since currentBranch() depends on git
 	for _, branch := range []string{"main", "master"} {
-		if !isProtectedBranch(branch) {
+		if !platform.IsProtectedBranch(branch) {
 			t.Errorf("expected %q to be protected", branch)
 		}
 	}
@@ -182,10 +175,10 @@ func TestHandlePushProtectedBranch(t *testing.T) {
 func TestMockPlatformPush(t *testing.T) {
 	mock := &mockPlatform{
 		name:       "test",
-		pushResult: &CommandResult{Success: true, Output: "pushed"},
+		pushResult: &platform.CommandResult{Success: true, Output: "pushed"},
 	}
 
-	result, err := mock.Push(context.Background(), PushOptions{
+	result, err := mock.Push(context.Background(), platform.PushOptions{
 		Remote: "origin",
 		Branch: "feat/test",
 	})
@@ -200,10 +193,10 @@ func TestMockPlatformPush(t *testing.T) {
 func TestMockPlatformCreatePR(t *testing.T) {
 	mock := &mockPlatform{
 		name:         "test",
-		createResult: &CommandResult{Success: true, URL: "https://example.com/pr/1"},
+		createResult: &platform.CommandResult{Success: true, URL: "https://example.com/pr/1"},
 	}
 
-	result, err := mock.CreatePR(context.Background(), PRCreateOptions{
+	result, err := mock.CreatePR(context.Background(), platform.PRCreateOptions{
 		Title: "test PR",
 		Body:  "test body",
 	})
@@ -218,10 +211,10 @@ func TestMockPlatformCreatePR(t *testing.T) {
 func TestMockPlatformMergePR(t *testing.T) {
 	mock := &mockPlatform{
 		name:        "test",
-		mergeResult: &CommandResult{Success: true, Output: "merged"},
+		mergeResult: &platform.CommandResult{Success: true, Output: "merged"},
 	}
 
-	result, err := mock.MergePR(context.Background(), PRMergeOptions{
+	result, err := mock.MergePR(context.Background(), platform.PRMergeOptions{
 		Identifier: "42",
 	})
 	if err != nil {
@@ -235,7 +228,7 @@ func TestMockPlatformMergePR(t *testing.T) {
 func TestMockPlatformPRStatus(t *testing.T) {
 	mock := &mockPlatform{
 		name: "test",
-		statusResult: &PRInfo{
+		statusResult: &platform.PRInfo{
 			Identifier: "42",
 			Title:      "test PR",
 			State:      "open",
@@ -245,7 +238,7 @@ func TestMockPlatformPRStatus(t *testing.T) {
 		},
 	}
 
-	info, err := mock.PRStatus(context.Background(), PRStatusOptions{Identifier: "42"})
+	info, err := mock.PRStatus(context.Background(), platform.PRStatusOptions{Identifier: "42"})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -260,11 +253,11 @@ func TestMockPlatformPRStatus(t *testing.T) {
 func TestMockPlatformFailure(t *testing.T) {
 	mock := &mockPlatform{
 		name:       "test",
-		pushResult: &CommandResult{Success: false, Output: "rejected"},
+		pushResult: &platform.CommandResult{Success: false, Output: "rejected"},
 		pushErr:    fmt.Errorf("push rejected"),
 	}
 
-	result, err := mock.Push(context.Background(), PushOptions{
+	result, err := mock.Push(context.Background(), platform.PushOptions{
 		Remote: "origin",
 		Branch: "feat/test",
 	})
@@ -279,10 +272,10 @@ func TestMockPlatformFailure(t *testing.T) {
 func TestMockPlatformCreateRelease(t *testing.T) {
 	mock := &mockPlatform{
 		name:          "test",
-		releaseResult: &ReleaseInfo{Tag: "v1.0.0", Title: "v1.0.0", URL: "https://example.com/releases/v1.0.0"},
+		releaseResult: &platform.ReleaseInfo{Tag: "v1.0.0", Title: "v1.0.0", URL: "https://example.com/releases/v1.0.0"},
 	}
 
-	info, err := mock.CreateRelease(context.Background(), ReleaseCreateOptions{
+	info, err := mock.CreateRelease(context.Background(), platform.ReleaseCreateOptions{
 		Tag:   "v1.0.0",
 		Title: "v1.0.0",
 		Notes: "## Fixed\n- **scope**: description",
@@ -310,10 +303,30 @@ func TestInferNextVersion(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.latestTag+"/"+tc.sections[0], func(t *testing.T) {
-			got := inferNextVersion(tc.latestTag, tc.sections)
+			got := InferNextVersion(tc.latestTag, tc.sections)
 			if got != tc.wantBump {
-				t.Errorf("inferNextVersion(%q, %v) = %q, want %q", tc.latestTag, tc.sections, got, tc.wantBump)
+				t.Errorf("InferNextVersion(%q, %v) = %q, want %q", tc.latestTag, tc.sections, got, tc.wantBump)
 			}
 		})
+	}
+}
+
+func TestMockPlatformListReleases(t *testing.T) {
+	mock := &mockPlatform{
+		name: "test",
+		listResult: []platform.ReleaseInfo{
+			{Tag: "v1.0.0", Title: "Release 1.0.0", IsDraft: false, IsPrerelease: false, PublishedAt: "2026-07-10T12:00:00Z", URL: "https://example.com/tag/v1.0.0"},
+		},
+	}
+
+	result, err := mock.ListReleases(context.Background(), platform.ListReleasesOptions{Limit: 5})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(result) != 1 {
+		t.Errorf("len(result) = %d, want 1", len(result))
+	}
+	if result[0].Tag != "v1.0.0" {
+		t.Errorf("Tag = %q, want v1.0.0", result[0].Tag)
 	}
 }

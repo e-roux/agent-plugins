@@ -1,20 +1,23 @@
-package main
+package gitops
 
 import (
 	"context"
 	"fmt"
+	"strings"
 
+	"github.com/e-roux/mcp-git-ops/internal/platform"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 )
 
-func registerAllTools(s *server.MCPServer) {
+func RegisterAllTools(s *server.MCPServer) {
 	s.AddTool(pushTool(), handlePush)
 	s.AddTool(createPRTool(), handleCreatePR)
 	s.AddTool(mergePRTool(), handleMergePR)
 	s.AddTool(prStatusTool(), handlePRStatus)
 	s.AddTool(releaseStatusTool(), handleReleaseStatus)
 	s.AddTool(createReleaseTool(), handleCreateRelease)
+	s.AddTool(listReleasesTool(), handleListReleases)
 }
 
 func pushTool() mcp.Tool {
@@ -58,6 +61,14 @@ func prStatusTool() mcp.Tool {
 	)
 }
 
+func listReleasesTool() mcp.Tool {
+	return mcp.NewTool("list_releases",
+		mcp.WithDescription("List releases from the repository. Auto-detects platform."),
+		mcp.WithString("cwd", mcp.Description("Working directory of the git repository.")),
+		mcp.WithNumber("limit", mcp.Description("Maximum number of releases to list. Defaults to 30.")),
+	)
+}
+
 func handlePush(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	cwd := stringArg(request, "cwd", "")
 	remote := stringArg(request, "remote", "origin")
@@ -65,32 +76,32 @@ func handlePush(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTool
 	force := boolArg(request, "force")
 
 	if branch == "" {
-		detected, err := currentBranch(cwd)
+		detected, err := platform.CurrentBranch(cwd)
 		if err != nil {
 			return errorResult("cannot determine current branch: %s", err), nil
 		}
 		branch = detected
 	}
 
-	if isProtectedBranch(branch) {
+	if platform.IsProtectedBranch(branch) {
 		return errorResult("denied: cannot push to protected branch '%s'. Create a feature branch: git checkout -b <type>/<slug>", branch), nil
 	}
 
-	platform, err := detectPlatform(cwd)
+	plat, err := platform.DetectPlatform(cwd)
 	if err != nil {
 		return errorResult("platform detection failed: %s — fallback: git push %s %s", err, remote, branch), nil
 	}
 
-	result, err := platform.Push(ctx, PushOptions{Remote: remote, Branch: branch, Force: force})
+	result, err := plat.Push(ctx, platform.PushOptions{Remote: remote, Branch: branch, Force: force})
 	if err != nil {
 		msg := "push failed"
 		if result != nil {
 			msg = result.Output
 		}
-		return errorResult("push failed (%s): %s — fallback: git push %s %s", platform.PlatformName(), msg, remote, branch), nil
+		return errorResult("push failed (%s): %s — fallback: git push %s %s", plat.PlatformName(), msg, remote, branch), nil
 	}
 
-	return mcp.NewToolResultText(fmt.Sprintf("pushed %s to %s/%s (%s)", branch, remote, branch, platform.PlatformName())), nil
+	return mcp.NewToolResultText(fmt.Sprintf("pushed %s to %s/%s (%s)", branch, remote, branch, plat.PlatformName())), nil
 }
 
 func handleCreatePR(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -106,23 +117,23 @@ func handleCreatePR(ctx context.Context, request mcp.CallToolRequest) (*mcp.Call
 	}
 
 	if sourceBranch == "" {
-		detected, err := currentBranch(cwd)
+		detected, err := platform.CurrentBranch(cwd)
 		if err != nil {
 			return errorResult("cannot determine current branch: %s", err), nil
 		}
 		sourceBranch = detected
 	}
 
-	if isProtectedBranch(sourceBranch) {
+	if platform.IsProtectedBranch(sourceBranch) {
 		return errorResult("denied: cannot create PR from protected branch '%s'. Work on a feature branch.", sourceBranch), nil
 	}
 
-	platform, err := detectPlatform(cwd)
+	plat, err := platform.DetectPlatform(cwd)
 	if err != nil {
 		return errorResult("platform detection failed: %s", err), nil
 	}
 
-	result, err := platform.CreatePR(ctx, PRCreateOptions{
+	result, err := plat.CreatePR(ctx, platform.PRCreateOptions{
 		Title:        title,
 		Body:         body,
 		SourceBranch: sourceBranch,
@@ -134,12 +145,12 @@ func handleCreatePR(ctx context.Context, request mcp.CallToolRequest) (*mcp.Call
 		if result != nil {
 			msg = result.Output
 		}
-		return errorResult("create PR failed (%s): %s", platform.PlatformName(), msg), nil
+		return errorResult("create PR failed (%s): %s", plat.PlatformName(), msg), nil
 	}
 
-	output := fmt.Sprintf("PR created on %s", platform.PlatformName())
+	output := fmt.Sprintf("PR created on %s", plat.PlatformName())
 	if result.URL != "" {
-		output = fmt.Sprintf("PR created on %s: %s", platform.PlatformName(), result.URL)
+		output = fmt.Sprintf("PR created on %s: %s", plat.PlatformName(), result.URL)
 	}
 	return mcp.NewToolResultText(output), nil
 }
@@ -154,12 +165,12 @@ func handleMergePR(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallT
 		return errorResult("identifier is required (PR number or MR ID)"), nil
 	}
 
-	platform, err := detectPlatform(cwd)
+	plat, err := platform.DetectPlatform(cwd)
 	if err != nil {
 		return errorResult("platform detection failed: %s", err), nil
 	}
 
-	result, err := platform.MergePR(ctx, PRMergeOptions{
+	result, err := plat.MergePR(ctx, platform.PRMergeOptions{
 		Identifier:    identifier,
 		DeleteBranch:  deleteBranch,
 		MergeStrategy: strategy,
@@ -169,10 +180,10 @@ func handleMergePR(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallT
 		if result != nil {
 			msg = result.Output
 		}
-		return errorResult("merge PR failed (%s): %s", platform.PlatformName(), msg), nil
+		return errorResult("merge PR failed (%s): %s", plat.PlatformName(), msg), nil
 	}
 
-	return mcp.NewToolResultText(fmt.Sprintf("PR %s merged on %s", identifier, platform.PlatformName())), nil
+	return mcp.NewToolResultText(fmt.Sprintf("PR %s merged on %s", identifier, plat.PlatformName())), nil
 }
 
 func handlePRStatus(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -181,29 +192,29 @@ func handlePRStatus(ctx context.Context, request mcp.CallToolRequest) (*mcp.Call
 	branch := stringArg(request, "branch", "")
 
 	if identifier == "" && branch == "" {
-		detected, err := currentBranch(cwd)
+		detected, err := platform.CurrentBranch(cwd)
 		if err != nil {
 			return errorResult("cannot determine current branch: %s", err), nil
 		}
 		branch = detected
 	}
 
-	platform, err := detectPlatform(cwd)
+	plat, err := platform.DetectPlatform(cwd)
 	if err != nil {
 		return errorResult("platform detection failed: %s", err), nil
 	}
 
-	info, err := platform.PRStatus(ctx, PRStatusOptions{
+	info, err := plat.PRStatus(ctx, platform.PRStatusOptions{
 		Identifier: identifier,
 		Branch:     branch,
 	})
 	if err != nil {
-		return errorResult("pr status failed (%s): %s", platform.PlatformName(), err), nil
+		return errorResult("pr status failed (%s): %s", plat.PlatformName(), err), nil
 	}
 
 	return mcp.NewToolResultText(fmt.Sprintf(
 		"PR %s (%s)\nTitle: %s\nState: %s\n%s → %s\nURL: %s",
-		info.Identifier, platform.PlatformName(),
+		info.Identifier, plat.PlatformName(),
 		info.Title, info.State,
 		info.Source, info.Target,
 		info.URL,
@@ -229,6 +240,59 @@ func boolArg(request mcp.CallToolRequest, key string) bool {
 	}
 	val, _ := args[key].(bool)
 	return val
+}
+
+func intArg(request mcp.CallToolRequest, key string, defaultValue int) int {
+	args, ok := request.Params.Arguments.(map[string]any)
+	if !ok {
+		return defaultValue
+	}
+	val, ok := args[key].(float64)
+	if !ok {
+		return defaultValue
+	}
+	return int(val)
+}
+
+func handleListReleases(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	cwd := stringArg(request, "cwd", "")
+	limit := intArg(request, "limit", 30)
+
+	plat, err := platform.DetectPlatform(cwd)
+	if err != nil {
+		return errorResult("platform detection failed: %s", err), nil
+	}
+
+	releases, err := plat.ListReleases(ctx, platform.ListReleasesOptions{Limit: limit})
+	if err != nil {
+		return errorResult("list releases failed (%s): %s", plat.PlatformName(), err), nil
+	}
+
+	if len(releases) == 0 {
+		return mcp.NewToolResultText("No releases found."), nil
+	}
+
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("Releases for repository (%s):\n\n", plat.PlatformName()))
+	for _, r := range releases {
+		draftStr := ""
+		if r.IsDraft {
+			draftStr = " [Draft]"
+		}
+		preStr := ""
+		if r.IsPrerelease {
+			preStr = " [Pre-release]"
+		}
+		sb.WriteString(fmt.Sprintf("- %s (%s)%s%s\n", r.Title, r.Tag, draftStr, preStr))
+		if r.PublishedAt != "" {
+			sb.WriteString(fmt.Sprintf("  Published: %s\n", r.PublishedAt))
+		}
+		if r.URL != "" {
+			sb.WriteString(fmt.Sprintf("  URL: %s\n", r.URL))
+		}
+	}
+
+	return mcp.NewToolResultText(sb.String()), nil
 }
 
 func errorResult(format string, args ...any) *mcp.CallToolResult {

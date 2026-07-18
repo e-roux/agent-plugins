@@ -8,8 +8,10 @@ a unified tool interface. Auto-detects the platform from the git remote URL.
 
 ## Installation
 
+To install the latest version to an alternate `GOBIN` (such as `XDG_BIN_HOME` or `$HOME/.local/bin`):
+
 ```bash
-go install github.com/e-roux/mcp-git-ops@latest
+GOBIN=${XDG_BIN_HOME:-$HOME/.local/bin} go install github.com/e-roux/mcp-git-ops@latest
 ```
 
 Or build from source:

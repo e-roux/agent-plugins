@@ -1,11 +1,14 @@
-package main
+package platform
 
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 )
 
 type PushOptions struct {
@@ -57,10 +60,17 @@ type ReleaseCreateOptions struct {
 	Target     string
 }
 
+type ListReleasesOptions struct {
+	Limit int
+}
+
 type ReleaseInfo struct {
-	Tag   string
-	Title string
-	URL   string
+	Tag          string `json:"tag"`
+	Title        string `json:"title"`
+	URL          string `json:"url"`
+	IsDraft      bool   `json:"is_draft"`
+	IsPrerelease bool   `json:"is_prerelease"`
+	PublishedAt  string `json:"published_at"`
 }
 
 type Platform interface {
@@ -70,6 +80,7 @@ type Platform interface {
 	MergePR(ctx context.Context, opts PRMergeOptions) (*CommandResult, error)
 	PRStatus(ctx context.Context, opts PRStatusOptions) (*PRInfo, error)
 	CreateRelease(ctx context.Context, opts ReleaseCreateOptions) (*ReleaseInfo, error)
+	ListReleases(ctx context.Context, opts ListReleasesOptions) ([]ReleaseInfo, error)
 }
 
 var protectedBranches = parseProtectedBranches()
@@ -90,7 +101,7 @@ func parseProtectedBranches() []string {
 	return result
 }
 
-func isProtectedBranch(branch string) bool {
+func IsProtectedBranch(branch string) bool {
 	for _, protected := range protectedBranches {
 		if branch == protected {
 			return true
@@ -99,7 +110,7 @@ func isProtectedBranch(branch string) bool {
 	return false
 }
 
-func detectPlatform(dir string) (Platform, error) {
+func DetectPlatform(dir string) (Platform, error) {
 	if override := os.Getenv("GIT_OPS_PLATFORM"); override != "" {
 		switch strings.ToLower(override) {
 		case "github":
@@ -113,7 +124,7 @@ func detectPlatform(dir string) (Platform, error) {
 		}
 	}
 
-	remoteURL, err := runGitCommand(dir, "remote", "get-url", "origin")
+	remoteURL, err := RunGitCommand(dir, "remote", "get-url", "origin")
 	if err != nil {
 		return nil, fmt.Errorf("cannot read git remote: %w", err)
 	}
@@ -130,13 +141,26 @@ func detectPlatform(dir string) (Platform, error) {
 		return &AzureDevOpsPlatform{Dir: dir}, nil
 	}
 
+	host := parseHost(remoteURL)
+	if host != "" {
+		apiPrefix := getAPIPrefix(remoteURL, host)
+		if platformType := probePlatform(apiPrefix); platformType != "" {
+			switch platformType {
+			case "github":
+				return &GitHubPlatform{Dir: dir}, nil
+			case "gitlab":
+				return &GitLabPlatform{Dir: dir}, nil
+			}
+		}
+	}
+
 	if cliAvailable("glab") {
-		if _, err := runExternalCommand(dir, "glab", "repo", "view"); err == nil {
+		if _, err := RunExternalCommand(dir, "glab", "repo", "view"); err == nil {
 			return &GitLabPlatform{Dir: dir}, nil
 		}
 	}
 	if cliAvailable("gh") {
-		if _, err := runExternalCommand(dir, "gh", "repo", "view", "--json", "name"); err == nil {
+		if _, err := RunExternalCommand(dir, "gh", "repo", "view", "--json", "name"); err == nil {
 			return &GitHubPlatform{Dir: dir}, nil
 		}
 	}
@@ -147,11 +171,11 @@ func detectPlatform(dir string) (Platform, error) {
 	return nil, fmt.Errorf("cannot detect platform from remote: %s", remoteURL)
 }
 
-func currentBranch(dir string) (string, error) {
-	return runGitCommand(dir, "rev-parse", "--abbrev-ref", "HEAD")
+func CurrentBranch(dir string) (string, error) {
+	return RunGitCommand(dir, "rev-parse", "--abbrev-ref", "HEAD")
 }
 
-func runGitCommand(dir string, args ...string) (string, error) {
+func RunGitCommand(dir string, args ...string) (string, error) {
 	cmd := exec.Command("git", args...)
 	if dir != "" {
 		cmd.Dir = dir
@@ -163,7 +187,7 @@ func runGitCommand(dir string, args ...string) (string, error) {
 	return strings.TrimSpace(string(out)), nil
 }
 
-func runExternalCommand(dir string, name string, args ...string) (string, error) {
+func RunExternalCommand(dir string, name string, args ...string) (string, error) {
 	cmd := exec.Command(name, args...)
 	if dir != "" {
 		cmd.Dir = dir
@@ -180,7 +204,7 @@ func cliAvailable(name string) bool {
 	return err == nil
 }
 
-func extractURL(output string) string {
+func ExtractURL(output string) string {
 	for _, line := range strings.Split(output, "\n") {
 		trimmed := strings.TrimSpace(line)
 		if strings.HasPrefix(trimmed, "https://") {
@@ -190,9 +214,103 @@ func extractURL(output string) string {
 	return ""
 }
 
-func boolFlag(b bool) string {
+func BoolFlag(b bool) string {
 	if b {
 		return "true"
 	}
 	return "false"
+}
+
+func parseHost(remoteURL string) string {
+	lowered := strings.ToLower(remoteURL)
+	if strings.HasPrefix(lowered, "http://") || strings.HasPrefix(lowered, "https://") {
+		u, err := url.Parse(remoteURL)
+		if err == nil {
+			return u.Host
+		}
+	}
+	var urlStr string
+	if strings.HasPrefix(lowered, "ssh://") {
+		u, err := url.Parse(remoteURL)
+		if err == nil {
+			urlStr = u.Host
+		}
+	} else {
+		urlStr = remoteURL
+		if strings.Contains(urlStr, "@") {
+			parts := strings.SplitN(urlStr, "@", 2)
+			urlStr = parts[1]
+		}
+	}
+	if idx := strings.Index(urlStr, "/"); idx != -1 {
+		urlStr = urlStr[:idx]
+	}
+	if idx := strings.Index(urlStr, ":"); idx != -1 {
+		urlStr = urlStr[:idx]
+	}
+	return urlStr
+}
+
+func getAPIPrefix(remoteURL string, host string) string {
+	if strings.HasPrefix(strings.ToLower(remoteURL), "http://") {
+		return "http://" + host
+	}
+	return "https://" + host
+}
+
+func probePlatform(apiPrefix string) string {
+	client := &http.Client{
+		Timeout: 1500 * time.Millisecond,
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+
+	ch := make(chan string, 2)
+
+	go func() {
+		req, err := http.NewRequest("HEAD", apiPrefix+"/api/v3", nil)
+		if err != nil {
+			ch <- ""
+			return
+		}
+		resp, err := client.Do(req)
+		if err == nil && resp != nil {
+			defer resp.Body.Close()
+			for k := range resp.Header {
+				if strings.HasPrefix(strings.ToLower(k), "x-github-") {
+					ch <- "github"
+					return
+				}
+			}
+		}
+		ch <- ""
+	}()
+
+	go func() {
+		req, err := http.NewRequest("HEAD", apiPrefix+"/api/v4/", nil)
+		if err != nil {
+			ch <- ""
+			return
+		}
+		resp, err := client.Do(req)
+		if err == nil && resp != nil {
+			defer resp.Body.Close()
+			for k := range resp.Header {
+				if strings.HasPrefix(strings.ToLower(k), "x-gitlab-") {
+					ch <- "gitlab"
+					return
+				}
+			}
+		}
+		ch <- ""
+	}()
+
+	for i := 0; i < 2; i++ {
+		res := <-ch
+		if res != "" {
+			return res
+		}
+	}
+	return ""
 }

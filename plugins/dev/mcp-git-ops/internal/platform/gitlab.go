@@ -1,7 +1,8 @@
-package main
+package platform
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -17,7 +18,7 @@ func (g *GitLabPlatform) Push(_ context.Context, opts PushOptions) (*CommandResu
 	if opts.Force {
 		args = []string{"push", "--force-with-lease", opts.Remote, opts.Branch}
 	}
-	output, err := runGitCommand(g.Dir, args...)
+	output, err := RunGitCommand(g.Dir, args...)
 	if err != nil {
 		return &CommandResult{Success: false, Output: output}, err
 	}
@@ -41,11 +42,11 @@ func (g *GitLabPlatform) CreatePR(_ context.Context, opts PRCreateOptions) (*Com
 		args = append(args, "--draft")
 	}
 
-	output, err := runExternalCommand(g.Dir, "glab", args...)
+	output, err := RunExternalCommand(g.Dir, "glab", args...)
 	if err != nil {
 		return &CommandResult{Success: false, Output: output}, err
 	}
-	return &CommandResult{Success: true, Output: output, URL: extractURL(output)}, nil
+	return &CommandResult{Success: true, Output: output, URL: ExtractURL(output)}, nil
 }
 
 func (g *GitLabPlatform) MergePR(_ context.Context, opts PRMergeOptions) (*CommandResult, error) {
@@ -61,7 +62,7 @@ func (g *GitLabPlatform) MergePR(_ context.Context, opts PRMergeOptions) (*Comma
 		args = append(args, "--remove-source-branch")
 	}
 
-	output, err := runExternalCommand(g.Dir, "glab", args...)
+	output, err := RunExternalCommand(g.Dir, "glab", args...)
 	if err != nil {
 		return &CommandResult{Success: false, Output: output}, err
 	}
@@ -79,12 +80,12 @@ func (g *GitLabPlatform) PRStatus(_ context.Context, opts PRStatusOptions) (*PRI
 		args = append(args, ref)
 	}
 
-	output, err := runExternalCommand(g.Dir, "glab", args...)
+	output, err := RunExternalCommand(g.Dir, "glab", args...)
 	if err != nil {
 		return nil, fmt.Errorf("glab mr view: %s", output)
 	}
 
-	return parseGitLabMROutput(output), nil
+	return ParseGitLabMROutput(output), nil
 }
 
 func (g *GitLabPlatform) CreateRelease(_ context.Context, opts ReleaseCreateOptions) (*ReleaseInfo, error) {
@@ -96,14 +97,48 @@ func (g *GitLabPlatform) CreateRelease(_ context.Context, opts ReleaseCreateOpti
 		args = append(args, "--prerelease")
 	}
 
-	output, err := runExternalCommand(g.Dir, "glab", args...)
+	output, err := RunExternalCommand(g.Dir, "glab", args...)
 	if err != nil {
 		return nil, fmt.Errorf("glab release create: %s", output)
 	}
-	return &ReleaseInfo{Tag: opts.Tag, Title: opts.Title, URL: extractURL(output)}, nil
+	return &ReleaseInfo{Tag: opts.Tag, Title: opts.Title, URL: ExtractURL(output)}, nil
 }
 
-func parseGitLabMROutput(output string) *PRInfo {
+func (g *GitLabPlatform) ListReleases(_ context.Context, opts ListReleasesOptions) ([]ReleaseInfo, error) {
+	perPage := opts.Limit
+	if perPage <= 0 {
+		perPage = 30
+	}
+
+	args := []string{"release", "list", "-F", "json", "--per-page", fmt.Sprintf("%d", perPage)}
+	output, err := RunExternalCommand(g.Dir, "glab", args...)
+	if err != nil {
+		return nil, fmt.Errorf("glab release list: %s", output)
+	}
+
+	var data []struct {
+		TagName    string `json:"tag_name"`
+		Name       string `json:"name"`
+		ReleasedAt string `json:"released_at"`
+	}
+
+	if err := json.Unmarshal([]byte(output), &data); err != nil {
+		return nil, fmt.Errorf("parse glab release list output: %w", err)
+	}
+
+	releases := make([]ReleaseInfo, len(data))
+	for i, r := range data {
+		releases[i] = ReleaseInfo{
+			Tag:         r.TagName,
+			Title:       r.Name,
+			PublishedAt: r.ReleasedAt,
+		}
+	}
+
+	return releases, nil
+}
+
+func ParseGitLabMROutput(output string) *PRInfo {
 	info := &PRInfo{}
 	for _, line := range strings.Split(output, "\n") {
 		trimmed := strings.TrimSpace(line)

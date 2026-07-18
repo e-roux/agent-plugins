@@ -1,6 +1,6 @@
 ---
 name: git
-description: Version control operations including commits, pull requests, and branch management. Use when handling git operations, commits, pull requests, or version control workflows.
+description: "Repository-specific Git workflow constraints and safety guidelines. Enforces strict branch-first development, mandatory quality gates before commits, and precise commit message conventions. Triggers on any request involving any git command or package release. MUST load to prevent breaking branch-protection guards."
 ---
 
 # Git Operations
@@ -29,7 +29,7 @@ The `branch-first-guard` hook mechanically enforces this — `edit`/`create` cal
 
 - No emoji in commit bodies. Small Unicode symbols (·, →, ✗, ✓) acceptable only when they add meaning.
 - Describe **why**, not what. Avoid listing files, test counts, or implementation steps.
-- Titles and bodies must be concise and technical.
+- Titles and bodies must be concise and technical. Only top level bullet in description.
 
 ### Quality Gate
 
@@ -43,7 +43,7 @@ The `branch-first-guard` hook mechanically enforces this — `edit`/`create` cal
 
 **Warnings are not optional.** Do not silently ignore warnings emitted by `make qa`. Fix them when feasible — they indicate real issues. Only skip a warning fix when it is genuinely infeasible (e.g., upstream dependency, false positive from a third-party tool). In that case, state which warning you are skipping and why.
 
-If a pull requests is emitted:
+If a pull request is emitted:
 - the pull request must be merged into the target branch,
 - the target branch must be selected and the git status must be clean
 - the feature branch can then be safely be removed
@@ -68,10 +68,11 @@ Raw bash commands bypass these guards (except the existing branch-guard in hooks
 
 ## Git Subcommands
 
-For detailed workflows and guidelines by operation, see the relevant resource file:
+For detailed workflows and guidelines by operation, see the relevant reference file:
 
-- **`git commit`** → See [resources/git-commit.md](resources/git-commit.md)
-- **Pull requests** → See [resources/git-pull-request.md](resources/git-pull-request.md)
-- **Releases** → See [resources/git-release.md](resources/git-release.md)
+- **`git commit`** → See [references/git-commit.md](references/git-commit.md)
+- **Pull requests** → See [references/git-pull-request.md](references/git-pull-request.md)
+- **Releases** → See [references/git-release.md](references/git-release.md)
+- **Safety** → See [references/git-safety.md](references/git-safety.md)
 
-**MANDATORY**: When the user requests a commit, pull request, or release, you MUST read the corresponding resource file to ensure you follow the complete workflow and formatting requirements.
+**MANDATORY**: When the user requests a commit, pull request, release, or safety check, you MUST read the corresponding reference file to ensure you follow the complete workflow and formatting requirements.
