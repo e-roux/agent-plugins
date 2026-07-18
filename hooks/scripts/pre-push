@@ -1,36 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if ! command -v gh >/dev/null 2>&1; then
-  exit 0
-fi
-
-is_gh_release_push() {
-  local pid=$PPID
-  while [ "$pid" -gt 1 ]; do
-    local cmd
-    cmd=$(ps -o command= -p "$pid" 2>/dev/null || true)
-    if [[ "$cmd" =~ "gh" && "$cmd" =~ "release" ]]; then
-      return 0
-    fi
-    pid=$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ' || true)
-    [ -n "$pid" ] || break
-  done
-  return 1
-}
-
-if is_gh_release_push; then
-  exit 0
-fi
-
 while read -r local_ref local_sha remote_ref remote_sha; do
   if [[ "$local_ref" =~ ^refs/tags/(.*)$ ]]; then
     tag="${BASH_REMATCH[1]}"
     
-    if ! gh release view "$tag" >/dev/null 2>&1; then
-      printf "\n\033[1;31m[REJECTED]\033[0m Pushing tag '%s' is blocked because the corresponding Release does not exist on GitHub.\n" "$tag"
-      printf "Please create the Release on GitHub first (which will automatically create the tag), or publish a draft release.\n\n"
-      exit 1
+    if [[ "$tag" =~ ^dev/ || "$tag" =~ ^v[0-9] ]]; then
+      binary_path="plugins/dev/mcp-git-ops/mcp-git-ops"
+      if [ ! -f "$binary_path" ]; then
+        printf "\n\033[1;31m[REJECTED]\033[0m Pushing tag '%s' is blocked because the compiled MCP server binary is missing.\n" "$tag"
+        printf "Please compile the binary first (e.g. run 'make build' inside plugins/dev/mcp-git-ops) before pushing this tag.\n\n"
+        exit 1
+      fi
     fi
   fi
 done
