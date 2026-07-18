@@ -3,7 +3,7 @@ SHELL := /bin/bash
 .ONESHELL:
 .DEFAULT_GOAL := help
 
-PLUGINS    := make dev vulcan infra
+PLUGINS    := dev vulcan infra
 PI_PLUGINS := make dev infra
 JQ         := jq
 
