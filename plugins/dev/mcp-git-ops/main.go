@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/e-roux/mcp-git-ops/internal/gitops"
 	"github.com/mark3labs/mcp-go/server"
 )
 
-const serverVersion = "0.1.0"
+const serverVersion = "0.3.0"
 
 func main() {
 	mcpServer := server.NewMCPServer(
@@ -15,7 +16,7 @@ func main() {
 		serverVersion,
 	)
 
-	registerAllTools(mcpServer)
+	gitops.RegisterAllTools(mcpServer)
 
 	if err := server.ServeStdio(mcpServer); err != nil {
 		fmt.Fprintf(os.Stderr, "fatal: %s\n", err)

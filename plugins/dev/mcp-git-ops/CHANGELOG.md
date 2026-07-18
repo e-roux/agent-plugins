@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.3.0
+
+- Added: Dynamic, scheme-aware HTTP/HTTPS API endpoint probing to auto-detect self-hosted platforms (GitHub Enterprise and GitLab self-hosted) based on response headers (`X-GitHub-*` and `X-GitLab-*`).
+- Fixed: Host parsing from remote Git URLs, properly preserving port numbers for HTTP/HTTPS targets and stripping SSH/SCP port numbers.
+- Added: Robust unit tests using local `httptest` mock servers to verify dynamic auto-detection behavior.
+
+## 0.2.1
+
+- Patch release to trigger Go module proxy cache refresh
+
+## 0.2.0
+
+- Refactored: moved main.go from cmd/mcp-git-ops/ to root for simpler go install
+- Bumped minor version for breaking change in project structure
+
+## 0.1.2
+
+- Fixed module path to match repository URL (github.com/e-roux/mcp-git-ops)
+
+## 0.1.1
+
+- Refactored project to follow standard Go layout: main package under `cmd/mcp-git-ops` and internal packages under `internal/`
+- Standardized package naming and visibility
+- Updated build and install targets to build the command module
+- Omitted comment lines in Go source files to ensure clean and self-documenting code
+- Updated installation documentation for alternate GOBIN usage
+
 ## 0.1.0
 
 - MCP server with push, create_pr, merge_pr, pr_status tools

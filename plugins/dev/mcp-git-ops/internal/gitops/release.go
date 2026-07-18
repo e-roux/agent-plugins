@@ -1,4 +1,4 @@
-package main
+package gitops
 
 import (
 	"bufio"
@@ -7,8 +7,8 @@ import (
 	"os"
 	"regexp"
 	"strings"
-	"time"
 
+	"github.com/e-roux/mcp-git-ops/internal/platform"
 	"github.com/mark3labs/mcp-go/mcp"
 )
 
@@ -37,21 +37,21 @@ func handleReleaseStatus(_ context.Context, request mcp.CallToolRequest) (*mcp.C
 
 	var lines []string
 
-	branch, err := currentBranch(cwd)
+	branch, err := platform.CurrentBranch(cwd)
 	if err != nil {
 		lines = append(lines, fmt.Sprintf("branch: unknown (%s)", err))
 	} else {
 		lines = append(lines, fmt.Sprintf("branch: %s", branch))
 	}
 
-	dirty, err := runGitCommand(cwd, "status", "--porcelain")
+	dirty, err := platform.RunGitCommand(cwd, "status", "--porcelain")
 	if err != nil || dirty != "" {
 		lines = append(lines, "tree: dirty — commit or stash changes before releasing")
 	} else {
 		lines = append(lines, "tree: clean")
 	}
 
-	latestTag, err := runGitCommand(cwd, "describe", "--tags", "--abbrev=0")
+	latestTag, err := platform.RunGitCommand(cwd, "describe", "--tags", "--abbrev=0")
 	if err != nil || latestTag == "" {
 		lines = append(lines, "latest-tag: none")
 		latestTag = ""
@@ -65,7 +65,7 @@ func handleReleaseStatus(_ context.Context, request mcp.CallToolRequest) (*mcp.C
 	}
 
 	changelogPath := dir + "/CHANGELOG.md"
-	clStatus, unreleased, inferred := inspectChangelog(changelogPath, latestTag)
+	clStatus, unreleased, inferred := InspectChangelog(changelogPath, latestTag)
 	lines = append(lines, fmt.Sprintf("changelog: %s", clStatus))
 	if unreleased != "" {
 		lines = append(lines, fmt.Sprintf("unreleased-categories: %s", unreleased))
@@ -102,22 +102,22 @@ func handleCreateRelease(ctx context.Context, request mcp.CallToolRequest) (*mcp
 		title = tag
 	}
 
-	localTags, err := runGitCommand(cwd, "tag", "-l", tag)
+	localTags, err := platform.RunGitCommand(cwd, "tag", "-l", tag)
 	if err != nil || strings.TrimSpace(localTags) == "" {
 		return errorResult("tag %s does not exist locally — create it with: git tag -a %s -m 'Release %s'", tag, tag, tag), nil
 	}
 
-	remoteRefs, err := runGitCommand(cwd, "ls-remote", "--tags", "origin", tag)
+	remoteRefs, err := platform.RunGitCommand(cwd, "ls-remote", "--tags", "origin", tag)
 	if err != nil || strings.TrimSpace(remoteRefs) == "" {
 		return errorResult("tag %s not found on origin — push it first: git push origin %s", tag, tag), nil
 	}
 
-	platform, err := detectPlatform(cwd)
+	plat, err := platform.DetectPlatform(cwd)
 	if err != nil {
 		return errorResult("platform detection failed: %s", err), nil
 	}
 
-	info, err := platform.CreateRelease(ctx, ReleaseCreateOptions{
+	info, err := plat.CreateRelease(ctx, platform.ReleaseCreateOptions{
 		Tag:        tag,
 		Title:      title,
 		Notes:      notes,
@@ -126,17 +126,17 @@ func handleCreateRelease(ctx context.Context, request mcp.CallToolRequest) (*mcp
 		Target:     target,
 	})
 	if err != nil {
-		return errorResult("create release failed (%s): %s", platform.PlatformName(), err), nil
+		return errorResult("create release failed (%s): %s", plat.PlatformName(), err), nil
 	}
 
-	output := fmt.Sprintf("Release %s created on %s", tag, platform.PlatformName())
+	output := fmt.Sprintf("Release %s created on %s", tag, plat.PlatformName())
 	if info != nil && info.URL != "" {
-		output = fmt.Sprintf("Release %s created on %s: %s", tag, platform.PlatformName(), info.URL)
+		output = fmt.Sprintf("Release %s created on %s: %s", tag, plat.PlatformName(), info.URL)
 	}
 	return mcp.NewToolResultText(output), nil
 }
 
-func inspectChangelog(path string, latestTag string) (status string, categories string, inferredVersion string) {
+func InspectChangelog(path string, latestTag string) (status string, categories string, inferredVersion string) {
 	f, err := os.Open(path)
 	if err != nil {
 		return "CHANGELOG.md not found — create one with an [Unreleased] section", "", ""
@@ -148,7 +148,6 @@ func inspectChangelog(path string, latestTag string) (status string, categories 
 	var inUnreleased bool
 
 	sectionRe := regexp.MustCompile(`^### (Added|Changed|Deprecated|Removed|Fixed|Security)`)
-	entryRe := regexp.MustCompile(`^- `)
 	unreleasedHeadingRe := regexp.MustCompile(`^## \[Unreleased\]`)
 	versionHeadingRe := regexp.MustCompile(`^## \[`)
 
@@ -171,7 +170,6 @@ func inspectChangelog(path string, latestTag string) (status string, categories 
 				unreleasedSections = append(unreleasedSections, sec)
 			}
 		}
-		_ = entryRe
 	}
 
 	if !hasUnreleased {
@@ -184,11 +182,11 @@ func inspectChangelog(path string, latestTag string) (status string, categories 
 
 	categories = strings.Join(dedup(unreleasedSections), ", ")
 	status = fmt.Sprintf("ok — [Unreleased] has categories: %s", categories)
-	inferredVersion = inferNextVersion(latestTag, unreleasedSections)
+	inferredVersion = InferNextVersion(latestTag, unreleasedSections)
 	return
 }
 
-func inferNextVersion(latestTag string, sections []string) string {
+func InferNextVersion(latestTag string, sections []string) string {
 	if latestTag == "" {
 		return "v1.0.0 (first release)"
 	}
@@ -235,9 +233,3 @@ func dedup(in []string) []string {
 	}
 	return out
 }
-
-func currentYear() string {
-	return fmt.Sprintf("%d", time.Now().Year())
-}
-
-var _ = currentYear

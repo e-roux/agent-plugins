@@ -10,6 +10,9 @@
   "pi": {
     "extensions": [
       "./extensions/pi"
+    ],
+    "skills": [
+      "./skills"
     ]
   },
   "peerDependencies": {

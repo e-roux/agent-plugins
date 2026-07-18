@@ -1,4 +1,4 @@
-package main
+package platform
 
 import (
 	"context"
@@ -18,7 +18,7 @@ func (g *GitHubPlatform) Push(_ context.Context, opts PushOptions) (*CommandResu
 	if opts.Force {
 		args = []string{"push", "--force-with-lease", opts.Remote, opts.Branch}
 	}
-	output, err := runGitCommand(g.Dir, args...)
+	output, err := RunGitCommand(g.Dir, args...)
 	if err != nil {
 		return &CommandResult{Success: false, Output: output}, err
 	}
@@ -37,11 +37,11 @@ func (g *GitHubPlatform) CreatePR(_ context.Context, opts PRCreateOptions) (*Com
 		args = append(args, "--draft")
 	}
 
-	output, err := runExternalCommand(g.Dir, "gh", args...)
+	output, err := RunExternalCommand(g.Dir, "gh", args...)
 	if err != nil {
 		return &CommandResult{Success: false, Output: output}, err
 	}
-	return &CommandResult{Success: true, Output: output, URL: extractURL(output)}, nil
+	return &CommandResult{Success: true, Output: output, URL: ExtractURL(output)}, nil
 }
 
 func (g *GitHubPlatform) MergePR(_ context.Context, opts PRMergeOptions) (*CommandResult, error) {
@@ -59,7 +59,7 @@ func (g *GitHubPlatform) MergePR(_ context.Context, opts PRMergeOptions) (*Comma
 		args = append(args, "--delete-branch")
 	}
 
-	output, err := runExternalCommand(g.Dir, "gh", args...)
+	output, err := RunExternalCommand(g.Dir, "gh", args...)
 	if err != nil {
 		return &CommandResult{Success: false, Output: output}, err
 	}
@@ -78,7 +78,7 @@ func (g *GitHubPlatform) PRStatus(_ context.Context, opts PRStatusOptions) (*PRI
 	}
 	args = append(args, "--json", "number,title,state,url,headRefName,baseRefName")
 
-	output, err := runExternalCommand(g.Dir, "gh", args...)
+	output, err := RunExternalCommand(g.Dir, "gh", args...)
 	if err != nil {
 		return nil, fmt.Errorf("gh pr view: %s", output)
 	}
@@ -117,9 +117,47 @@ func (g *GitHubPlatform) CreateRelease(_ context.Context, opts ReleaseCreateOpti
 		args = append(args, "--target", opts.Target)
 	}
 
-	output, err := runExternalCommand(g.Dir, "gh", args...)
+	output, err := RunExternalCommand(g.Dir, "gh", args...)
 	if err != nil {
 		return nil, fmt.Errorf("gh release create: %s", output)
 	}
-	return &ReleaseInfo{Tag: opts.Tag, Title: opts.Title, URL: extractURL(output)}, nil
+	return &ReleaseInfo{Tag: opts.Tag, Title: opts.Title, URL: ExtractURL(output)}, nil
+}
+
+func (g *GitHubPlatform) ListReleases(_ context.Context, opts ListReleasesOptions) ([]ReleaseInfo, error) {
+	limit := opts.Limit
+	if limit <= 0 {
+		limit = 30
+	}
+
+	args := []string{"release", "list", "--json", "tagName,name,isDraft,isPrerelease,publishedAt", "--limit", fmt.Sprintf("%d", limit)}
+	output, err := RunExternalCommand(g.Dir, "gh", args...)
+	if err != nil {
+		return nil, fmt.Errorf("gh release list: %s", output)
+	}
+
+	var data []struct {
+		TagName      string `json:"tagName"`
+		Name         string `json:"name"`
+		IsDraft      bool   `json:"isDraft"`
+		IsPrerelease bool   `json:"isPrerelease"`
+		PublishedAt  string `json:"publishedAt"`
+	}
+
+	if err := json.Unmarshal([]byte(output), &data); err != nil {
+		return nil, fmt.Errorf("parse gh release list output: %w", err)
+	}
+
+	releases := make([]ReleaseInfo, len(data))
+	for i, r := range data {
+		releases[i] = ReleaseInfo{
+			Tag:          r.TagName,
+			Title:        r.Name,
+			IsDraft:      r.IsDraft,
+			IsPrerelease: r.IsPrerelease,
+			PublishedAt:  r.PublishedAt,
+		}
+	}
+
+	return releases, nil
 }

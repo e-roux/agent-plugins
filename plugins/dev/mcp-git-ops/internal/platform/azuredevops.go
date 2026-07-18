@@ -1,4 +1,4 @@
-package main
+package platform
 
 import (
 	"context"
@@ -18,7 +18,7 @@ func (a *AzureDevOpsPlatform) Push(_ context.Context, opts PushOptions) (*Comman
 	if opts.Force {
 		args = []string{"push", "--force-with-lease", opts.Remote, opts.Branch}
 	}
-	output, err := runGitCommand(a.Dir, args...)
+	output, err := RunGitCommand(a.Dir, args...)
 	if err != nil {
 		return &CommandResult{Success: false, Output: output}, err
 	}
@@ -41,7 +41,7 @@ func (a *AzureDevOpsPlatform) CreatePR(_ context.Context, opts PRCreateOptions) 
 		args = append(args, "--draft")
 	}
 
-	output, err := runExternalCommand(a.Dir, "az", args...)
+	output, err := RunExternalCommand(a.Dir, "az", args...)
 	if err != nil {
 		return &CommandResult{Success: false, Output: output}, err
 	}
@@ -58,7 +58,7 @@ func (a *AzureDevOpsPlatform) CreatePR(_ context.Context, opts PRCreateOptions) 
 		}, nil
 	}
 
-	return &CommandResult{Success: true, Output: output, URL: extractURL(output)}, nil
+	return &CommandResult{Success: true, Output: output, URL: ExtractURL(output)}, nil
 }
 
 func (a *AzureDevOpsPlatform) MergePR(_ context.Context, opts PRMergeOptions) (*CommandResult, error) {
@@ -71,11 +71,11 @@ func (a *AzureDevOpsPlatform) MergePR(_ context.Context, opts PRMergeOptions) (*
 		"repos", "pr", "update",
 		"--id", opts.Identifier,
 		"--status", "completed",
-		"--squash", boolFlag(strategy == "squash"),
-		"--delete-source-branch", boolFlag(opts.DeleteBranch),
+		"--squash", BoolFlag(strategy == "squash"),
+		"--delete-source-branch", BoolFlag(opts.DeleteBranch),
 	}
 
-	output, err := runExternalCommand(a.Dir, "az", args...)
+	output, err := RunExternalCommand(a.Dir, "az", args...)
 	if err != nil {
 		return &CommandResult{Success: false, Output: output}, err
 	}
@@ -93,7 +93,7 @@ func (a *AzureDevOpsPlatform) PRStatus(_ context.Context, opts PRStatusOptions) 
 		"--output", "json",
 	}
 
-	output, err := runExternalCommand(a.Dir, "az", args...)
+	output, err := RunExternalCommand(a.Dir, "az", args...)
 	if err != nil {
 		return nil, fmt.Errorf("az repos pr show: %s", output)
 	}
@@ -122,4 +122,8 @@ func (a *AzureDevOpsPlatform) PRStatus(_ context.Context, opts PRStatusOptions) 
 
 func (a *AzureDevOpsPlatform) CreateRelease(_ context.Context, opts ReleaseCreateOptions) (*ReleaseInfo, error) {
 	return nil, fmt.Errorf("Azure DevOps does not support releases via CLI — push tag %s and create the release in the Azure DevOps portal under Pipelines > Releases", opts.Tag)
+}
+
+func (a *AzureDevOpsPlatform) ListReleases(_ context.Context, _ ListReleasesOptions) ([]ReleaseInfo, error) {
+	return nil, fmt.Errorf("Azure DevOps does not support releases via CLI")
 }

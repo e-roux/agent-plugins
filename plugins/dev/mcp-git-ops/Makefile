@@ -4,11 +4,13 @@ SHELL := /bin/bash
 .DEFAULT_GOAL := help
 
 BINARY  := mcp-git-ops
+VERSION := $(shell awk '/^\#\# [0-9]/ {print $$2; exit}' CHANGELOG.md)
+TAG     := v$(VERSION)
 override GOBIN := $(or $(XDG_BIN_HOME),$(HOME)/.local/bin)
 
 .PHONY: help sync fmt lint typecheck check qa clean distclean
 .PHONY: test test.unit test.integration test.e2e
-.PHONY: build install
+.PHONY: build install release-notes tag release
 
 check: fmt lint typecheck
 qa: check test
@@ -51,6 +53,19 @@ clean:
 
 distclean: clean
 
+release-notes:
+	awk '/## $(VERSION)/{flag=1;next}/## [0-9]/{flag=0}flag' CHANGELOG.md > release_notes.tmp
+	printf "  OK release notes generated\n"
+
+tag:
+	git tag -a $(TAG) -m "Release $(TAG)" && git push origin $(TAG)
+	printf "  OK tag $(TAG) created and pushed\n"
+
+release: build release-notes
+	gh release create $(TAG) ./$(BINARY) --title "$(TAG)" --notes-file release_notes.tmp
+	rm -f release_notes.tmp
+	printf "  OK release $(TAG) created on GitHub\n"
+
 help:
 	printf "\033[36m"
 	printf "╔═╗ ╦ ╔╦╗   ╔═╗╔═╗╔═╗\n"
@@ -72,6 +87,11 @@ help:
 	printf "\033[1;35mTesting:\033[0m\n"
 	printf "  test         - Run all tests\n"
 	printf "  test.unit    - Unit tests with race detector\n"
+	printf "\n"
+	printf "\033[1;35mReleasing:\033[0m\n"
+	printf "  release-notes - Extract changes for current version\n"
+	printf "  tag          - Create and push git tag\n"
+	printf "  release      - Build and create GitHub release with macOS binary\n"
 	printf "\n"
 	printf "\033[1;35mCleanup:\033[0m\n"
 	printf "  clean        - Remove local binary\n"
