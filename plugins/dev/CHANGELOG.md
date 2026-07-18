@@ -4,7 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.1.0] - 2026-07-18
+
+### Added
+
+- **skills/git**: reintroduce local `git` skill folder in `plugins/dev/skills/git/` to enforce robust commit/PR/Release workflows across all clients natively.
+- **mcp-git-ops**: reintroduce the Go-based `mcp-git-ops` MCP server source in `plugins/dev/mcp-git-ops/`, updated with the latest standalone sub-packaged directory layout (`internal/gitops/`, `internal/platform/`).
+- **hooks/claude**: add a native `Setup` compilation hook in `.claude-plugin/plugin.json` to automatically compile and install the `mcp-git-ops` binary on plugin install/update.
+- **hooks/gemini**: migrate all sub-plugin hook configs to isolated `hooks/gemini.json` and inlined Claude hooks inside manifests to avoid any auto-discovery or relative path collisions.
 
 - refactor(skills): remove `skills/{dev,git}` — now canonical in [`e-roux/agent-skills`](https://github.com/e-roux/agent-skills); drop the `"skills"` field from `plugin.json`/`package.json`
 - refactor(mcp): remove embedded `mcp-git-ops` Go source — now maintained standalone at [`e-roux/mcp-git-ops`](https://github.com/e-roux/mcp-git-ops); `install`/`build` targets run `go install github.com/e-roux/mcp-git-ops@latest`
