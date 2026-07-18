@@ -61,7 +61,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "GOBIN=\"${XDG_BIN_HOME:-$HOME/.local/bin}\" go install \"$CLAUDE_PLUGIN_ROOT/mcp-git-ops\"",
+            "command": "command -v mcp-git-ops >/dev/null 2>&1 || { GOBIN=\"${XDG_BIN_HOME:-$HOME/.local/bin}\" go install \"$CLAUDE_PLUGIN_ROOT/mcp-git-ops\"; }",
             "timeout": 120,
             "statusMessage": "Compiling mcp-git-ops..."
           }
