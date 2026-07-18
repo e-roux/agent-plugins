@@ -1,0 +1,16 @@
+{
+  "name": "e-roux-plugins-all",
+  "description": "Unified all-in-one general-purpose development guards, Ansible Molecule utilities, and Make-centric workflows",
+  "version": "1.0.1",
+  "author": {
+    "name": "e-roux"
+  },
+  "license": "MIT",
+  "mcpServers": {
+    "git-ops": {
+      "command": "mcp-git-ops"
+    }
+  },
+  "contextFileName": "GEMINI.md",
+  "hooks": "hooks/gemini.json"
+}

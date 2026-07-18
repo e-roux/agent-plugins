@@ -1,0 +1,7 @@
+{
+  "name": "infra",
+  "description": "Infrastructure development plugin for Ansible roles and collections with Molecule testing (Podman driver), IaC conventions, and Make-centric workflow.",
+  "version": "0.1.16",
+  "contextFileName": "GEMINI.md",
+  "hooks": "hooks/gemini.json"
+}
