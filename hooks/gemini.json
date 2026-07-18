@@ -23,15 +23,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${extensionPath}/plugins/make/hooks/scripts/gemini-session-start.sh\"",
-            "timeout": 10000
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
             "command": "bash \"${extensionPath}/plugins/vulcan/scripts/inject-memory.sh\"",
             "timeout": 10000
           }
@@ -65,16 +56,6 @@
           {
             "type": "command",
             "command": "bash \"${extensionPath}/plugins/infra/hooks/scripts/gemini-pre-tool.sh\"",
-            "timeout": 15000
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"${extensionPath}/plugins/make/hooks/scripts/gemini-pre-tool.sh\"",
-            "name": "make-first-guards",
             "timeout": 15000
           }
         ]
