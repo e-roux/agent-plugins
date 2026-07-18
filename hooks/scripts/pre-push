@@ -1,13 +1,25 @@
 #!/usr/bin/env bash
-#
-# pre-push hook to prevent pushing tags if the corresponding GitHub Release does not exist.
-#
-# Standard input receives lines of the form:
-# <local ref> <local sha1> <remote ref> <remote sha1>
-
 set -euo pipefail
 
 if ! command -v gh >/dev/null 2>&1; then
+  exit 0
+fi
+
+is_gh_release_push() {
+  local pid=$PPID
+  while [ "$pid" -gt 1 ]; do
+    local cmd
+    cmd=$(ps -o command= -p "$pid" 2>/dev/null || true)
+    if [[ "$cmd" =~ "gh" && "$cmd" =~ "release" ]]; then
+      return 0
+    fi
+    pid=$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ' || true)
+    [ -n "$pid" ] || break
+  done
+  return 1
+}
+
+if is_gh_release_push; then
   exit 0
 fi
 
