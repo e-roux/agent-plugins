@@ -3,8 +3,11 @@ SHELL := /bin/bash
 .ONESHELL:
 .DEFAULT_GOAL := help
 
-PLUGINS    := dev vulcan infra
+PLUGINS    := dev infra
 PI_PLUGINS := dev infra
+BIOME      := biome
+GH		   := gh
+GIT		   := git
 JQ         := jq
 
 PLUGIN_DIRS  := $(patsubst plugins/%/Makefile,%,$(wildcard plugins/*/Makefile))
@@ -15,7 +18,7 @@ CLEAN_PLUGINS   := $(addprefix clean/,$(PLUGIN_DIRS))
 
 .PHONY: help sync fmt lint typecheck check qa clean distclean
 .PHONY: test test.unit test.integration test.e2e
-.PHONY: verify.versions verify.pi changelog
+.PHONY: verify.versions verify.pi verify.opencode changelog
 .PHONY: update update.list
 .PHONY: build install install.agents
 
@@ -23,24 +26,27 @@ check: fmt lint typecheck
 qa: check test $(QA_PLUGINS)
 test: test.unit
 
-sync:
-	command -v $(JQ) >/dev/null || { printf "FAIL: jq not found\n"; exit 1; }
-	command -v gh    >/dev/null || { printf "FAIL: gh not found\n"; exit 1; }
-	command -v git   >/dev/null || { printf "FAIL: git not found\n"; exit 1; }
-	mkdir -p .git/hooks && ln -sf ../../hooks/scripts/pre-push .git/hooks/pre-push
-	printf "  OK tools present and local pre-push Git hook installed\n"
+$(if $(shell command -v $(BIOME) >/dev/null 2>&1 && echo ok),,$(error biome not found))
+$(if $(shell command -v $(JQ) >/dev/null 2>&1 && echo ok),,$(error jq not found))
+$(if $(shell command -v $(GH) >/dev/null 2>&1 && echo ok),,$(error gh not found))
+$(if $(shell command -v $(GIT) >/dev/null 2>&1 && echo ok),,$(error git not found))
 
-fmt:
-	fail=0
-	for f in $$(find plugins -name "plugin.json" -o -name "package.json" -o -name "copilot.json" -o -name "hooks.json") .claude-plugin/marketplace.json marketplace.json; do
-		$(JQ) . "$$f" >/dev/null 2>&1 || { printf "FAIL: invalid JSON: %s\n" "$$f"; fail=1; }
-	done
-	[ $$fail -eq 0 ] && printf "  OK JSON valid\n" || exit 1
+.git/hooks/pre-push: hooks/scripts/pre-push
+	mkdir -p $(@D)
+	ln -sf $< $@
+	$(info   OK pre-push hook installed)
 
-lint: verify.versions verify.pi changelog
+sync: .git/hooks/pre-push
 
-typecheck:
-	printf "  OK no compiled sources\n"
+fmt: sync
+	printf "Checking JSON formatting...\n"
+	$(BIOME) format . > /dev/null 2>&1 || { printf "FAIL: JSON files are not formatted\n"; exit 1; }
+	printf "  OK: JSON files formatted\n"
+
+lint: sync verify.versions verify.pi verify.opencode changelog
+
+typecheck: sync
+	tsc --noEmit
 
 verify.versions:
 	fail=0
@@ -82,6 +88,21 @@ verify.pi:
 	done
 	[ $$fail -eq 0 ] || exit 1
 
+verify.opencode:
+	[ -f opencode.json ] || { printf "FAIL: opencode.json not found\n"; exit 1; }
+	fail=0
+	for plugin in $(PLUGINS); do
+		dir="plugins/$$plugin/.opencode/plugins"
+		if [ ! -d "$$dir" ]; then
+			printf "FAIL: %s/ directory not found\n" "$$dir"; fail=1
+		elif ! ls "$$dir"/*.ts >/dev/null 2>&1; then
+			printf "FAIL: no .ts plugin files in %s/\n" "$$dir"; fail=1
+		else
+			printf "  OK %-14s opencode\n" "$$plugin"
+		fi
+	done
+	[ $$fail -eq 0 ] || exit 1
+
 changelog:
 	cl="CHANGELOG.md"
 	[ -f "$$cl" ] || { printf "FAIL: %s not found\n" "$$cl"; exit 1; }
@@ -90,7 +111,7 @@ changelog:
 	[ -z "$$bad" ] || { printf "FAIL: invalid changelog section header: %s\n" "$$bad"; exit 1; }
 	printf "  OK changelog\n"
 
-test.unit: verify.versions verify.pi changelog
+test.unit: sync verify.versions verify.pi changelog
 
 test.integration:
 	printf "  OK no integration tests\n"
@@ -121,6 +142,7 @@ update:
 	else
 		printf "  ⚠ claude not found\n"
 	fi
+	printf "  → opencode (plugin loaded from opencode.json)\n"
 
 update.list:
 	if command -v copilot >/dev/null 2>&1; then
@@ -140,6 +162,14 @@ update.list:
 		claude plugin list --json 2>/dev/null | $(JQ) -r '.[] | "  • \(.id) (v\(.version))"' || printf "  (none)\n"
 	else
 		printf "  ⚠ claude not found\n"
+	fi
+	printf "opencode:\n"
+	if [ -d .opencode/plugins ]; then
+		ls .opencode/plugins/*.ts 2>/dev/null | while IFS= read -r f; do
+			printf "  • %s\n" "$$(basename "$$f" .ts)"
+		done || printf "  (none)\n"
+	else
+		printf "  (.opencode/plugins/ not found)\n"
 	fi
 
 build: $(BUILD_PLUGINS)
@@ -168,20 +198,21 @@ clean/%:
 
 help:
 	printf "\033[36m"
-	printf "╔═╗╦  ╦ ╦╔═╗ ╦ ╔╗╔╔═╗\n"
-	printf "╠═╝║  ║ ║║╠╗ ║ ║║║╚═╗\n"
-	printf "╝  ╩═╝╚═╝╚═╝ ╩ ╝╚╝╚═╝\n"
+	printf "╔═╗╔═╗╔═╗╔╗╔╔╦╗   ╔═╗╦  ╦ ╦╔═╗ ╦ ╔╗╔╔═╗\n"
+	printf "╠═╣║╠╗║╣ ║║║ ║    ╠═╝║  ║ ║║╠╗ ║ ║║║╚═╗\n"
+	printf "╝ ╝╚═╝╚═╝╝╚╝ ╝    ╝  ╩═╝╚═╝╚═╝ ╩ ╝╚╝╚═╝\n"
 	printf "\033[0m\n"
 	printf "Usage: make [target]\n\n"
 	printf "\033[1;35mSetup:\033[0m\n"
-	printf "  sync            Check required tools (jq, gh, git)\n"
+	printf "  sync            Install pre-push hook (prerequisite for validation targets)\n"
 	printf "\n"
 	printf "\033[1;35mValidation:\033[0m\n"
 	printf "  verify.versions Version drift: plugin.json = gemini-extension.json = marketplace.json\n"
 	printf "  verify.pi       pi-enabled plugins have package.json with pi key\n"
+	printf "  verify.opencode opencode plugin directory and files valid\n"
 	printf "  changelog       CHANGELOG.md has [Unreleased] and valid section headers\n"
 	printf "  fmt             Validate all JSON files are well-formed\n"
-	printf "  lint            verify.versions + verify.pi + changelog\n"
+	printf "  lint            verify.versions + verify.pi + verify.opencode + changelog\n"
 	printf "  check           fmt + lint + typecheck\n"
 	printf "  qa              check + test + qa in all plugins (use -j for parallel)\n"
 	printf "\n"
@@ -190,7 +221,7 @@ help:
 	printf "  distclean       Deep clean\n"
 	printf "\n"
 	printf "\033[1;35mAgents:\033[0m\n"
-	printf "  update          Update all installed plugins (Copilot + Gemini + Claude)\n"
+	printf "  update          Update all installed plugins (Copilot + Gemini + Claude + opencode)\n"
 	printf "  update.list     List installed plugins across all agents\n"
 	printf "\n"
 	printf "\033[1;35mBuild:\033[0m\n"

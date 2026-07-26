@@ -7,7 +7,7 @@ export default function (pi: ExtensionAPI) {
 
   pi.on("tool_call", async (event, _ctx) => {
     const tool = event.toolName;
-    const input = event.input || {};
+    const input = (event.input || {}) as Record<string, any>;
 
     if (tool !== "bash") return;
     const cmd: string = input.command || "";

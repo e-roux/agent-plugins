@@ -103,7 +103,7 @@ export default function (pi: ExtensionAPI) {
 
   pi.on("tool_call", async (event, _ctx) => {
     const tool = event.toolName;
-    const input = event.input || {};
+    const input = (event.input || {}) as Record<string, any>;
 
     if (tool === "write" || tool === "edit") {
       const filePath: string = input.path || input.file_path || "";
@@ -211,14 +211,12 @@ export default function (pi: ExtensionAPI) {
 
   pi.on("tool_result", async (event, _ctx) => {
     if (event.toolName === "bash") {
-      const output = String(event.result?.content?.[0]?.text || "");
+      const output = String((event.content?.[0] as any)?.text || "");
       const { redacted, found } = redactSecrets(output);
       if (found) {
         return {
-          modifiedResult: {
-            content: [{ type: "text", text: redacted }],
-            details: {},
-          },
+          content: [{ type: "text", text: redacted }],
+          details: {},
         };
       }
     }
@@ -235,7 +233,7 @@ export default function (pi: ExtensionAPI) {
     const cmd = String(event.input?.command || "");
     if (!/git\s+push/.test(cmd)) return;
 
-    const output = String(event.result?.content?.[0]?.text || "");
+    const output = String((event.content?.[0] as any)?.text || "");
     if (/rejected|failed|error|fatal|denied|non-fast-forward/i.test(output)) {
       ctx.ui.notify("⚠️ Pipeline Chainguard: git push failed. Fix the error first.", "warning");
       return;

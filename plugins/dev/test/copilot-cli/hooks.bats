@@ -1,44 +1,45 @@
 #!/usr/bin/env bats
 
-SCRIPTS_DIR="$BATS_TEST_DIRNAME/../../hooks/scripts"
+SCRIPTS_DIR="$BATS_TEST_DIRNAME/../../hooks/src"
+NODE_FLAGS="--experimental-strip-types"
 
 # ── session-start.sh ──────────────────────────────────────────────────────────
 
 
 @test "session-start: exits successfully" {
   local input='{"timestamp":1704614400000,"cwd":"/tmp","source":"new"}'
-  run bash -c "echo '$input' | '$SCRIPTS_DIR/session-start.sh'"
+  run bash -c "echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/session-start.ts'"
   [ "$status" -eq 0 ]
 }
 
 @test "session-start: outputs additionalContext JSON" {
   local input='{"timestamp":1704614400000,"cwd":"/tmp","source":"new"}'
-  run bash -c "echo '$input' | '$SCRIPTS_DIR/session-start.sh'"
+  run bash -c "echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/session-start.ts'"
   [ "$status" -eq 0 ]
   echo "$output" | jq -e '.additionalContext' >/dev/null
 }
 
 @test "session-start: banner mentions secrets-guard" {
   local input='{"timestamp":1704614400000,"cwd":"/tmp","source":"new"}'
-  run bash -c "echo '$input' | '$SCRIPTS_DIR/session-start.sh'"
+  run bash -c "echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/session-start.ts'"
   [[ "$output" == *"secrets-guard"* ]]
 }
 
 @test "session-start: banner mentions branch-guard" {
   local input='{"timestamp":1704614400000,"cwd":"/tmp","source":"new"}'
-  run bash -c "echo '$input' | '$SCRIPTS_DIR/session-start.sh'"
+  run bash -c "echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/session-start.ts'"
   [[ "$output" == *"branch-guard"* ]]
 }
 
 @test "session-start: banner mentions migration-guard" {
   local input='{"timestamp":1704614400000,"cwd":"/tmp","source":"new"}'
-  run bash -c "echo '$input' | '$SCRIPTS_DIR/session-start.sh'"
+  run bash -c "echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/session-start.ts'"
   [[ "$output" == *"migration-guard"* ]]
 }
 
 @test "session-start: banner mentions no-comments-guard" {
   local input='{"timestamp":1704614400000,"cwd":"/tmp","source":"new"}'
-  run bash -c "echo '$input' | '$SCRIPTS_DIR/session-start.sh'"
+  run bash -c "echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/session-start.ts'"
   [[ "$output" == *"no-comments-guard"* ]]
 }
 
@@ -50,7 +51,7 @@ SCRIPTS_DIR="$BATS_TEST_DIRNAME/../../hooks/scripts"
   local input
   input=$(jq -cn --arg cwd "$tmpdir" '{"timestamp":1704614400000,"cwd":$cwd,"source":"new"}')
   local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
-  run bash -c "'$SCRIPTS_DIR/session-start.sh' < '$tmpf'"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/session-start.ts' < '$tmpf'"
   rm -f "$tmpf"; rm -rf "$tmpdir"
   [ "$status" -eq 0 ]
   [[ "$output" == *"Not Yet Configured"* ]]
@@ -64,7 +65,7 @@ SCRIPTS_DIR="$BATS_TEST_DIRNAME/../../hooks/scripts"
   local input
   input=$(jq -cn --arg cwd "$tmpdir" '{"timestamp":1704614400000,"cwd":$cwd,"source":"new"}')
   local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
-  run bash -c "'$SCRIPTS_DIR/session-start.sh' < '$tmpf'"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/session-start.ts' < '$tmpf'"
   rm -f "$tmpf"; rm -rf "$tmpdir"
   [ "$status" -eq 0 ]
   [[ "$output" == *"Active"* ]]
@@ -79,7 +80,7 @@ SCRIPTS_DIR="$BATS_TEST_DIRNAME/../../hooks/scripts"
   local input
   input=$(jq -cn --arg cwd "$tmpdir" '{"timestamp":1704614400000,"cwd":$cwd,"source":"new"}')
   local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
-  run bash -c "'$SCRIPTS_DIR/session-start.sh' < '$tmpf'"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/session-start.ts' < '$tmpf'"
   rm -f "$tmpf"; rm -rf "$tmpdir"
   [ "$status" -eq 0 ]
   [[ "$output" == *"Active"* ]]
@@ -99,7 +100,7 @@ SCRIPTS_DIR="$BATS_TEST_DIRNAME/../../hooks/scripts"
   local input
   input=$(jq -n --arg args "$toolargs" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"edit","args":$args}]}')
   local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
-  run bash -c "'$SCRIPTS_DIR/pre-tool.sh' < '$tmpf'"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts' < '$tmpf'"
   rm -f "$tmpf"
   [ "$status" -eq 0 ]
   [ -z "$output" ]
@@ -113,7 +114,7 @@ SCRIPTS_DIR="$BATS_TEST_DIRNAME/../../hooks/scripts"
   local input
   input=$(jq -n --arg args "$toolargs" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"edit","args":$args}]}')
   local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
-  run bash -c "'$SCRIPTS_DIR/pre-tool.sh' < '$tmpf'"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts' < '$tmpf'"
   rm -f "$tmpf"
   [ "$status" -eq 0 ]
   decision="$(echo "$output" | jq -r '.permissionDecision')"
@@ -128,7 +129,7 @@ SCRIPTS_DIR="$BATS_TEST_DIRNAME/../../hooks/scripts"
   local input
   input=$(jq -n --arg args "$toolargs" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"create","args":$args}]}')
   local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
-  run bash -c "'$SCRIPTS_DIR/pre-tool.sh' < '$tmpf'"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts' < '$tmpf'"
   rm -f "$tmpf"
   [ "$status" -eq 0 ]
   decision="$(echo "$output" | jq -r '.permissionDecision')"
@@ -143,7 +144,7 @@ SCRIPTS_DIR="$BATS_TEST_DIRNAME/../../hooks/scripts"
   local input
   input=$(jq -n --arg args "$toolargs" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"edit","args":$args}]}')
   local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
-  run bash -c "'$SCRIPTS_DIR/pre-tool.sh' < '$tmpf'"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts' < '$tmpf'"
   rm -f "$tmpf"
   [ "$status" -eq 0 ]
   [ -z "$output" ]
@@ -165,7 +166,7 @@ _make_main_repo() {
   local input
   input=$(jq -n --arg args "$args" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"bash","args":$args}]}')
   echo "$(date +%s)" > /tmp/.mcp-git-ops-cb
-  run bash -c "echo '$input' | '$SCRIPTS_DIR/pre-tool.sh'"
+  run bash -c "echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts'"
   rm -f /tmp/.mcp-git-ops-cb
   [ "$status" -eq 0 ]
   [ -z "$output" ]
@@ -177,7 +178,7 @@ _make_main_repo() {
   local args; args=$(jq -n '{"command":"git push origin feat/my-feature"}')
   local input
   input=$(jq -n --arg args "$args" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"bash","args":$args}]}')
-  run bash -c "echo '$input' | '$SCRIPTS_DIR/pre-tool.sh'"
+  run bash -c "echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts'"
   [ "$status" -eq 0 ]
   decision="$(echo "$output" | jq -r '.permissionDecision')"
   [ "$decision" = "deny" ]
@@ -188,7 +189,7 @@ _make_main_repo() {
   local args; args=$(jq -n '{"command":"git push origin main"}')
   local input
   input=$(jq -n --arg args "$args" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"bash","args":$args}]}')
-  run bash -c "echo '$input' | '$SCRIPTS_DIR/pre-tool.sh'"
+  run bash -c "echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts'"
   [ "$status" -eq 0 ]
   decision="$(echo "$output" | jq -r '.permissionDecision')"
   [ "$decision" = "deny" ]
@@ -198,7 +199,7 @@ _make_main_repo() {
   local args; args=$(jq -n '{"command":"git merge main"}')
   local input
   input=$(jq -n --arg args "$args" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"bash","args":$args}]}')
-  run bash -c "echo '$input' | '$SCRIPTS_DIR/pre-tool.sh'"
+  run bash -c "echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts'"
   [ "$status" -eq 0 ]
   decision="$(echo "$output" | jq -r '.permissionDecision')"
   [ "$decision" = "deny" ]
@@ -208,7 +209,7 @@ _make_main_repo() {
   local args; args=$(jq -n '{"command":"git checkout -B main origin/main"}')
   local input
   input=$(jq -n --arg args "$args" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"bash","args":$args}]}')
-  run bash -c "echo '$input' | '$SCRIPTS_DIR/pre-tool.sh'"
+  run bash -c "echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts'"
   [ "$status" -eq 0 ]
   [ -z "$output" ]
 }
@@ -217,7 +218,7 @@ _make_main_repo() {
   local args; args=$(jq -n '{"command":"git merge --abort && git reset --hard origin/main"}')
   local input
   input=$(jq -n --arg args "$args" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"bash","args":$args}]}')
-  run bash -c "echo '$input' | '$SCRIPTS_DIR/pre-tool.sh'"
+  run bash -c "echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts'"
   [ "$status" -eq 0 ]
   [ -z "$output" ]
 }
@@ -226,7 +227,7 @@ _make_main_repo() {
   local args; args=$(jq -n '{"command":"git commit -m msg --no-verify"}')
   local input
   input=$(jq -n --arg args "$args" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"bash","args":$args}]}')
-  run bash -c "echo '$input' | '$SCRIPTS_DIR/pre-tool.sh'"
+  run bash -c "echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts'"
   [ "$status" -eq 0 ]
   decision="$(echo "$output" | jq -r '.permissionDecision')"
   [ "$decision" = "deny" ]
@@ -237,11 +238,11 @@ _make_main_repo() {
 @test "branch-first: denies edit of file in main-branch repo" {
   local repo; repo=$(_make_main_repo)
   local toolargs
-  toolargs=$(jq -n --arg path "$repo/main.go" '{"path":$path,"old_str":"","new_str":"x"}')
+  toolargs=$(jq -cn --arg path "$repo/main.go" '{"path":$path,"old_str":"","new_str":"x"}')
   local input
-  input=$(jq -n --arg args "$toolargs" --arg cwd "$repo" '{"cwd":$cwd,"toolCalls":[{"id":"t1","name":"edit","args":$args}]}')
+  input=$(jq -cn --arg args "$toolargs" --arg cwd "$repo" '{"cwd":$cwd,"toolCalls":[{"id":"t1","name":"edit","args":$args}]}')
   local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
-  run bash -c "'$SCRIPTS_DIR/pre-tool.sh' < '$tmpf'"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts' < '$tmpf'"
   rm -f "$tmpf"; rm -rf "$repo"
   [ "$status" -eq 0 ]
   decision="$(echo "$output" | jq -r '.permissionDecision')"
@@ -251,11 +252,11 @@ _make_main_repo() {
 @test "branch-first: denies create of file in main-branch repo" {
   local repo; repo=$(_make_main_repo)
   local toolargs
-  toolargs=$(jq -n --arg path "$repo/new.go" '{"path":$path,"file_text":"x"}')
+  toolargs=$(jq -cn --arg path "$repo/new.go" '{"path":$path,"file_text":"x"}')
   local input
-  input=$(jq -n --arg args "$toolargs" --arg cwd "$repo" '{"cwd":$cwd,"toolCalls":[{"id":"t1","name":"create","args":$args}]}')
+  input=$(jq -cn --arg args "$toolargs" --arg cwd "$repo" '{"cwd":$cwd,"toolCalls":[{"id":"t1","name":"create","args":$args}]}')
   local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
-  run bash -c "'$SCRIPTS_DIR/pre-tool.sh' < '$tmpf'"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts' < '$tmpf'"
   rm -f "$tmpf"; rm -rf "$repo"
   [ "$status" -eq 0 ]
   decision="$(echo "$output" | jq -r '.permissionDecision')"
@@ -270,7 +271,7 @@ _make_main_repo() {
   local input
   input=$(jq -n --arg args "$toolargs" --arg cwd "$repo" '{"cwd":$cwd,"toolCalls":[{"id":"t1","name":"edit","args":$args}]}')
   local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
-  run bash -c "'$SCRIPTS_DIR/pre-tool.sh' < '$tmpf'"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts' < '$tmpf'"
   rm -f "$tmpf"; rm -rf "$repo"
   [ "$status" -eq 0 ]
   [ -z "$output" ]
@@ -282,7 +283,7 @@ _make_main_repo() {
   local input
   input=$(jq -n --arg args "$toolargs" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"edit","args":$args}]}')
   local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
-  run bash -c "'$SCRIPTS_DIR/pre-tool.sh' < '$tmpf'"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts' < '$tmpf'"
   rm -f "$tmpf"
   [ "$status" -eq 0 ]
   [ -z "$output" ]
@@ -297,7 +298,7 @@ _make_main_repo() {
   local input
   input=$(jq -n --arg args "$args" --arg cwd "$repo" '{"cwd":$cwd,"toolCalls":[{"id":"t1","name":"bash","args":$args}]}')
   local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
-  run bash -c "'$SCRIPTS_DIR/pre-tool.sh' < '$tmpf'"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts' < '$tmpf'"
   rm -f "$tmpf"; rm -rf "$repo"
   [ "$status" -eq 0 ]
   decision="$(echo "$output" | jq -r '.permissionDecision')"
@@ -313,7 +314,7 @@ _make_main_repo() {
   input=$(jq -n --arg args "$args" --arg cwd "$repo" '{"cwd":$cwd,"toolCalls":[{"id":"t1","name":"bash","args":$args}]}')
   local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
   echo "$(date +%s)" > /tmp/.mcp-git-ops-cb
-  run bash -c "'$SCRIPTS_DIR/pre-tool.sh' < '$tmpf'"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts' < '$tmpf'"
   rm -f "$tmpf" /tmp/.mcp-git-ops-cb; rm -rf "$repo"
   [ "$status" -eq 0 ]
   ctx="$(echo "$output" | jq -r '.additionalContext')"
@@ -325,7 +326,7 @@ _make_main_repo() {
   local input
   input=$(jq -n --arg args "$args" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"bash","args":$args}]}')
   echo "$(date +%s)" > /tmp/.mcp-git-ops-cb
-  run bash -c "echo '$input' | '$SCRIPTS_DIR/pre-tool.sh'"
+  run bash -c "echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts'"
   rm -f /tmp/.mcp-git-ops-cb
   [ "$status" -eq 0 ]
   [ -z "$output" ]
@@ -337,7 +338,7 @@ _make_main_repo() {
   local args; args=$(jq -n '{"command":"psql -c \"SELECT * FROM users\""}')
   local input
   input=$(jq -n --arg args "$args" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"bash","args":$args}]}')
-  run bash -c "echo '$input' | '$SCRIPTS_DIR/pre-tool.sh'"
+  run bash -c "echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts'"
   [ "$status" -eq 0 ]
   [ -z "$output" ]
 }
@@ -348,7 +349,7 @@ _make_main_repo() {
   local input
   input=$(jq -n --arg args "$args" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"bash","args":$args}]}')
   local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
-  run bash -c "'$SCRIPTS_DIR/pre-tool.sh' < '$tmpf'"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts' < '$tmpf'"
   rm -f "$tmpf"
   [ "$status" -eq 0 ]
   decision="$(echo "$output" | jq -r '.permissionDecision')"
@@ -361,7 +362,7 @@ _make_main_repo() {
   local input
   input=$(jq -n --arg args "$args" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"bash","args":$args}]}')
   local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
-  run bash -c "'$SCRIPTS_DIR/pre-tool.sh' < '$tmpf'"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts' < '$tmpf'"
   rm -f "$tmpf"
   [ "$status" -eq 0 ]
   decision="$(echo "$output" | jq -r '.permissionDecision')"
@@ -374,7 +375,7 @@ _make_main_repo() {
   local input
   input=$(jq -n --arg args "$args" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"bash","args":$args}]}')
   local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
-  run bash -c "'$SCRIPTS_DIR/pre-tool.sh' < '$tmpf'"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts' < '$tmpf'"
   rm -f "$tmpf"
   [ "$status" -eq 0 ]
   [ -z "$output" ]
@@ -391,7 +392,7 @@ _make_main_repo() {
   local input
   input=$(jq -n --arg args "$toolargs" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"edit","args":$args}]}')
   local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
-  run bash -c "'$SCRIPTS_DIR/pre-tool.sh' < '$tmpf'"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts' < '$tmpf'"
   rm -f "$tmpf"
   [ "$status" -eq 0 ]
   decision="$(echo "$output" | jq -r '.permissionDecision')"
@@ -406,7 +407,7 @@ _make_main_repo() {
   local input
   input=$(jq -n --arg args "$toolargs" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"create","args":$args}]}')
   local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
-  run bash -c "'$SCRIPTS_DIR/pre-tool.sh' < '$tmpf'"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts' < '$tmpf'"
   rm -f "$tmpf"
   [ "$status" -eq 0 ]
   decision="$(echo "$output" | jq -r '.permissionDecision')"
@@ -421,7 +422,7 @@ _make_main_repo() {
   local input
   input=$(jq -n --arg args "$toolargs" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"edit","args":$args}]}')
   local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
-  run bash -c "'$SCRIPTS_DIR/pre-tool.sh' < '$tmpf'"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts' < '$tmpf'"
   rm -f "$tmpf"
   [ "$status" -eq 0 ]
   decision="$(echo "$output" | jq -r '.permissionDecision')"
@@ -436,7 +437,7 @@ _make_main_repo() {
   local input
   input=$(jq -n --arg args "$toolargs" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"create","args":$args}]}')
   local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
-  run bash -c "'$SCRIPTS_DIR/pre-tool.sh' < '$tmpf'"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts' < '$tmpf'"
   rm -f "$tmpf"
   [ "$status" -eq 0 ]
   [ -z "$output" ]
@@ -450,7 +451,7 @@ _make_main_repo() {
   local input
   input=$(jq -n --arg args "$toolargs" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"edit","args":$args}]}')
   local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
-  run bash -c "'$SCRIPTS_DIR/pre-tool.sh' < '$tmpf'"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts' < '$tmpf'"
   rm -f "$tmpf"
   [ "$status" -eq 0 ]
   [ -z "$output" ]
@@ -464,7 +465,7 @@ _make_main_repo() {
   local input
   input=$(jq -n --arg args "$toolargs" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"create","args":$args}]}')
   local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
-  run bash -c "'$SCRIPTS_DIR/pre-tool.sh' < '$tmpf'"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts' < '$tmpf'"
   rm -f "$tmpf"
   [ "$status" -eq 0 ]
   [ -z "$output" ]
@@ -478,7 +479,7 @@ _make_main_repo() {
   local input
   input=$(jq -n --arg args "$toolargs" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"create","args":$args}]}')
   local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
-  run bash -c "'$SCRIPTS_DIR/pre-tool.sh' < '$tmpf'"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts' < '$tmpf'"
   rm -f "$tmpf"
   [ "$status" -eq 0 ]
   [ -z "$output" ]
@@ -492,7 +493,7 @@ _make_main_repo() {
   local input
   input=$(jq -n --arg args "$toolargs" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"edit","args":$args}]}')
   local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
-  run bash -c "'$SCRIPTS_DIR/pre-tool.sh' < '$tmpf'"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts' < '$tmpf'"
   rm -f "$tmpf"
   [ "$status" -eq 0 ]
   [ -z "$output" ]
@@ -506,7 +507,7 @@ _make_main_repo() {
   local input
   input=$(jq -n --arg args "$toolargs" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"edit","args":$args}]}')
   local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
-  run bash -c "'$SCRIPTS_DIR/pre-tool.sh' < '$tmpf'"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts' < '$tmpf'"
   rm -f "$tmpf"
   [ "$status" -eq 0 ]
   [ -z "$output" ]
@@ -517,21 +518,21 @@ _make_main_repo() {
 
 @test "chainguard: ignores non-bash tools" {
   local input='{"toolName":"edit","toolArgs":{"path":"/tmp/f.go","new_str":"x"},"toolResult":{"textResultForLlm":"ok","resultType":"success"}}'
-  run bash -c "echo '$input' | '$SCRIPTS_DIR/pipeline-chainguard.sh'"
+  run bash -c "echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/pipeline-chainguard.ts'"
   [ "$status" -eq 0 ]
   [ -z "$output" ]
 }
 
 @test "chainguard: ignores bash commands without git push" {
   local input='{"toolName":"bash","toolArgs":{"command":"make test"},"toolResult":{"textResultForLlm":"ok","resultType":"success"}}'
-  run bash -c "echo '$input' | '$SCRIPTS_DIR/pipeline-chainguard.sh'"
+  run bash -c "echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/pipeline-chainguard.ts'"
   [ "$status" -eq 0 ]
   [ -z "$output" ]
 }
 
 @test "chainguard: detects git push and returns additionalContext" {
   local input='{"toolName":"bash","toolArgs":{"command":"git push origin feat/ci-check"},"toolResult":{"textResultForLlm":"To github.com:user/repo.git\n abc1234..def5678 feat/ci-check -> feat/ci-check","resultType":"success"}}'
-  run bash -c "echo '$input' | '$SCRIPTS_DIR/pipeline-chainguard.sh'"
+  run bash -c "echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/pipeline-chainguard.ts'"
   [ "$status" -eq 0 ]
   echo "$output" | jq -e '.additionalContext' >/dev/null
   [[ "$output" == *"Pipeline Chainguard"* ]]
@@ -539,14 +540,14 @@ _make_main_repo() {
 
 @test "chainguard: detects failed push and warns instead of CI check" {
   local input='{"toolName":"bash","toolArgs":{"command":"git push origin feat/broken"},"toolResult":{"textResultForLlm":"error: failed to push some refs to remote","resultType":"success"}}'
-  run bash -c "echo '$input' | '$SCRIPTS_DIR/pipeline-chainguard.sh'"
+  run bash -c "echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/pipeline-chainguard.ts'"
   [ "$status" -eq 0 ]
   [[ "$output" == *"push FAILED"* ]]
 }
 
 @test "chainguard: detects git push without explicit remote/branch" {
   local input='{"toolName":"bash","toolArgs":{"command":"git push"},"toolResult":{"textResultForLlm":"Everything up-to-date","resultType":"success"}}'
-  run bash -c "echo '$input' | '$SCRIPTS_DIR/pipeline-chainguard.sh'"
+  run bash -c "echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/pipeline-chainguard.ts'"
   [ "$status" -eq 0 ]
   echo "$output" | jq -e '.additionalContext' >/dev/null
   [[ "$output" == *"Pipeline Chainguard"* ]]
@@ -557,14 +558,14 @@ _make_main_repo() {
     skip "gh CLI not installed"
   fi
   local input='{"toolName":"bash","toolArgs":{"command":"git push origin feat/test"},"toolResult":{"textResultForLlm":"pushed","resultType":"success"}}'
-  run bash -c "echo '$input' | '$SCRIPTS_DIR/pipeline-chainguard.sh'"
+  run bash -c "echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/pipeline-chainguard.ts'"
   [ "$status" -eq 0 ]
   [[ "$output" == *"gh run"* ]]
 }
 
 @test "chainguard: detects mcp__git-ops__push and returns additionalContext" {
   local input='{"toolName":"mcp__git-ops__push","toolArgs":{"branch":"feat/mcp-test","remote":"origin"},"toolResult":{"textResultForLlm":"pushed feat/mcp-test to origin/feat/mcp-test (github)","resultType":"success","isError":false}}'
-  run bash -c "echo '$input' | '$SCRIPTS_DIR/pipeline-chainguard.sh'"
+  run bash -c "echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/pipeline-chainguard.ts'"
   [ "$status" -eq 0 ]
   echo "$output" | jq -e '.additionalContext' >/dev/null
   [[ "$output" == *"Pipeline Chainguard"* ]]
@@ -572,14 +573,14 @@ _make_main_repo() {
 
 @test "chainguard: detects failed mcp__git-ops__push and warns" {
   local input='{"toolName":"mcp__git-ops__push","toolArgs":{"branch":"feat/bad","remote":"origin"},"toolResult":{"textResultForLlm":"push failed (github): authentication failed — fallback: git push origin feat/bad","resultType":"error","isError":true}}'
-  run bash -c "echo '$input' | '$SCRIPTS_DIR/pipeline-chainguard.sh'"
+  run bash -c "echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/pipeline-chainguard.ts'"
   [ "$status" -eq 0 ]
   [[ "$output" == *"push FAILED"* ]]
 }
 
 @test "chainguard: reads branch from mcp__git-ops__push toolArgs" {
   local input='{"toolName":"mcp__git-ops__push","toolArgs":{"branch":"fix/some-bug","remote":"upstream"},"toolResult":{"textResultForLlm":"pushed fix/some-bug to upstream/fix/some-bug (gitlab)","resultType":"success","isError":false}}'
-  run bash -c "echo '$input' | '$SCRIPTS_DIR/pipeline-chainguard.sh'"
+  run bash -c "echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/pipeline-chainguard.ts'"
   [ "$status" -eq 0 ]
   [[ "$output" == *"upstream/fix/some-bug"* ]]
 }
