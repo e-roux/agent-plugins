@@ -6,7 +6,9 @@
     "pi-package"
   ],
   "license": "MIT",
+  "type": "module",
   "author": "Emmanuel Roux",
+  "main": ".opencode/plugins/infra.ts",
   "pi": {
     "extensions": [
       "./extensions/pi"

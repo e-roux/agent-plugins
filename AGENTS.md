@@ -1,6 +1,4 @@
-# agent-plugins — Agent Instructions
-
-Mono-repo of agent plugins and built-in skill suites for ##GitHub Copilot CLI_##, ##Claude Code_##, ##Gemini CLI_##, and ##pi_## coding agent.
+# agent-plugins
 
 ## Repository Layout
 
@@ -12,9 +10,12 @@ agent-plugins/
 │   │   └── skills/git/ ### embedded git skill (SKILL.md + guides)
 │   ├── infra/         ### infrastructure & Molecule deployment guards
 │   ├── make/          ### Makefile-first workflow enforcement
-│   └── vulcan/        ### Copilot CLI plugin-development expert
 ├── .claude-plugin/
 │   └── marketplace.json ### version registry consumed by `copilot/claude plugin update`
+├── .opencode/
+│   └── plugins/
+│       └── opencode.ts  ### opencode plugin (TypeScript wrapper for hook scripts)
+├── opencode.json      ### opencode config (MCP, permissions)
 ├── Makefile           ### top-level QA: fmt / lint / typecheck / test / qa
 └── CHANGELOG.md
 ```
@@ -26,6 +27,8 @@ Each plugin directory contains:
 - `.claude-plugin/plugin.json` — Claude Code manifest (contains direct inline `"hooks"` to prevent resolution conflicts)
 - `GEMINI.md` — Gemini CLI context file (standalone behavioral instructions loaded at session start)
 - `AGENTS.md` (when present) — plugin-specific agent instructions
+
+opencode support is configured at the repository root via `opencode.json` (MCP servers, permission patterns) and `.opencode/plugins/opencode.ts` (TypeScript plugin that delegates to existing shell hook scripts and injects skills paths).
 
 ### Skills and MCP Servers
 
@@ -139,8 +142,6 @@ Open a pull request and squash-merge it cleanly into `main` after checks pass.
      plugins/infra/hooks/ \
      plugins/make/gemini-extension.json \
      plugins/make/hooks/ \
-     plugins/vulcan/gemini-extension.json \
-     plugins/vulcan/hooks/
    ```
 5. Remove the transient binary from your local work tree:
    ```bash

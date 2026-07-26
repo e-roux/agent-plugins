@@ -4,33 +4,33 @@
     "sessionStart": [
       {
         "type": "command",
-        "bash": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/session-start.sh\"",
+        "bash": "node \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/session-start.js\"",
         "timeoutSec": 10
       }
     ],
     "userPromptSubmit": [
       {
         "type": "command",
-        "bash": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/branch-check-turn.sh\"",
+        "bash": "node \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/branch-check-turn.js\"",
         "timeoutSec": 5
       }
     ],
     "preToolUse": [
       {
         "type": "command",
-        "bash": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/pre-tool.sh\"",
+        "bash": "node \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/pre-tool.js\"",
         "timeoutSec": 15
       }
     ],
     "postToolUse": [
       {
         "type": "command",
-        "bash": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/post-tool.sh\"",
+        "bash": "node \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/post-tool.js\"",
         "timeoutSec": 10
       },
       {
         "type": "command",
-        "bash": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/pipeline-chainguard.sh\"",
+        "bash": "node \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/pipeline-chainguard.js\"",
         "timeoutSec": 5
       }
     ]

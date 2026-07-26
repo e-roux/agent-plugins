@@ -23,7 +23,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/session-start.sh\"",
+            "command": "node \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/session-start.js\"",
             "timeout": 10000
           }
         ]
@@ -34,7 +34,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/pre-tool.sh\"",
+            "command": "node \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/pre-tool.js\"",
             "timeout": 15000
           }
         ]
@@ -45,12 +45,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/post-tool.sh\"",
+            "command": "node \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/post-tool.js\"",
             "timeout": 10000
           },
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/pipeline-chainguard.sh\"",
+            "command": "node \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/pipeline-chainguard.js\"",
             "timeout": 5000
           }
         ]

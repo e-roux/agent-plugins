@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${extensionPath}/hooks/scripts/gemini-session-start.sh\"",
+            "command": "node \"${extensionPath}/hooks/scripts/session-start.js\"",
             "timeout": 10000
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${extensionPath}/hooks/scripts/gemini-pre-tool.sh\"",
+            "command": "node \"${extensionPath}/hooks/scripts/pre-tool.js\"",
             "timeout": 15000
           }
         ]
