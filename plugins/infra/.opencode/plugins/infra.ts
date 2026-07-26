@@ -1,6 +1,6 @@
 import path from "path"
 import type { Plugin } from "@opencode-ai/plugin"
-import { runPreTool } from "../../hooks/src/pre-tool.ts"
+import { runPreTool } from "@infra/hooks/pre-tool.ts"
 
 const PLUGIN_ROOT = path.resolve(import.meta.dir, "../..")
 const SKILLS_DIR = path.resolve(PLUGIN_ROOT, "skills")

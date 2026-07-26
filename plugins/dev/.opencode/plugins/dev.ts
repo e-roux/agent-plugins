@@ -1,8 +1,8 @@
 import path from "path"
 import type { Plugin } from "@opencode-ai/plugin"
-import { runPreTool } from "../../hooks/src/pre-tool.ts"
-import { runPostTool } from "../../hooks/src/post-tool.ts"
-import { runPipelineChainguard } from "../../hooks/src/pipeline-chainguard.ts"
+import { runPreTool } from "@dev/hooks/pre-tool.ts"
+import { runPostTool } from "@dev/hooks/post-tool.ts"
+import { runPipelineChainguard } from "@dev/hooks/pipeline-chainguard.ts"
 
 const PLUGIN_ROOT = path.resolve(import.meta.dir, "../..")
 const SKILLS_DIR = path.resolve(PLUGIN_ROOT, "skills")
