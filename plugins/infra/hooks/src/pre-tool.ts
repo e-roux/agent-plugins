@@ -1,22 +1,5 @@
 import { readFileSync } from "node:fs";
-
-export interface ToolCall {
-  id?: string;
-  name: string;
-  args: string | Record<string, any>;
-}
-
-export interface PreToolInput {
-  cwd?: string;
-  toolCalls?: ToolCall[];
-}
-
-export interface PreToolOutput {
-  permissionDecision?: "allow" | "deny";
-  permissionDecisionReason?: string;
-  modifiedArgs?: Record<string, any>;
-  additionalContext?: string;
-}
+import type { PreToolInput, PreToolOutput } from "@mxhq/agent-plugin-core";
 
 export function runPreTool(input: PreToolInput): PreToolOutput {
   if (!input.toolCalls || input.toolCalls.length === 0) {

@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${extensionPath}/hooks/scripts/session-start.js\"",
+            "command": "node --experimental-strip-types \"${extensionPath}/hooks/src/session-start.ts\"",
             "timeout": 10000
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${extensionPath}/hooks/scripts/pre-tool.js\"",
+            "command": "node --experimental-strip-types \"${extensionPath}/hooks/src/pre-tool.ts\"",
             "timeout": 15000
           }
         ]

@@ -1,4 +1,3 @@
 dist/
 hooks/logs/
 plugins/*/hooks/logs/
-plugins/*/hooks/scripts/*.js

@@ -20,7 +20,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/session-start.js\"",
+            "command": "node --experimental-strip-types \"$CLAUDE_PLUGIN_ROOT/hooks/src/session-start.ts\"",
             "timeout": 10000
           }
         ]
@@ -31,7 +31,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/pre-tool.js\"",
+            "command": "node --experimental-strip-types \"$CLAUDE_PLUGIN_ROOT/hooks/src/pre-tool.ts\"",
             "timeout": 15000
           }
         ]
