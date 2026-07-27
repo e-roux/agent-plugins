@@ -8,12 +8,22 @@
     "skipLibCheck": true,
     "noEmit": true,
     "allowImportingTsExtensions": true,
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "paths": {
-      "@dev/hooks/*": ["./plugins/dev/hooks/src/*"],
-      "@dev/skills": ["./plugins/dev/skills"],
-      "@infra/hooks/*": ["./plugins/infra/hooks/src/*"],
-      "@infra/skills": ["./plugins/infra/skills"]
+      "$dev/hooks/*": [
+        "./plugins/dev/hooks/src/*"
+      ],
+      "$dev/skills": [
+        "./plugins/dev/skills"
+      ],
+      "$infra/hooks/*": [
+        "./plugins/infra/hooks/src/*"
+      ],
+      "$infra/skills": [
+        "./plugins/infra/skills"
+      ]
     }
   },
   "include": [

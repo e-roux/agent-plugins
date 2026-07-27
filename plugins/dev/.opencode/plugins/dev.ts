@@ -1,8 +1,12 @@
 import path from "path"
-import type { Plugin } from "@opencode-ai/plugin"
-import { runPreTool } from "@dev/hooks/pre-tool.ts"
-import { runPostTool } from "@dev/hooks/post-tool.ts"
-import { runPipelineChainguard } from "@dev/hooks/pipeline-chainguard.ts"
+import type { Plugin, Config } from "@opencode-ai/plugin"
+import { runPreTool } from "$dev/hooks/pre-tool.ts"
+import { runPostTool } from "$dev/hooks/post-tool.ts"
+import { runPipelineChainguard } from "$dev/hooks/pipeline-chainguard.ts"
+
+interface PluginConfig extends Config {
+  skills?: { paths?: string[] }
+}
 
 const PLUGIN_ROOT = path.resolve(import.meta.dir, "../..")
 const SKILLS_DIR = path.resolve(PLUGIN_ROOT, "skills")
@@ -10,13 +14,14 @@ const SKILLS_DIR = path.resolve(PLUGIN_ROOT, "skills")
 const devPlugin: Plugin = async ({ directory }) => {
   return {
     config: async (cfg) => {
-      const c = cfg as Record<string, unknown>
-      const skills = (c.skills ??= {}) as Record<string, unknown>
-      const paths = (skills.paths ??= []) as string[]
-      if (!paths.includes(SKILLS_DIR)) paths.push(SKILLS_DIR)
+      const c = cfg as PluginConfig
 
-      const mcp = (c.mcp ??= {}) as Record<string, unknown>
-      Object.assign(mcp, {
+      c.skills ??= {}
+      c.skills.paths ??= []
+      if (!c.skills.paths.includes(SKILLS_DIR)) c.skills.paths.push(SKILLS_DIR)
+
+      c.mcp ??= {}
+      Object.assign(c.mcp, {
         "git-ops": {
           type: "local",
           command: ["bash", "-c", 'exec "${XDG_BIN_HOME:-$HOME/.local/bin}/mcp-git-ops"'],
@@ -24,9 +29,9 @@ const devPlugin: Plugin = async ({ directory }) => {
         },
       })
 
-      const perm = (c.permission ??= {}) as Record<string, unknown>
-      const bashPerm = (perm.bash ??= {}) as Record<string, string>
-      Object.assign(bashPerm, {
+      c.permission ??= {}
+      c.permission.bash = {
+        ...(typeof c.permission.bash === "object" ? c.permission.bash : {}),
         "python3? *": "deny",
         "pip3? *": "deny",
         "virtualenv *": "deny",
@@ -35,7 +40,7 @@ const devPlugin: Plugin = async ({ directory }) => {
         "git commit *--no-verify*": "deny",
         "git push *": "ask",
         "git commit *": "ask",
-      })
+      }
     },
 
     "tool.execute.before": async (input, output) => {
@@ -50,7 +55,7 @@ const devPlugin: Plugin = async ({ directory }) => {
     },
 
     "tool.execute.after": async (input, output) => {
-      const out = output as Record<string, any>
+      const out = output as { additionalContext?: string }
       const r1 = runPostTool({
         toolName: input.tool,
         toolInput: input.args,
@@ -59,7 +64,7 @@ const devPlugin: Plugin = async ({ directory }) => {
       })
       if (r1.modifiedResult) Object.assign(output, r1.modifiedResult)
       if (r1.additionalContext) {
-        const existing = (out.additionalContext as string) ?? ""
+        const existing = out.additionalContext ?? ""
         out.additionalContext = [existing, r1.additionalContext].filter(Boolean).join("\n")
       }
 
@@ -70,7 +75,7 @@ const devPlugin: Plugin = async ({ directory }) => {
         cwd: directory,
       })
       if (r2.additionalContext) {
-        const existing = (out.additionalContext as string) ?? ""
+        const existing = out.additionalContext ?? ""
         out.additionalContext = [existing, r2.additionalContext].filter(Boolean).join("\n")
       }
     },
