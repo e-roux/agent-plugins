@@ -12,16 +12,25 @@
       "node"
     ],
     "paths": {
-      "$dev/hooks/*": [
+      "@mxhq/agent-plugin-core": [
+        "./packages/core/src/index.ts"
+      ],
+      "@mxhq/agent-plugin-core/types": [
+        "./packages/core/src/types.ts"
+      ],
+      "@mxhq/agent-plugin-core/utils": [
+        "./packages/core/src/utils.ts"
+      ],
+      "@dev/hooks/*": [
         "./plugins/dev/hooks/src/*"
       ],
-      "$dev/skills": [
+      "@dev/skills": [
         "./plugins/dev/skills"
       ],
-      "$infra/hooks/*": [
+      "@infra/hooks/*": [
         "./plugins/infra/hooks/src/*"
       ],
-      "$infra/skills": [
+      "@infra/skills": [
         "./plugins/infra/skills"
       ]
     }
@@ -29,6 +38,7 @@
   "include": [
     "env.d.ts",
     "plugins/**/*.ts",
-    "plugins/**/.opencode/**/*.ts"
+    "plugins/**/.opencode/**/*.ts",
+    "packages/**/*.ts"
   ]
 }

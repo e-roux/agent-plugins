@@ -6,7 +6,6 @@ SHELL := /bin/bash
 BATS         := bats
 SHELLCHECK   := shellcheck
 TEST_DIR     := test
-HOOKS_SCRIPTS := hooks/scripts
 MCP_MODULE   := github.com/e-roux/mcp-git-ops
 override GOBIN := $(or $(XDG_BIN_HOME),$(HOME)/.local/bin)
 
@@ -25,10 +24,8 @@ sync:
 	printf "  OK dependencies present (run 'make install' for mcp-git-ops binary)\n"
 
 fmt:
-	if [ -d $(HOOKS_SCRIPTS) ] && [ $$(find $(HOOKS_SCRIPTS) -name '*.sh' | wc -l) -gt 0 ]; then find $(HOOKS_SCRIPTS) -name '*.sh' -exec shellcheck -f gcc {} +; fi
 
 lint:
-	if [ -d $(HOOKS_SCRIPTS) ] && [ $$(find $(HOOKS_SCRIPTS) -name '*.sh' | wc -l) -gt 0 ]; then find $(HOOKS_SCRIPTS) -name '*.sh' -exec shellcheck {} +; fi
 
 changelog:
 	cl="CHANGELOG.md"
@@ -41,15 +38,7 @@ changelog:
 typecheck:
 	printf "  OK no local compiled sources (mcp-git-ops lives in github.com/e-roux/mcp-git-ops)\n"
 
-build: compile install
-
-compile:
-	printf "  → Bundling dev hooks using Bun\n"
-	bun build hooks/src/pre-tool.ts --outfile hooks/scripts/pre-tool.js --target node
-	bun build hooks/src/post-tool.ts --outfile hooks/scripts/post-tool.js --target node
-	bun build hooks/src/session-start.ts --outfile hooks/scripts/session-start.js --target node
-	bun build hooks/src/branch-check-turn.ts --outfile hooks/scripts/branch-check-turn.js --target node
-	bun build hooks/src/pipeline-chainguard.ts --outfile hooks/scripts/pipeline-chainguard.js --target node
+build: install
 
 install:
 	GOBIN=$(GOBIN) go install $(MCP_MODULE)@latest
@@ -60,7 +49,6 @@ test.unit:
 
 clean:
 	rm -f hooks/logs/*.log
-	rm -f hooks/scripts/*.js
 
 distclean: clean
 

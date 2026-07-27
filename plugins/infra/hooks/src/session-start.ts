@@ -1,12 +1,5 @@
 import { readFileSync } from "node:fs";
-
-export interface SessionStartInput {
-  cwd?: string;
-}
-
-export interface SessionStartOutput {
-  additionalContext?: string;
-}
+import type { SessionStartInput, SessionStartOutput } from "@mxhq/agent-plugin-core";
 
 export function runSessionStart(input: SessionStartInput): SessionStartOutput {
   return {

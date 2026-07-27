@@ -1,76 +1,17 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
 import { execFile } from "node:child_process";
-import { readFileSync, existsSync, mkdirSync, appendFileSync } from "node:fs";
-import { basename, dirname, resolve } from "node:path";
-
-const SECRET_PATTERN =
-  /(JWT_SECRET|API_KEY|CLIENT_SECRET|OIDC_CLIENT_SECRET|DB_PASS(?:WORD)?|MONGODB_URI|RABBITMQ_URL|PRIVATE_KEY|ACCESS_TOKEN_SECRET|SECRET_KEY|PASSWORD|PASSWD)\s*:?=\s*["'][^"']{8,}["']/;
-
-const COMMENT_EXTENSIONS = new Set([
-  ".go", ".ts", ".tsx", ".js", ".jsx", ".py", ".rs",
-  ".java", ".c", ".cpp", ".h", ".cs", ".rb", ".swift", ".kt",
-]);
-
-const TEST_CONFIG_PATTERN =
-  /(_test\.(go|ts|js|rs|py)|\.test\.(ts|js)|spec\.(ts|js)|\.example|\.md|\.template|testdata|\.bats|\/test\/)/;
-
-const TOKEN_PATTERNS: Array<[RegExp, string]> = [
-  [/gh[ps]_[a-zA-Z0-9]{36}/g, "[REDACTED_GITHUB_TOKEN]"],
-  [/gho_[a-zA-Z0-9]{36}/g, "[REDACTED_GITHUB_OAUTH]"],
-  [/AKIA[A-Z0-9]{16}/g, "[REDACTED_AWS_KEY]"],
-  [/sk-[a-zA-Z0-9]{32,}/g, "[REDACTED_API_KEY]"],
-  [/[0-9a-f]{64,}/g, "[REDACTED_TOKEN]"],
-];
-
-const MCP_CB_FILE = "/tmp/.mcp-git-ops-cb";
-const MCP_CB_TTL = 300;
-
-function isTestOrConfig(path: string): boolean {
-  return TEST_CONFIG_PATTERN.test(path);
-}
-
-function currentBranch(cwd: string): string {
-  try {
-    const { execFileSync } = require("node:child_process");
-    const branch = execFileSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
-      cwd,
-      timeout: 5000,
-      encoding: "utf-8",
-    }).trim();
-    if (branch === "HEAD") {
-      return execFileSync("git", ["symbolic-ref", "--short", "HEAD"], {
-        cwd,
-        timeout: 5000,
-        encoding: "utf-8",
-      }).trim();
-    }
-    return branch;
-  } catch {
-    return "";
-  }
-}
-
-function isProtectedBranch(branch: string): boolean {
-  return branch === "main" || branch === "master";
-}
-
-function mpcGitOpsAvailable(): boolean {
-  try {
-    const { execFileSync } = require("node:child_process");
-    execFileSync("which", ["mcp-git-ops"], { timeout: 3000 });
-  } catch {
-    return false;
-  }
-  if (existsSync(MCP_CB_FILE)) {
-    try {
-      const tripped = parseInt(readFileSync(MCP_CB_FILE, "utf-8").trim(), 10);
-      const age = Math.floor(Date.now() / 1000) - tripped;
-      if (age < MCP_CB_TTL) return false;
-    } catch {}
-  }
-  return true;
-}
+import { readFileSync, existsSync } from "node:fs";
+import { basename, dirname } from "node:path";
+import {
+  SECRET_PATTERN,
+  COMMENT_EXTENSIONS,
+  isTestOrConfig,
+  currentBranch,
+  isProtectedBranch,
+  mcpGitOpsAvailable,
+  redactSecrets,
+} from "@mxhq/agent-plugin-core";
 
 function runCmd(cmd: string, args: string[], cwd: string): Promise<{ ok: boolean; out: string }> {
   return new Promise((res) => {
@@ -78,22 +19,6 @@ function runCmd(cmd: string, args: string[], cwd: string): Promise<{ ok: boolean
       res(err ? { ok: false, out: stderr || err.message } : { ok: true, out: stdout.trim() });
     });
   });
-}
-
-function redactSecrets(text: string): { redacted: string; found: boolean } {
-  let result = text;
-  let found = false;
-  for (const [pattern, replacement] of TOKEN_PATTERNS) {
-    if (pattern.test(result)) {
-      result = result.replace(pattern, replacement);
-      found = true;
-    }
-  }
-  if (/BEGIN.*PRIVATE KEY/.test(result)) {
-    result = result.replace(/-----BEGIN[^-]*PRIVATE KEY-----[\s\S]*?-----END[^-]*PRIVATE KEY-----/g, "[REDACTED_PRIVATE_KEY]");
-    found = true;
-  }
-  return { redacted: result, found };
 }
 
 export default function (pi: ExtensionAPI) {
@@ -155,19 +80,19 @@ export default function (pi: ExtensionAPI) {
       const cmd: string = input.command || "";
       if (!cmd) return;
 
-      if (/git\s+push\b/.test(cmd) && mpcGitOpsAvailable()) {
+      if (/git\s+push\b/.test(cmd) && mcpGitOpsAvailable()) {
         return {
           block: true,
           reason: "Use the mcp__git-ops__push tool instead of bash git push.",
         };
       }
-      if (/(gh\s+pr\s+create|glab\s+mr\s+create|az\s+repos\s+pr\s+create)\b/.test(cmd) && mpcGitOpsAvailable()) {
+      if (/(gh\s+pr\s+create|glab\s+mr\s+create|az\s+repos\s+pr\s+create)\b/.test(cmd) && mcpGitOpsAvailable()) {
         return {
           block: true,
           reason: "Use the mcp__git-ops__create_pr tool instead.",
         };
       }
-      if (/(gh\s+pr\s+merge|glab\s+mr\s+merge)\b/.test(cmd) && mpcGitOpsAvailable()) {
+      if (/(gh\s+pr\s+merge|glab\s+mr\s+merge)\b/.test(cmd) && mcpGitOpsAvailable()) {
         return {
           block: true,
           reason: "Use the mcp__git-ops__merge_pr tool instead.",

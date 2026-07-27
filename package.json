@@ -5,11 +5,18 @@
   "type": "module",
   "keywords": ["pi-package"],
   "license": "MIT",
+  "engines": {
+    "node": ">=22.6.0"
+  },
   "author": "Emmanuel Roux",
   "repository": {
     "type": "git",
     "url": "https://github.com/e-roux/agent-plugins.git"
   },
+  "workspaces": [
+    "plugins/*",
+    "packages/*"
+  ],
   "pi": {
     "extensions": [
       "./plugins/dev/extensions/pi",
@@ -26,6 +33,9 @@
     "@earendil-works/pi-coding-agent": "*",
     "@earendil-works/pi-tui": "*",
     "typebox": "*"
+  },
+  "dependencies": {
+    "@mxhq/agent-plugin-core": "file:packages/core"
   },
   "devDependencies": {
     "@opencode-ai/plugin": "^1.15.13",

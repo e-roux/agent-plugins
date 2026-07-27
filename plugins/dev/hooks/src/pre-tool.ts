@@ -6,13 +6,53 @@ import {
   currentBranch,
   isProtectedBranch,
   mcpGitOpsAvailable,
-  isMakefile,
-  validateMakefile,
-  validateExistingMakefile,
   SECRET_PATTERN,
   COMMENT_EXTENSIONS,
-} from "./utils.ts";
-import type { PreToolInput, PreToolOutput, ToolCall } from "./types.ts";
+} from "@mxhq/agent-plugin-core";
+import type { PreToolInput, PreToolOutput, ToolCall } from "@mxhq/agent-plugin-core";
+
+function isMakefile(name: string): boolean {
+  return name === "Makefile" || name === "makefile" || name === "GNUmakefile" || name.endsWith(".mk");
+}
+
+function validateMakefile(content: string): string | null {
+  if (!content.includes(".SILENT:")) {
+    return "Makefile missing required directive: '.SILENT:' - add it before the first target to suppress recipe echoing without @.";
+  }
+  if (!content.includes(".ONESHELL:")) {
+    return "Makefile missing required directive: '.ONESHELL:' - add it to run each recipe in a single shell instance.";
+  }
+  if (!content.includes(".DEFAULT_GOAL")) {
+    return "Makefile missing required directive: '.DEFAULT_GOAL := help' - the default target must be 'help'.";
+  }
+  if (/\t@/.test(content)) {
+    return "Makefile has '@' prefix in recipe lines - this is redundant with '.SILENT:' and FORBIDDEN. Remove all '@' prefixes from recipes.";
+  }
+  const inlineHelpRegex = /^[a-zA-Z_.][a-zA-Z_.0-9]*[^#\n]*##/m;
+  if (inlineHelpRegex.test(content)) {
+    return "Makefile has '##' inline annotations on target lines - Approach B (grep-parsed help) is FORBIDDEN. Use explicit printf entries in the help target instead (Approach A).";
+  }
+  const qaRegex = /(?:^\.PHONY:[^\n]*\bqa\b|^qa\s*:)/m;
+  if (!qaRegex.test(content)) {
+    return "Makefile missing required 'qa' target - add a 'qa:' recipe that runs 'check test' as the quality gate (e.g., 'qa: check test').";
+  }
+  return null;
+}
+
+function validateExistingMakefile(filePath: string, newContent: string): string | null {
+  if (!existsSync(filePath)) return null;
+  const current = readFileSync(filePath, "utf-8");
+  if (!current.includes(".SILENT:") && !newContent.includes(".SILENT:")) {
+    return `Makefile at ${filePath} is missing '.SILENT:' - add this directive before making other edits.`;
+  }
+  if (!current.includes(".ONESHELL:") && !newContent.includes(".ONESHELL:")) {
+    return `Makefile at ${filePath} is missing '.ONESHELL:' - add this directive before making other edits.`;
+  }
+  if (!current.includes(".DEFAULT_GOAL") && !newContent.includes(".DEFAULT_GOAL")) {
+    return `Makefile at ${filePath} is missing '.DEFAULT_GOAL' - add this directive before making other edits.`;
+  }
+  return null;
+}
 
 function deny(reason: string): PreToolOutput {
   return {

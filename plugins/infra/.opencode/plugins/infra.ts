@@ -1,6 +1,6 @@
 import path from "path"
 import type { Plugin, Config } from "@opencode-ai/plugin"
-import { runPreTool } from "$infra/hooks/pre-tool.ts"
+import { runPreTool } from "@infra/hooks/pre-tool.ts"
 
 interface PluginConfig extends Config {
   skills?: { paths?: string[] }

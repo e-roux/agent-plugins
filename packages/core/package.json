@@ -1,0 +1,19 @@
+{
+  "name": "@mxhq/agent-plugin-core",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Shared types and utilities for agent plugin hooks across platforms",
+  "exports": {
+    ".": "./src/index.ts",
+    "./types": "./src/types.ts",
+    "./utils": "./src/utils.ts"
+  },
+  "types": "./src/index.ts",
+  "engines": {
+    "node": ">=22.6.0"
+  },
+  "files": [
+    "src"
+  ],
+  "license": "MIT"
+}

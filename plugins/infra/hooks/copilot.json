@@ -4,14 +4,14 @@
     "sessionStart": [
       {
         "type": "command",
-        "bash": "node \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/session-start.js\"",
+        "bash": "node --experimental-strip-types \"$CLAUDE_PLUGIN_ROOT/hooks/src/session-start.ts\"",
         "timeoutSec": 10
       }
     ],
     "preToolUse": [
       {
         "type": "command",
-        "bash": "node \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/pre-tool.js\"",
+        "bash": "node --experimental-strip-types \"$CLAUDE_PLUGIN_ROOT/hooks/src/pre-tool.ts\"",
         "timeoutSec": 10
       }
     ]

@@ -1,8 +1,8 @@
 import path from "path"
 import type { Plugin, Config } from "@opencode-ai/plugin"
-import { runPreTool } from "$dev/hooks/pre-tool.ts"
-import { runPostTool } from "$dev/hooks/post-tool.ts"
-import { runPipelineChainguard } from "$dev/hooks/pipeline-chainguard.ts"
+import { runPreTool } from "@dev/hooks/pre-tool.ts"
+import { runPostTool } from "@dev/hooks/post-tool.ts"
+import { runPipelineChainguard } from "@dev/hooks/pipeline-chainguard.ts"
 
 interface PluginConfig extends Config {
   skills?: { paths?: string[] }

@@ -1,7 +1,0 @@
-packages:
-  - "plugins/*"
-
-allowBuilds:
-  '@google/genai': true
-  msgpackr-extract: true
-  protobufjs: true
