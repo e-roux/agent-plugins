@@ -1,6 +1,10 @@
 import path from "path"
-import type { Plugin } from "@opencode-ai/plugin"
-import { runPreTool } from "@infra/hooks/pre-tool.ts"
+import type { Plugin, Config } from "@opencode-ai/plugin"
+import { runPreTool } from "$infra/hooks/pre-tool.ts"
+
+interface PluginConfig extends Config {
+  skills?: { paths?: string[] }
+}
 
 const PLUGIN_ROOT = path.resolve(import.meta.dir, "../..")
 const SKILLS_DIR = path.resolve(PLUGIN_ROOT, "skills")
@@ -8,10 +12,11 @@ const SKILLS_DIR = path.resolve(PLUGIN_ROOT, "skills")
 const infraPlugin: Plugin = async ({ directory }) => {
   return {
     config: async (cfg) => {
-      const c = cfg as Record<string, unknown>
-      const skills = (c.skills ??= {}) as Record<string, unknown>
-      const paths = (skills.paths ??= []) as string[]
-      if (!paths.includes(SKILLS_DIR)) paths.push(SKILLS_DIR)
+      const c = cfg as PluginConfig
+
+      c.skills ??= {}
+      c.skills.paths ??= []
+      if (!c.skills.paths.includes(SKILLS_DIR)) c.skills.paths.push(SKILLS_DIR)
     },
 
     "tool.execute.before": async (input, output) => {
