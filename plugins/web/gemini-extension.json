@@ -1,0 +1,6 @@
+{
+  "name": "web",
+  "description": "Web automation and remote-control browser plugin, using Chrome DevTools Protocol.",
+  "version": "1.0.0",
+  "contextFileName": "GEMINI.md"
+}

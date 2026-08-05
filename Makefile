@@ -3,8 +3,8 @@ SHELL := /bin/bash
 .ONESHELL:
 .DEFAULT_GOAL := help
 
-PLUGINS    := dev infra editor shell
-PI_PLUGINS := dev infra editor shell
+PLUGINS    := dev infra editor shell web
+PI_PLUGINS := dev infra editor shell web
 BIOME      := biome
 GH		   := gh
 GIT		   := git

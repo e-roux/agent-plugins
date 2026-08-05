@@ -30,7 +30,8 @@
       "./plugins/infra/skills",
       "./plugins/make/skills",
       "./plugins/editor/skills",
-      "./plugins/shell/skills"
+      "./plugins/shell/skills",
+      "./plugins/web/skills"
     ]
   },
   "peerDependencies": {
