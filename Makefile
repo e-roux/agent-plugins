@@ -3,12 +3,13 @@ SHELL := /bin/bash
 .ONESHELL:
 .DEFAULT_GOAL := help
 
-PLUGINS    := dev infra
-PI_PLUGINS := dev infra
+PLUGINS    := dev infra editor shell web
+PI_PLUGINS := dev infra editor shell web
 BIOME      := biome
 GH		   := gh
 GIT		   := git
 JQ         := jq
+TSC        := ./node_modules/.bin/tsc
 
 PLUGIN_DIRS  := $(patsubst plugins/%/Makefile,%,$(wildcard plugins/*/Makefile))
 QA_PLUGINS   := $(addprefix qa/,$(PLUGIN_DIRS))
@@ -25,6 +26,8 @@ CLEAN_PLUGINS   := $(addprefix clean/,$(PLUGIN_DIRS))
 check: fmt lint typecheck
 qa: check test $(QA_PLUGINS)
 test: test.unit
+
+_has_exe = $(if $(and $(1),$(shell command -v $(1) 2>/dev/null)),,$(error Required executable '$(1)' not found))
 
 $(if $(shell command -v $(BIOME) >/dev/null 2>&1 && echo ok),,$(error biome not found))
 $(if $(shell command -v $(JQ) >/dev/null 2>&1 && echo ok),,$(error jq not found))
@@ -46,7 +49,7 @@ fmt: sync
 lint: sync verify.versions verify.pi verify.opencode changelog
 
 typecheck: sync
-	tsc --noEmit
+	$(TSC) --noEmit
 
 verify.versions:
 	fail=0

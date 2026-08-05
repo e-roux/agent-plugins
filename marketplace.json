@@ -11,14 +11,32 @@
     {
       "name": "dev",
       "description": "General-purpose development guards: no hardcoded secrets, no direct main pushes, self-documenting code",
-      "version": "1.1.0",
+      "version": "1.1.2",
       "source": "./plugins/dev"
     },
     {
       "name": "infra",
       "description": "Infrastructure automation agent for cloud and on-premise environments",
-      "version": "0.1.16",
+      "version": "0.1.17",
       "source": "./plugins/infra"
+    },
+    {
+      "name": "editor",
+      "description": "Editor configurations and developer environment plugin, containing Neovim Lua configuration standards.",
+      "version": "1.0.0",
+      "source": "./plugins/editor"
+    },
+    {
+      "name": "shell",
+      "description": "Shell integration and command completions plugin, covering multi-shell configurations (Zsh, Fish, Nushell) and asynchronous scripting.",
+      "version": "1.0.0",
+      "source": "./plugins/shell"
+    },
+    {
+      "name": "web",
+      "description": "Web automation and remote-control browser plugin, using Chrome DevTools Protocol.",
+      "version": "1.0.0",
+      "source": "./plugins/web"
     }
   ]
 }

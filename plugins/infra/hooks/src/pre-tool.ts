@@ -1,12 +1,22 @@
 import { readFileSync } from "node:fs";
-import type { PreToolInput, PreToolOutput } from "@mxhq/agent-plugin-core";
+import type { PreToolInput, PreToolOutput, ToolCall } from "@mxhq/agent-plugin-core";
 
 export function runPreTool(input: PreToolInput): PreToolOutput {
-  if (!input.toolCalls || input.toolCalls.length === 0) {
+  const toolCalls: ToolCall[] = [];
+  if (input.toolCalls && Array.isArray(input.toolCalls)) {
+    toolCalls.push(...input.toolCalls);
+  } else if (input.tool_name) {
+    toolCalls.push({
+      name: input.tool_name,
+      args: input.tool_input || {},
+    });
+  }
+
+  if (toolCalls.length === 0) {
     return {};
   }
 
-  for (const toolCall of input.toolCalls) {
+  for (const toolCall of toolCalls) {
     if (toolCall.name === "bash" || toolCall.name === "run_command" || toolCall.name === "execute_command") {
       let args: Record<string, any> = {};
       if (typeof toolCall.args === "string") {
@@ -30,6 +40,8 @@ export function runPreTool(input: PreToolInput): PreToolOutput {
           return {
             permissionDecision: "deny",
             permissionDecisionReason: "ansible-playbook must use --check (dry-run) first on non-local connections. Run with --check to verify, then remove it for the real run.",
+            decision: "deny",
+            reason: "ansible-playbook must use --check (dry-run) first on non-local connections. Run with --check to verify, then remove it for the real run.",
           };
         }
       }

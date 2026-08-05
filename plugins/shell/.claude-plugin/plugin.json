@@ -1,0 +1,16 @@
+{
+  "name": "shell",
+  "description": "Shell integration and command completions plugin, covering multi-shell configurations (Zsh, Fish, Nushell) and asynchronous scripting.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Emmanuel Roux"
+  },
+  "license": "MIT",
+  "keywords": [
+    "shell",
+    "zsh",
+    "fish",
+    "nushell",
+    "config"
+  ]
+}

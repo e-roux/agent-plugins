@@ -7,11 +7,15 @@ export interface ToolCall {
 export interface PreToolInput {
   cwd?: string;
   toolCalls?: ToolCall[];
+  tool_name?: string;
+  tool_input?: Record<string, any>;
 }
 
 export interface PreToolOutput {
   permissionDecision?: "allow" | "deny";
   permissionDecisionReason?: string;
+  decision?: "allow" | "deny" | "block";
+  reason?: string;
   modifiedArgs?: Record<string, any>;
   additionalContext?: string;
 }

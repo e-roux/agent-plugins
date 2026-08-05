@@ -44,7 +44,7 @@ pi install git:github.com/e-roux/agent-plugins
 Hooks, extensions, and manifests are agent-specific:
 - **Copilot CLI**: `plugin.json` manifest + `hooks/*.copilot.json` + `.mjs` extensions
 - **Claude Code**: `.claude-plugin/plugin.json` manifest with inline hook configurations
-- **Gemini CLI**: `gemini-extension.json` manifest + `GEMINI.md` context + isolated `hooks/gemini.json` configuration
+- **Gemini CLI**: `gemini-extension.json` manifest + `GEMINI.md` context + isolated `hooks/hooks.json` configuration
 - **Pi**: `package.json` manifest + TypeScript extensions in `extensions/pi/`
 
 ## Skills

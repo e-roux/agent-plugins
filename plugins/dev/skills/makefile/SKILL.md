@@ -44,34 +44,103 @@ SHELL := /bin/bash
 .DEFAULT_GOAL := help
 ```
 
-| Directive | Purpose |
-|-----------|---------|
-| `.SILENT:` | Suppresses recipe echoing — **removes ALL need for `@` prefix** |
-| `.ONESHELL:` | Runs each recipe in a single shell instance (enables multi-line logic) |
-| `.DEFAULT_GOAL := help` | Makes `help` the default target when `make` is run bare |
-
 > **Hook enforcement**: Creating or editing a Makefile without these directives is **denied** by the plugin's `preToolUse` hook.
 
 ---
 
-## FORBIDDEN: `@` Prefix in Recipes
+## FORBIDDEN
+### Commands in recipes
+
+No command directly written in the recipe, use variables!
+
+```makefile
+# ✗ WRONG — pytest directly called from the recipe
+test:
+	pytest tests/
+
+# ✓ CORRECT
+UV      := uv
+PYTEST 	:= $(UV) run python -m pytest
+test:
+	$(PYTEST) tests/
+```
+
+### `@` Prefix in Recipes
 
 **NEVER** use the `@` prefix in recipe lines. `.SILENT:` already suppresses all echoing.
 
 ```makefile
 # ✗ WRONG — @ is redundant and forbidden
+PYTEST  := pytest
+
 test:
-	@pytest tests/
+	@$(PYTEST) tests/
 
 # ✓ CORRECT
 test:
-	pytest tests/
+	$(PYTEST) tests/
 ```
 
 > **Hook enforcement**: Adding `@` to recipe lines is **denied** by the plugin's `preToolUse` hook.
 
----
+### Use Makefile variables when possible
 
+Stay DRY and use Makefile capabilites!
+
+```makefile
+# ✗ WRONG: use Makefile variables! 
+.git/hooks/pre-push: hooks/scripts/pre-push
+	mkdir -p .git/hooks
+	ln -sf hooks/scripts/pre-push .git/hooks/pre-push
+	$(info   OK pre-push hook installed)
+
+# ✓ CORRECT
+.git/hooks/pre-push: hooks/scripts/pre-push
+	mkdir -p $(@D)
+	ln -sf $< $@
+	$(info   OK pre-push hook installed)
+```
+### Create a `.PHONY` rule when a concrete file can be used
+If your command generates a specific physical file, do not use .PHONY. Target
+the concrete file instead so Make can skip unnecessary builds.
+
+```makefile
+.PHONY: sync
+
+# ✗ WRONG — `@` is redundant and forbidden
+sync: 
+	mkdir -p .git/hooks/
+	ln -sf hooks/scripts/pre-push .git/hooks/pre-push 
+	$(info   OK pre-push hook installed)
+
+# ✓ CORRECT
+.git/hooks/pre-push: hooks/scripts/pre-push
+	mkdir -p $(@D)
+	ln -sf $< $@
+	$(info   OK pre-push hook installed)
+
+sync: .git/hooks/pre-push
+```
+
+### Avoid creating .PHONY targets that solely act as aliases for real file targets 
+
+> Exceptions are  `build`, `clean`, `distclean`, `doc`, `fmt`, `lint`, `qa`,
+> `sync`, `test`, `typecheck` that act as structural entry points.
+
+```makefile
+data/models.yaml: input/data.py
+	printf "Creating $@:\n"
+	$(RTK) $(PYTHON) $<
+	printf "\n"
+
+# ✗ WRONG: Creating an unnecessary alias target
+.PHONY: data.models
+data.models: data/models.yaml
+```
+
+
+models.schema: schema/pipeline-models.v1.json
+---
 ## Standard Targets
 
 All projects provide these targets:

@@ -1,0 +1,15 @@
+{
+  "name": "@e-roux/pi-plugin-editor",
+  "version": "1.0.0",
+  "description": "Editor configurations and developer environment plugin",
+  "keywords": [
+    "pi-package"
+  ],
+  "license": "MIT",
+  "author": "Emmanuel Roux",
+  "pi": {
+    "skills": [
+      "./skills"
+    ]
+  }
+}
