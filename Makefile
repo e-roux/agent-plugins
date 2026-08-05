@@ -3,12 +3,13 @@ SHELL := /bin/bash
 .ONESHELL:
 .DEFAULT_GOAL := help
 
-PLUGINS    := dev infra
-PI_PLUGINS := dev infra
+PLUGINS    := dev infra editor
+PI_PLUGINS := dev infra editor
 BIOME      := biome
 GH		   := gh
 GIT		   := git
 JQ         := jq
+TSC        := ./node_modules/.bin/tsc
 
 PLUGIN_DIRS  := $(patsubst plugins/%/Makefile,%,$(wildcard plugins/*/Makefile))
 QA_PLUGINS   := $(addprefix qa/,$(PLUGIN_DIRS))
@@ -46,7 +47,7 @@ fmt: sync
 lint: sync verify.versions verify.pi verify.opencode changelog
 
 typecheck: sync
-	tsc --noEmit
+	$(TSC) --noEmit
 
 verify.versions:
 	fail=0

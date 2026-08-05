@@ -1,0 +1,22 @@
+{
+  "name": "editor",
+  "description": "Editor configurations and developer environment plugin, containing Neovim Lua configuration standards.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Emmanuel Roux"
+  },
+  "license": "MIT",
+  "keywords": [
+    "neovim",
+    "lua",
+    "editor",
+    "config"
+  ],
+  "category": "development",
+  "_meta": {
+    "copilotCliVersion": "1.0.54",
+    "copilotSdkVersion": "0.2.2",
+    "lastVerified": "2026-07-19"
+  },
+  "skills": "skills/"
+}

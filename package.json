@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "Pi coding agent distribution: development guards, Make-centric workflow, and infrastructure skills",
   "type": "module",
-  "keywords": ["pi-package"],
+  "keywords": [
+    "pi-package"
+  ],
   "license": "MIT",
   "engines": {
     "node": ">=22.6.0"
@@ -26,7 +28,8 @@
     "skills": [
       "./plugins/dev/skills",
       "./plugins/infra/skills",
-      "./plugins/make/skills"
+      "./plugins/make/skills",
+      "./plugins/editor/skills"
     ]
   },
   "peerDependencies": {
@@ -39,6 +42,7 @@
   },
   "devDependencies": {
     "@opencode-ai/plugin": "^1.15.13",
-    "@types/node": "^22.0.0"
+    "@types/node": "^22.0.0",
+    "typescript": "^7.0.2"
   }
 }

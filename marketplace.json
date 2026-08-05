@@ -19,6 +19,12 @@
       "description": "Infrastructure automation agent for cloud and on-premise environments",
       "version": "0.1.16",
       "source": "./plugins/infra"
+    },
+    {
+      "name": "editor",
+      "description": "Editor configurations and developer environment plugin, containing Neovim Lua configuration standards.",
+      "version": "1.0.0",
+      "source": "./plugins/editor"
     }
   ]
 }
