@@ -58,6 +58,8 @@ function deny(reason: string): PreToolOutput {
   return {
     permissionDecision: "deny",
     permissionDecisionReason: reason,
+    decision: "deny",
+    reason: reason,
   };
 }
 
@@ -313,12 +315,20 @@ function processToolCall(toolCall: ToolCall, cwd: string): PreToolOutput | null 
 
 export function runPreTool(input: PreToolInput): PreToolOutput {
   const cwd = input.cwd || ".";
-  if (input.toolCalls && input.toolCalls.length > 0) {
-    for (const toolCall of input.toolCalls) {
-      const decision = processToolCall(toolCall, cwd);
-      if (decision) {
-        return decision;
-      }
+  const toolCalls: ToolCall[] = [];
+  if (input.toolCalls && Array.isArray(input.toolCalls)) {
+    toolCalls.push(...input.toolCalls);
+  } else if (input.tool_name) {
+    toolCalls.push({
+      name: input.tool_name,
+      args: input.tool_input || {},
+    });
+  }
+
+  for (const toolCall of toolCalls) {
+    const decision = processToolCall(toolCall, cwd);
+    if (decision) {
+      return decision;
     }
   }
   return {};

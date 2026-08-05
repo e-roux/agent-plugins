@@ -39,6 +39,12 @@ gh api projects/:id -X PUT -f "default_branch=main"
 
 ## CI/CD Troubleshooting
 
+### Run/branch selection
+Get the run number FIRST and limit the number of output elements by filtering the considered branch
+
+```bash
+PAGER=/bin/cat gh run list --branch <BRANCH_NAME>
+```
 ### Streaming Job Logs Without TUI
 ```bash
 ## Repository Management

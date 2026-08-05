@@ -46,6 +46,7 @@ install:
 
 test.unit:
 	$(BATS) $(TEST_DIR)/copilot-cli/hooks.bats
+	$(BATS) $(TEST_DIR)/copilot-cli/gemini-e2e.bats
 	$(BATS) $(TEST_DIR)/skills/codebase-audit.bats
 
 clean:
