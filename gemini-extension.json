@@ -11,6 +11,5 @@
       "command": "mcp-git-ops"
     }
   },
-  "contextFileName": "GEMINI.md",
-  "hooks": "hooks/gemini.json"
+  "contextFileName": "GEMINI.md"
 }

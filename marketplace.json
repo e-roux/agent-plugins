@@ -11,13 +11,13 @@
     {
       "name": "dev",
       "description": "General-purpose development guards: no hardcoded secrets, no direct main pushes, self-documenting code",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "source": "./plugins/dev"
     },
     {
       "name": "infra",
       "description": "Infrastructure automation agent for cloud and on-premise environments",
-      "version": "0.1.16",
+      "version": "0.1.17",
       "source": "./plugins/infra"
     },
     {

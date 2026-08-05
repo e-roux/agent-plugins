@@ -23,7 +23,7 @@ agent-plugins/
 Each plugin directory contains:
 - `plugin.json` — Copilot CLI manifest (specifies `"hooks": "hooks/copilot.json"` and `"skills": "skills/"`)
 - `package.json` — Pi manifest (carries `"pi"` with `"extensions"` and `"skills"`)
-- `gemini-extension.json` — Gemini CLI manifest (specifies `"hooks": "hooks/gemini.json"` and auto-loaded context file)
+- `gemini-extension.json` — Gemini CLI manifest (specifies metadata and auto-loaded context file)
 - `.claude-plugin/plugin.json` — Claude Code manifest (contains direct inline `"hooks"` to prevent resolution conflicts)
 - `GEMINI.md` — Gemini CLI context file (standalone behavioral instructions loaded at session start)
 - `AGENTS.md` (when present) — plugin-specific agent instructions
