@@ -75,5 +75,6 @@ For detailed workflows and guidelines by operation, see the relevant reference f
 - **Releases** → See [references/git-release.md](references/git-release.md)
 - **Safety** → See [references/git-safety.md](references/git-safety.md)
 - **GitLab hosting (`glab`)** → See [references/gitlab.md](references/gitlab.md)
+- **GitHub hosting (`gh`)** → See [references/gh.md](references/gh.md)
 
 **MANDATORY**: When the user requests a commit, pull request, release, safety check, or GitLab integration, you MUST read the corresponding reference file to ensure you follow the complete workflow and formatting requirements.

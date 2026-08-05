@@ -263,6 +263,34 @@ _make_main_repo() {
   [ "$decision" = "deny" ]
 }
 
+@test "branch-first: denies write_file of file in main-branch repo" {
+  local repo; repo=$(_make_main_repo)
+  local toolargs
+  toolargs=$(jq -cn --arg file_path "$repo/main.go" '{"file_path":$file_path,"content":"x"}')
+  local input
+  input=$(jq -cn --arg args "$toolargs" --arg cwd "$repo" '{"cwd":$cwd,"toolCalls":[{"id":"t1","name":"write_file","args":$args}]}')
+  local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts' < '$tmpf'"
+  rm -f "$tmpf"; rm -rf "$repo"
+  [ "$status" -eq 0 ]
+  decision="$(echo "$output" | jq -r '.permissionDecision')"
+  [ "$decision" = "deny" ]
+}
+
+@test "branch-first: denies replace of file in main-branch repo" {
+  local repo; repo=$(_make_main_repo)
+  local toolargs
+  toolargs=$(jq -cn --arg file_path "$repo/main.go" '{"file_path":$file_path,"old_string":"","new_string":"x"}')
+  local input
+  input=$(jq -cn --arg args "$toolargs" --arg cwd "$repo" '{"cwd":$cwd,"toolCalls":[{"id":"t1","name":"replace","args":$args}]}')
+  local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts' < '$tmpf'"
+  rm -f "$tmpf"; rm -rf "$repo"
+  [ "$status" -eq 0 ]
+  decision="$(echo "$output" | jq -r '.permissionDecision')"
+  [ "$decision" = "deny" ]
+}
+
 @test "branch-first: allows edit on feature branch" {
   local repo; repo=$(_make_main_repo)
   git -C "$repo" checkout -b feat/x -q 2>/dev/null || true

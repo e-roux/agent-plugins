@@ -83,9 +83,21 @@ function processToolCall(toolCall: ToolCall, cwd: string): PreToolOutput | null 
   }
 
   // 1. Edit / Create tools
-  if (toolName === "edit" || toolName === "create" || toolName === "write") {
+  if (
+    toolName === "edit" ||
+    toolName === "create" ||
+    toolName === "write" ||
+    toolName === "write_file" ||
+    toolName === "replace"
+  ) {
     const filePath = args.filePath || args.path || args.file_path || "";
-    const newContent = args.newString || args.new_str || args.file_text || args.content || "";
+    const newContent =
+      args.newString ||
+      args.new_str ||
+      args.new_string ||
+      args.file_text ||
+      args.content ||
+      "";
 
     if (filePath) {
       const base = basename(filePath);
