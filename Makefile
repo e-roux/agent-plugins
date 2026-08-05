@@ -3,8 +3,8 @@ SHELL := /bin/bash
 .ONESHELL:
 .DEFAULT_GOAL := help
 
-PLUGINS    := dev infra editor
-PI_PLUGINS := dev infra editor
+PLUGINS    := dev infra editor shell
+PI_PLUGINS := dev infra editor shell
 BIOME      := biome
 GH		   := gh
 GIT		   := git
@@ -26,6 +26,8 @@ CLEAN_PLUGINS   := $(addprefix clean/,$(PLUGIN_DIRS))
 check: fmt lint typecheck
 qa: check test $(QA_PLUGINS)
 test: test.unit
+
+_has_exe = $(if $(and $(1),$(shell command -v $(1) 2>/dev/null)),,$(error Required executable '$(1)' not found))
 
 $(if $(shell command -v $(BIOME) >/dev/null 2>&1 && echo ok),,$(error biome not found))
 $(if $(shell command -v $(JQ) >/dev/null 2>&1 && echo ok),,$(error jq not found))

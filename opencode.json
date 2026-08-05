@@ -3,6 +3,7 @@
   "plugin": [
     "./plugins/dev/.opencode/plugins/dev.ts",
     "./plugins/infra/.opencode/plugins/infra.ts",
-    "./plugins/editor/.opencode/plugins/editor.ts"
+    "./plugins/editor/.opencode/plugins/editor.ts",
+    "./plugins/shell/.opencode/plugins/shell.ts"
   ]
 }

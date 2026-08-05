@@ -1,0 +1,15 @@
+{
+  "name": "@e-roux/pi-plugin-shell",
+  "version": "1.0.0",
+  "description": "Shell integration and command completions plugin",
+  "keywords": [
+    "pi-package"
+  ],
+  "license": "MIT",
+  "author": "Emmanuel Roux",
+  "pi": {
+    "skills": [
+      "./skills"
+    ]
+  }
+}
