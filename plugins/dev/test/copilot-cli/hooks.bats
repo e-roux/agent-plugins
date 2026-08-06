@@ -215,7 +215,7 @@ _make_main_repo() {
 }
 
 @test "branch: does not false-positive on cd && git commands with main in path" {
-  local args; args=$(jq -n '{"command":"git merge --abort && git reset --hard origin/main"}')
+  local args; args=$(jq -n '{"command":"git merge --abort && git checkout feat/x-main"}')
   local input
   input=$(jq -n --arg args "$args" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"bash","args":$args}]}')
   run bash -c "echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts'"
@@ -231,6 +231,27 @@ _make_main_repo() {
   [ "$status" -eq 0 ]
   decision="$(echo "$output" | jq -r '.permissionDecision')"
   [ "$decision" = "deny" ]
+}
+
+@test "branch: denies git commit on main in real workspace" {
+  local repo; repo=$(_make_main_repo)
+  local args; args=$(jq -n '{"command":"git commit -m msg"}')
+  local input
+  input=$(jq -cn --arg args "$args" --arg cwd "$repo" '{"cwd":$cwd,"toolCalls":[{"id":"t1","name":"bash","args":$args}]}')
+  run bash -c "export TEST_FORCE_PROTECTED_BRANCH_BLOCK=1; echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts'"
+  rm -rf "$repo"
+  [ "$status" -eq 0 ]
+  decision="$(echo "$output" | jq -r '.permissionDecision')"
+  [ "$decision" = "deny" ]
+}
+
+@test "branch: allows git commit on main inside tmp directory" {
+  local args; args=$(jq -n '{"command":"git commit -m msg"}')
+  local input
+  input=$(jq -n --arg args "$args" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"bash","args":$args}]}')
+  run bash -c "echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts'"
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
 }
 
 # ── pre-tool.sh: branch-first-guard (edit/create on main) ────────────────────
