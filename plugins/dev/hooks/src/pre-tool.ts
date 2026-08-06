@@ -312,6 +312,14 @@ function processToolCall(toolCall: ToolCall, cwd: string): PreToolOutput | null 
         return deny("Branch guard: --no-verify bypasses commit hooks. Remove the flag.");
       }
 
+      if (/git\s+commit\b/.test(cmd)) {
+        const branch = currentBranch(cwd);
+        const isBypassed = /\/tmp\/|\/private\/tmp\/|\/var\/folders\//.test(cwd) && !process.env.TEST_FORCE_PROTECTED_BRANCH_BLOCK;
+        if (isProtectedBranch(branch) && !isBypassed) {
+          return deny(`Branch guard: committing directly to '${branch}' is FORBIDDEN. Checkout a feature branch first: git checkout -b <type>/<descriptive-slug>`);
+        }
+      }
+
       if (/git\s+([^&|;]*\s+)?reset\s+.*--hard/.test(cmd)) {
         return deny("Branch guard: 'git reset --hard' is FORBIDDEN in this workspace as it destroys local working tree changes.");
       }

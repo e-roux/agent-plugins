@@ -1,7 +1,9 @@
 import { readFileSync } from "node:fs";
 import type { PreToolInput, PreToolOutput, ToolCall } from "@mxhq/agent-plugin-core";
+import { currentBranch, isProtectedBranch } from "@mxhq/agent-plugin-core";
 
 export function runPreTool(input: PreToolInput): PreToolOutput {
+  const cwd = input.cwd || ".";
   const toolCalls: ToolCall[] = [];
   if (input.toolCalls && Array.isArray(input.toolCalls)) {
     toolCalls.push(...input.toolCalls);
@@ -37,7 +39,27 @@ export function runPreTool(input: PreToolInput): PreToolOutput {
       const cmd = args.command || args.commandLine || "";
       if (!cmd) continue;
 
-      // Block ansible-playbook without --check on non-localhost
+      if (/git\s+commit\b/.test(cmd)) {
+        const branch = currentBranch(cwd);
+        const isBypassed = /\/tmp\/|\/private\/tmp\/|\/var\/folders\//.test(cwd) && !process.env.TEST_FORCE_PROTECTED_BRANCH_BLOCK;
+        if (isProtectedBranch(branch) && !isBypassed) {
+          return {
+            permissionDecision: "deny",
+            permissionDecisionReason: `Branch guard: committing directly to '${branch}' is FORBIDDEN. Checkout a feature branch first: git checkout -b <type>/<descriptive-slug>`,
+            decision: "deny",
+            reason: `Branch guard: committing directly to '${branch}' is FORBIDDEN. Checkout a feature branch first: git checkout -b <type>/<descriptive-slug>`,
+          };
+        }
+      }
+
+      if (/git\s+([^&|;]*\s+)?reset\s+.*--hard/.test(cmd)) {
+        return {
+          permissionDecision: "deny",
+          permissionDecisionReason: "Branch guard: 'git reset --hard' is FORBIDDEN in this workspace as it destroys local working tree changes.",
+          decision: "deny",
+          reason: "Branch guard: 'git reset --hard' is FORBIDDEN in this workspace as it destroys local working tree changes.",
+        };
+      }
       if (/(^|[;&|]\s*)ansible-playbook\b/.test(cmd)) {
         const hasCheck = /--check\b/.test(cmd);
         const isLocal = /--connection[= ]local\b|-c local\b/.test(cmd);
