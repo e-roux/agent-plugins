@@ -215,7 +215,7 @@ _make_main_repo() {
 }
 
 @test "branch: does not false-positive on cd && git commands with main in path" {
-  local args; args=$(jq -n '{"command":"git merge --abort && git reset --hard origin/main"}')
+  local args; args=$(jq -n '{"command":"git merge --abort && git checkout feat/x-main"}')
   local input
   input=$(jq -n --arg args "$args" '{"cwd":"/tmp","toolCalls":[{"id":"t1","name":"bash","args":$args}]}')
   run bash -c "echo '$input' | node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts'"

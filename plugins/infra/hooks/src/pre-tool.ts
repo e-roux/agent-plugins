@@ -17,7 +17,12 @@ export function runPreTool(input: PreToolInput): PreToolOutput {
   }
 
   for (const toolCall of toolCalls) {
-    if (toolCall.name === "bash" || toolCall.name === "run_command" || toolCall.name === "execute_command") {
+    if (
+      toolCall.name === "bash" ||
+      toolCall.name === "run_command" ||
+      toolCall.name === "execute_command" ||
+      toolCall.name === "run_shell_command"
+    ) {
       let args: Record<string, any> = {};
       if (typeof toolCall.args === "string") {
         try {

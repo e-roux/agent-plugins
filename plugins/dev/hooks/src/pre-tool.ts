@@ -177,7 +177,12 @@ function processToolCall(toolCall: ToolCall, cwd: string): PreToolOutput | null 
   }
 
   // 2. Bash execution tool
-  if (toolName === "bash" || toolName === "run_command" || toolName === "execute_command") {
+  if (
+    toolName === "bash" ||
+    toolName === "run_command" ||
+    toolName === "execute_command" ||
+    toolName === "run_shell_command"
+  ) {
     const cmd = args.command || args.commandLine || "";
     if (cmd) {
       const matchesCmd = (pattern: string) => {
@@ -303,9 +308,12 @@ function processToolCall(toolCall: ToolCall, cwd: string): PreToolOutput | null 
         return deny("Branch guard: never push/merge to main directly. Use a PR: gh pr create --base <default-branch>.");
       }
 
-      // Block --no-verify bypass
       if (/git\s+commit\s+.*--no-verify/.test(cmd)) {
         return deny("Branch guard: --no-verify bypasses commit hooks. Remove the flag.");
+      }
+
+      if (/git\s+([^&|;]*\s+)?reset\s+.*--hard/.test(cmd)) {
+        return deny("Branch guard: 'git reset --hard' is FORBIDDEN in this workspace as it destroys local working tree changes.");
       }
     }
   }
