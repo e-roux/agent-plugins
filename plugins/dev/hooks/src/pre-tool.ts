@@ -126,6 +126,35 @@ function processToolCall(toolCall: ToolCall, cwd: string): PreToolOutput | null 
         }
       }
 
+      if (filePath.endsWith(".sql") && !isTestOrConfig(filePath)) {
+        const fileDir = dirname(filePath);
+        const checkDir = existsSync(fileDir) ? fileDir : cwd;
+
+        if (/\/migrations?\//.test(filePath)) {
+          const schemaHclPath = `${checkDir}/schema.hcl`;
+          const atlasHclPath = `${checkDir}/atlas.hcl`;
+          const parentSchemaHclPath = `${checkDir}/../schema.hcl`;
+          const parentAtlasHclPath = `${checkDir}/../atlas.hcl`;
+          
+          if (
+            existsSync(schemaHclPath) ||
+            existsSync(atlasHclPath) ||
+            existsSync(parentSchemaHclPath) ||
+            existsSync(parentAtlasHclPath)
+          ) {
+            return deny("Migration guard: direct hand-editing of SQL migrations is FORBIDDEN. This is an Atlas-backed project. You must edit 'schema.hcl' and run 'make atlas.diff' (or 'atlas migrate diff') to auto-generate the SQL migration.");
+          }
+        }
+
+        if (/(DROP\s+(TABLE|COLUMN|SCHEMA)|TRUNCATE\s+TABLE|DELETE\s+FROM)/i.test(newContent)) {
+          return deny("Migration guard: destructive SQL operations (DROP/TRUNCATE/DELETE) are FORBIDDEN in migrations to prevent data loss. Use additive changes only.");
+        }
+
+        if (/CREATE\s+INDEX\s+CONCURRENTLY/i.test(newContent)) {
+          return deny("Migration guard: CREATE INDEX CONCURRENTLY is forbidden inside transaction-wrapped migration scripts. Use a standard CREATE INDEX or run outside a transaction block.");
+        }
+      }
+
       // Secrets validation (non-test files)
       if (!isTestOrConfig(filePath)) {
         if (SECRET_PATTERN.test(newContent)) {

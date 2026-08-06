@@ -430,6 +430,49 @@ _make_main_repo() {
   [ -z "$output" ]
 }
 
+@test "migration: denies direct edits of SQL migrations in Atlas projects" {
+  local repo; repo=$(mktemp -d)
+  touch "$repo/schema.hcl"
+  mkdir -p "$repo/migrations"
+  local toolargs
+  toolargs=$(jq -cn --arg file_path "$repo/migrations/000001_add_col.sql" '{"file_path":$file_path,"content":"CREATE TABLE users (id INT);"}')
+  local input
+  input=$(jq -cn --arg args "$toolargs" --arg cwd "$repo" '{"cwd":$cwd,"toolCalls":[{"id":"t1","name":"write_file","args":$args}]}')
+  local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts' < '$tmpf'"
+  rm -f "$tmpf"; rm -rf "$repo"
+  [ "$status" -eq 0 ]
+  decision="$(echo "$output" | jq -r '.permissionDecision')"
+  [ "$decision" = "deny" ]
+}
+
+@test "migration: denies destructive DROP TABLE inside .sql files" {
+  local repo; repo=$(mktemp -d)
+  local toolargs
+  toolargs=$(jq -cn --arg file_path "$repo/000001_destructive.sql" '{"file_path":$file_path,"content":"DROP TABLE users;"}')
+  local input
+  input=$(jq -cn --arg args "$toolargs" --arg cwd "$repo" '{"cwd":$cwd,"toolCalls":[{"id":"t1","name":"write_file","args":$args}]}')
+  local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts' < '$tmpf'"
+  rm -f "$tmpf"; rm -rf "$repo"
+  [ "$status" -eq 0 ]
+  decision="$(echo "$output" | jq -r '.permissionDecision')"
+  [ "$decision" = "deny" ]
+}
+
+@test "migration: denies CREATE INDEX CONCURRENTLY inside .sql files" {
+  local repo; repo=$(mktemp -d)
+  local toolargs
+  toolargs=$(jq -cn --arg file_path "$repo/000001_concurrent.sql" '{"file_path":$file_path,"content":"CREATE INDEX CONCURRENTLY idx ON users(id);"}')
+  local input
+  input=$(jq -cn --arg args "$toolargs" --arg cwd "$repo" '{"cwd":$cwd,"toolCalls":[{"id":"t1","name":"write_file","args":$args}]}')
+  local tmpf; tmpf=$(mktemp); echo "$input" > "$tmpf"
+  run bash -c "node $NODE_FLAGS '$SCRIPTS_DIR/pre-tool.ts' < '$tmpf'"
+  rm -f "$tmpf"; rm -rf "$repo"
+  [ "$status" -eq 0 ]
+  decision="$(echo "$output" | jq -r '.permissionDecision')"
+  [ "$decision" = "deny" ]
+}
 
 # ── pre-tool.sh: no-comments-guard ───────────────────────────────────────────
 
