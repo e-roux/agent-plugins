@@ -38,3 +38,19 @@ _make_main_repo() {
   
   rm -rf "$repo"
 }
+
+@test "gemini-e2e: no-comments guard blocks comment lines on feature branch" {
+  local repo; repo=$(_make_main_repo)
+  
+  # Switch to a feature branch in our test repository so branch protection is satisfied
+  git -C "$repo" checkout -b feat/my-feature -q
+  
+  # Run gemini headless on that repository, prompting it to create a file containing comments
+  run gemini -e dev --approval-mode yolo --skip-trust --include-directories "$repo" -p "Create a python file named app.py with a comment line # Hello in $repo"
+  
+  # Verify that gemini executed successfully and our pre-tool hook successfully blocked the comment line
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q "No-comments guard: code must be self-documenting"
+  
+  rm -rf "$repo"
+}
