@@ -1,7 +1,7 @@
 import { readFileSync, existsSync, mkdirSync, appendFileSync } from "node:fs";
 import { join, basename } from "node:path";
 import { execSync } from "node:child_process";
-import type { SessionStartInput, SessionStartOutput } from "@mxhq/agent-plugin-core";
+import type { SessionStartInput, SessionStartOutput } from "./core.ts";
 
 export function runSessionStart(input: SessionStartInput): SessionStartOutput {
   const cwd = input.cwd || ".";

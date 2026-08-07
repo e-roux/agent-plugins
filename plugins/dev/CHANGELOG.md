@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `hooks/copilot.json`: use cross-agent plugin-root fallback (`COPILOT_PLUGIN_ROOT` → `CLAUDE_PLUGIN_ROOT` → `PLUGIN_ROOT`) so Copilot CLI hooks resolve correctly and no longer fail session startup.
+- `hooks/src/*.ts`: remove runtime import dependency on `@mxhq/agent-plugin-core` by inlining shared hook helpers/types in `hooks/src/core.ts`, fixing fail-closed preTool hook crashes in installed-plugin environments.
+
 ## [1.1.0] - 2026-07-18
 
 ### Added
@@ -157,4 +162,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **hooks/pre-tool**: initial `migration-guard` — blocks `DROP TABLE`, `TRUNCATE TABLE`, `DELETE FROM` in bash commands that reference migration file paths
 - **hooks/scripts**: `session-start` hook — injects "Dev Guards Active" policy banner
 - **skills/dev**: skill definition documenting all three guards with examples
-

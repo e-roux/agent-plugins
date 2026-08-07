@@ -1,7 +1,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import { execSync } from "node:child_process";
-import { currentBranch } from "@mxhq/agent-plugin-core";
-import type { PostToolInput, PostToolOutput } from "@mxhq/agent-plugin-core";
+import { currentBranch } from "./core.ts";
+import type { PostToolInput, PostToolOutput } from "./core.ts";
 
 function hasCommand(cmd: string): boolean {
   try {

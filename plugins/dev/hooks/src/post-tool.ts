@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync } from "node:fs";
-import { redactSecrets } from "@mxhq/agent-plugin-core";
-import type { PostToolInput, PostToolOutput } from "@mxhq/agent-plugin-core";
+import { redactSecrets } from "./core.ts";
+import type { PostToolInput, PostToolOutput } from "./core.ts";
 
 const MCP_CB_FILE = "/tmp/.mcp-git-ops-cb";
 

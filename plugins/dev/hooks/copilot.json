@@ -4,33 +4,33 @@
     "sessionStart": [
       {
         "type": "command",
-        "bash": "node --experimental-strip-types \"$CLAUDE_PLUGIN_ROOT/hooks/src/session-start.ts\"",
+        "bash": "node --experimental-strip-types \"${COPILOT_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-${PLUGIN_ROOT:-.}}}/hooks/src/session-start.ts\"",
         "timeoutSec": 10
       }
     ],
     "userPromptSubmit": [
       {
         "type": "command",
-        "bash": "node --experimental-strip-types \"$CLAUDE_PLUGIN_ROOT/hooks/src/branch-check-turn.ts\"",
+        "bash": "node --experimental-strip-types \"${COPILOT_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-${PLUGIN_ROOT:-.}}}/hooks/src/branch-check-turn.ts\"",
         "timeoutSec": 5
       }
     ],
     "preToolUse": [
       {
         "type": "command",
-        "bash": "node --experimental-strip-types \"$CLAUDE_PLUGIN_ROOT/hooks/src/pre-tool.ts\"",
+        "bash": "node --experimental-strip-types \"${COPILOT_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-${PLUGIN_ROOT:-.}}}/hooks/src/pre-tool.ts\"",
         "timeoutSec": 15
       }
     ],
     "postToolUse": [
       {
         "type": "command",
-        "bash": "node --experimental-strip-types \"$CLAUDE_PLUGIN_ROOT/hooks/src/post-tool.ts\"",
+        "bash": "node --experimental-strip-types \"${COPILOT_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-${PLUGIN_ROOT:-.}}}/hooks/src/post-tool.ts\"",
         "timeoutSec": 10
       },
       {
         "type": "command",
-        "bash": "node --experimental-strip-types \"$CLAUDE_PLUGIN_ROOT/hooks/src/pipeline-chainguard.ts\"",
+        "bash": "node --experimental-strip-types \"${COPILOT_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-${PLUGIN_ROOT:-.}}}/hooks/src/pipeline-chainguard.ts\"",
         "timeoutSec": 5
       }
     ]
