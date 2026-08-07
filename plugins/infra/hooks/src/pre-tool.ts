@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
-import type { PreToolInput, PreToolOutput, ToolCall } from "@mxhq/agent-plugin-core";
-import { currentBranch, isProtectedBranch } from "@mxhq/agent-plugin-core";
+import type { PreToolInput, PreToolOutput, ToolCall } from "./core.ts";
+import { currentBranch, isProtectedBranch } from "./core.ts";
 
 export function runPreTool(input: PreToolInput): PreToolOutput {
   const cwd = input.cwd || ".";

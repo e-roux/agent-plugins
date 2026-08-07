@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import type { SessionStartInput, SessionStartOutput } from "@mxhq/agent-plugin-core";
+import type { SessionStartInput, SessionStartOutput } from "./core.ts";
 
 export function runSessionStart(input: SessionStartInput): SessionStartOutput {
   return {

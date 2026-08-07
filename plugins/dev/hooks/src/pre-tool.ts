@@ -8,8 +8,8 @@ import {
   mcpGitOpsAvailable,
   SECRET_PATTERN,
   COMMENT_EXTENSIONS,
-} from "@mxhq/agent-plugin-core";
-import type { PreToolInput, PreToolOutput, ToolCall } from "@mxhq/agent-plugin-core";
+} from "./core.ts";
+import type { PreToolInput, PreToolOutput, ToolCall } from "./core.ts";
 
 function isMakefile(name: string): boolean {
   return name === "Makefile" || name === "makefile" || name === "GNUmakefile" || name.endsWith(".mk");

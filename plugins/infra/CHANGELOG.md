@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `hooks/copilot.json`: use cross-agent plugin-root fallback (`COPILOT_PLUGIN_ROOT` → `CLAUDE_PLUGIN_ROOT` → `PLUGIN_ROOT`) so Copilot CLI hook paths resolve reliably and no longer block session startup.
+- `hooks/src/*.ts`: remove runtime import dependency on `@mxhq/agent-plugin-core` by inlining shared hook helpers/types in `hooks/src/core.ts`, fixing fail-closed preTool hook crashes in installed-plugin environments.
+
 - refactor(skills): remove `skills/ansible-molecule` — now canonical in [`e-roux/agent-skills`](https://github.com/e-roux/agent-skills); drop the `"skills"` field from `plugin.json`/`package.json`
 
 ## [0.1.11] - 2026-05-26

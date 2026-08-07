@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
-import { currentBranch } from "@mxhq/agent-plugin-core";
-import type { SessionStartInput } from "@mxhq/agent-plugin-core";
+import { currentBranch } from "./core.ts";
+import type { SessionStartInput } from "./core.ts";
 
 export function runBranchCheckTurn(input: SessionStartInput): void {
   const cwd = input.cwd || ".";
