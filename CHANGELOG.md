@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- chore(repo/makefile): make `CHANGELOG.md` a real freshness target with source-file prerequisites so `make qa` fails when changelog updates lag behind code changes
 - refactor(repo/skills): migrate `plugins/dev/skills/{dev,git}`, `plugins/infra/skills/ansible-molecule`, and `plugins/make/skills/{banner,makefile,python,shell,testing}` to [`e-roux/agent-skills`](https://github.com/e-roux/agent-skills) — the canonical, agent-agnostic home for skill content; drop the `"skills"` field from `plugin.json`/`package.json` for `dev`, `infra`, and `make` (`vulcan`'s bundled skills are unaffected — they document plugin authoring in this repo and stay local)
 - refactor(dev/mcp): remove embedded `mcp-git-ops` Go source from `plugins/dev/mcp-git-ops/` — now maintained standalone at [`e-roux/mcp-git-ops`](https://github.com/e-roux/mcp-git-ops); `plugins/dev/Makefile` `install`/`build` targets now run `go install github.com/e-roux/mcp-git-ops@latest` instead of delegating to a local module; `typecheck`/`test.unit`/`sync` no longer reference local Go sources
 - docs(repo/readme): update `README.md`/`AGENTS.md` to describe skills and `mcp-git-ops` as externalized companion repos; drop stale `pi install ... --skill plugins/dev/skills` example and remaining `web-browser` plugin references

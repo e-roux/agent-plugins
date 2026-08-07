@@ -19,7 +19,7 @@ CLEAN_PLUGINS   := $(addprefix clean/,$(PLUGIN_DIRS))
 
 .PHONY: help sync fmt lint typecheck check qa clean distclean
 .PHONY: test test.unit test.integration test.e2e
-.PHONY: verify.versions verify.pi verify.opencode changelog
+.PHONY: verify.versions verify.pi verify.opencode changelog changelog.format
 .PHONY: update update.list
 .PHONY: build install install.agents
 
@@ -106,13 +106,30 @@ verify.opencode:
 	done
 	[ $$fail -eq 0 ] || exit 1
 
-changelog:
+SRC_FILES := $(shell find . -type f \( \
+	-name '*.go' -o -name '*.ts' -o -name '*.tsx' -o -name '*.js' -o -name '*.jsx' -o -name '*.py' -o -name '*.rs' -o \
+	-name '*.sh' -o -name '*.json' -o -name '*.yaml' -o -name '*.yml' -o -name '*.toml' -o -name '*.mk' -o -name '*.bats' -o \
+	-name '*.md' \
+\) ! -name 'CHANGELOG.md' ! -path './.git/*' ! -path './node_modules/*' ! -path './build/*' ! -path './dist/*' ! -path './hooks/logs/*' | sort)
+
+CHANGELOG.md: $(SRC_FILES) Makefile
+	newer=$$?; [ -n "$$newer" ] || { printf "  OK CHANGELOG.md is up to date\n"; exit 0; }
+	printf "FAIL: the following source files are newer than CHANGELOG.md:\n"
+	for f in $$newer; do
+		printf "  %s\n" "$$f"
+	done
+	printf "Add an entry under ## [Unreleased], then: touch CHANGELOG.md\n"
+	exit 1
+
+changelog.format:
 	cl="CHANGELOG.md"
 	[ -f "$$cl" ] || { printf "FAIL: %s not found\n" "$$cl"; exit 1; }
 	grep -q '^## \[Unreleased\]' "$$cl" || { printf "FAIL: %s missing [Unreleased] section\n" "$$cl"; exit 1; }
 	bad=$$(grep -E '^### ' "$$cl" | grep -vE '^### (Added|Changed|Deprecated|Removed|Fixed|Security)$$' | head -1)
 	[ -z "$$bad" ] || { printf "FAIL: invalid changelog section header: %s\n" "$$bad"; exit 1; }
 	printf "  OK changelog\n"
+
+changelog: CHANGELOG.md changelog.format
 
 test.unit: sync verify.versions verify.pi changelog
 
@@ -210,10 +227,11 @@ help:
 	printf "  sync            Install pre-push hook (prerequisite for validation targets)\n"
 	printf "\n"
 	printf "\033[1;35mValidation:\033[0m\n"
+	printf "  CHANGELOG.md     freshness gate: source files newer than CHANGELOG.md\n"
 	printf "  verify.versions Version drift: plugin.json = gemini-extension.json = marketplace.json\n"
 	printf "  verify.pi       pi-enabled plugins have package.json with pi key\n"
 	printf "  verify.opencode opencode plugin directory and files valid\n"
-	printf "  changelog       CHANGELOG.md has [Unreleased] and valid section headers\n"
+	printf "  changelog       CHANGELOG.md freshness + [Unreleased] and section header validation\n"
 	printf "  fmt             Validate all JSON files are well-formed\n"
 	printf "  lint            verify.versions + verify.pi + verify.opencode + changelog\n"
 	printf "  check           fmt + lint + typecheck\n"
